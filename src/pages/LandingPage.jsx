@@ -8,7 +8,7 @@ const LandingPage = () => {
   return (
     <div className='flex flex-col min-h-screen'>
         <Header />
-      <main className='flex-1 bg-cover bg-center' style={{ backgroundImage: "url('/src/img/mapa_do_rpg.png')"}}>
+      <main className='flex-1 bg-cover bg-center' style={{ backgroundImage: `url("../img/mapa_do_rpg.png")`}}>
           <section>
             <div className='relative w-full h-[100vh]'>
               <div className='absolute inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center'>

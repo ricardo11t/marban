@@ -2,71 +2,43 @@
   "racas": {
     "humano": {
       "bonus": {
-        "forca": 0,
-        "resFisica": 0,
-        "resMental": -2,
-        "manipulacao": -2,
+        "forca": 1,
+        "resFisica": 1,
+        "resMental": 0,
+        "manipulacao": 0,
         "resMagica": 0,
-        "agilidade": 0,
-        "destreza": 0,
-        "competencia": 0,
+        "agilidade": 1,
+        "destreza": 1,
+        "competencia": 1,
         "criatividade": 0,
         "sorte": 0
       }
     },
     "elfo": {
       "bonus": {
-        "forca": 2,
-        "resFisica": 2,
+        "forca": 0,
+        "resFisica": 0,
         "resMental": 0,
         "manipulacao": 0,
-        "resMagica": 0,
-        "agilidade": 0,
-        "destreza": 0,
-        "competencia": 0,
+        "resMagica": 2,
+        "agilidade": 1,
+        "destreza": 1,
+        "competencia": 1,
         "criatividade": 0,
         "sorte": 0
       }
     }
   },
   "classes": {
-    "assassino": {
-      "bonus": {
-        "forca": 0,
-        "resFisica": 0,
-        "resMental": -2,
-        "manipulacao": -2,
-        "resMagica": 0,
-        "agilidade": 0,
-        "destreza": 0,
-        "competencia": 0,
-        "criatividade": 0,
-        "sorte": 0
-      }
-    },
     "guerreiro": {
       "bonus": {
-        "forca": 8,
-        "resFisica": 7,
+        "forca": 2,
+        "resFisica": 1,
         "resMental": 0,
         "manipulacao": 0,
         "resMagica": 0,
         "agilidade": 0,
-        "destreza": 0,
-        "competencia": 0,
-        "criatividade": 0,
-        "sorte": 0
-      }
-    },
-    "a": {
-      "bonus": {
-        "forca": 10000,
-        "resFisica": 0,
-        "resMental": 0,
-        "manipulacao": 0,
-        "resMagica": 0,
-        "agilidade": 0,
-        "destreza": 0,
+        "destreza": 1,
         "competencia": 0,
         "criatividade": 0,
         "sorte": 0
