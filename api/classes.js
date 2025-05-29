@@ -1,27 +1,46 @@
-import fs from 'fs';
-import path from 'path';
-
-const dbPath = path.join(process.cwd(), 'db.json');
+import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
     try {
-        const fileData = fs.readFileSync(dbPath);
-        const db = JSON.parse(fileData);
-
         if (req.method === 'GET') {
-            res.status(200).json(db.classes); // Retorna db.classes
+            const { rows } = await sql`SELECT name, bonus FROM classes;`;
+            const classesData = rows.reduce((acc, row) => {
+                acc[row.name] = { bonus: row.bonus };
+                return acc;
+            }, {});
+            res.status(200).json(classesData);
         }
         else if (req.method === 'PUT') {
-            db.classes = req.body; // Atualiza db.classes
-            fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-            res.status(200).json({ message: 'Classes updated successfully!' });
+            const { name, bonus } = req.body;
+            if (!name || bonus === undefined) {
+                return res.status(400).json({ message: 'Nome e bônus são obrigatórios.' });
+            }
+            const classNameDB = name.toLowerCase();
+            await sql`
+        INSERT INTO classes (name, bonus) 
+        VALUES (${classNameDB}, ${JSON.stringify(bonus)})
+        ON CONFLICT (name) 
+        DO UPDATE SET bonus = ${JSON.stringify(bonus)};
+      `;
+            res.status(200).json({ message: 'Classe salva com sucesso!' });
+        }
+        else if (req.method === 'DELETE') {
+            const { name } = req.query;
+            if (!name) {
+                return res.status(400).json({ message: 'Nome da classe é obrigatório para deletar.' });
+            }
+            const result = await sql`DELETE FROM classes WHERE name = ${name.toLowerCase()};`;
+            if (result.rowCount === 0) {
+                return res.status(404).json({ message: 'Classe não encontrada para deletar.' });
+            }
+            res.status(200).json({ message: 'Classe deletada com sucesso!' });
         }
         else {
-            res.setHeader('Allow', ['GET', 'PUT']);
+            res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
             res.status(405).end(`Method ${req.method} Not Allowed`);
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        console.error('Erro na API /api/classes:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 }

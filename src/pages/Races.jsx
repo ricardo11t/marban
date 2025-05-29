@@ -62,36 +62,40 @@ const Races = () => {
     const handleSaveRace = async () => {
         setIsLoading(true);
         try {
-            const currentRaces = await (await fetch('/api/races')).json();
-            const newRaces = { ...currentRaces };
+            // Prepara o objeto para a raça individual que está sendo salva/editada
+            const raceDataToSave = {
+                // Garante que o nome seja enviado em minúsculas se for uma nova raça
+                // Se for edição, o nome já deve estar correto no formData
+                name: editingRaceName ? formData.nome : formData.nome.toLowerCase(),
+                bonus: formData.bonus
+            };
 
-            if (editingRaceName && editingRaceName !== formData.nome) {
-                delete newRaces[editingRaceName];
+            // Validação simples para o nome
+            if (!raceDataToSave.name.trim()) {
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da raça não pode ser vazio.' });
+                setIsLoading(false);
+                return;
             }
-
-            newRaces[formData.nome.toLowerCase()] = { bonus: formData.bonus };
 
             await fetch('/api/races', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newRaces)
+                body: JSON.stringify(raceDataToSave) // Envia apenas a raça sendo adicionada/editada
             });
 
-            await refetchRaces();
-            handleClose();
+            await refetchRaces(); // Função do seu RacesContext
+            handleClose(); // Fecha o Dialog
 
-            // ALERTA DE SUCESSO com SweetAlert2
             Swal.fire({
                 icon: 'success',
                 title: 'Salvo!',
-                text: 'A raça foi salva com sucesso.',
+                text: `A raça "${raceDataToSave.name}" foi salva com sucesso.`,
                 showConfirmButton: false,
-                timer: 1500 // Fecha automaticamente após 1.5s
+                timer: 1500
             });
 
         } catch (error) {
             console.error("Erro ao salvar raça:", error);
-            // ALERTA DE ERRO com SweetAlert2
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -104,7 +108,6 @@ const Races = () => {
     };
 
     const handleDelete = (raceName) => {
-        // 2. SUBSTITUÍDO window.confirm por SweetAlert2
         Swal.fire({
             title: 'Tem certeza?',
             text: `Você não poderá reverter a exclusão da raça "${raceName}"!`,
@@ -115,22 +118,22 @@ const Races = () => {
             confirmButtonText: 'Sim, deletar!',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
-            // Se o usuário confirmar a ação
             if (result.isConfirmed) {
                 setIsLoading(true);
                 try {
-                    const currentRaces = await (await fetch('/api/races')).json();
-                    delete currentRaces[raceName];
-
-                    await fetch('/api/races', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(currentRaces)
+                    // A API agora espera o nome como um query parameter para DELETE
+                    const response = await fetch(`/api/races?name=${encodeURIComponent(raceName)}`, {
+                        method: 'DELETE'
                     });
 
-                    await refetchRaces();
+                    if (!response.ok) {
+                        // Tenta pegar a mensagem de erro do backend se houver
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                    }
 
-                    // ALERTA DE SUCESSO na exclusão
+                    await refetchRaces(); // Função do seu RacesContext
+
                     Swal.fire(
                         'Deletado!',
                         `A raça "${raceName}" foi deletada.`,
@@ -139,7 +142,6 @@ const Races = () => {
 
                 } catch (error) {
                     console.error("Erro ao deletar raça:", error);
-                    // ALERTA DE ERRO na exclusão
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',

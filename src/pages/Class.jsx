@@ -18,13 +18,11 @@ const initialFormState = {
 };
 
 const Classes = () => {
-    // CORRIGIDO: refetchclasses -> refetchClasses
     const { classes, refetchClasses } = useContext(ClassesContext);
     const nomesDasClasses = Object.keys(classes || {});
 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
-    // CORRIGIDO: editingclassName -> editingClassName (evitar palavra reservada)
     const [editingClassName, setEditingClassName] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -36,7 +34,14 @@ const Classes = () => {
 
     const handleOpenEdit = (nome) => {
         setEditingClassName(nome);
-        setFormData({ nome, bonus: classes[nome].bonus });
+        // Garante que está pegando os dados corretos do objeto 'classes'
+        if (classes[nome]) {
+            setFormData({ nome, bonus: classes[nome].bonus });
+        } else {
+            // Fallback ou tratamento de erro se a classe não for encontrada
+            console.error(`Classe ${nome} não encontrada nos dados do contexto.`);
+            setFormData(initialFormState);
+        }
         setOpen(true);
     };
 
@@ -56,44 +61,46 @@ const Classes = () => {
         }
     };
 
-    // --- FUNÇÕES CRUD CORRIGIDAS ---
+    // --- FUNÇÕES CRUD AJUSTADAS PARA VERCEL POSTGRES ---
 
-    // CORRIGIDO: handleSaveclass -> handleSaveClasse
     const handleSaveClasse = async () => {
         setIsLoading(true);
         try {
-            // CORRIGIDO: Endpoint /classes
-            const currentClasses = await (await fetch('/api/classes')).json();
-            const newClasses = { ...currentClasses };
+            // Prepara o objeto para a classe individual que está sendo salva/editada
+            const classDataToSave = {
+                // Se for edição, usa o nome do formData. Se for adição, converte para minúsculas.
+                // O backend também fará a conversão para minúsculas para consistência no nome da chave/PK.
+                name: formData.nome, // O backend cuidará do toLowerCase() no nome para a chave primária
+                bonus: formData.bonus
+            };
 
-            if (editingClassName && editingClassName !== formData.nome) {
-                delete newClasses[editingClassName];
+            // Validação simples para o nome
+            if (!classDataToSave.name.trim()) {
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da classe não pode ser vazio.' });
+                setIsLoading(false);
+                return;
             }
 
-            newClasses[formData.nome.toLowerCase()] = { bonus: formData.bonus };
-
-            // CORRIGIDO: Endpoint /classes
+            // A API agora espera UM objeto de classe no corpo do PUT
             await fetch('/api/classes', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newClasses)
+                body: JSON.stringify(classDataToSave) // Envia apenas a classe sendo adicionada/editada
             });
 
-            await refetchClasses();
-            handleClose();
+            await refetchClasses(); // Função do seu ClassesContext
+            handleClose(); // Fecha o Dialog
 
-            // CORRIGIDO: Texto do Alerta
             Swal.fire({
                 icon: 'success',
                 title: 'Salvo!',
-                text: 'A classe foi salva com sucesso.',
+                text: `A classe "${classDataToSave.name}" foi salva com sucesso.`,
                 showConfirmButton: false,
                 timer: 1500
             });
 
         } catch (error) {
             console.error("Erro ao salvar classe:", error);
-            // CORRIGIDO: Texto do Alerta
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -105,11 +112,9 @@ const Classes = () => {
         }
     };
 
-    // CORRIGIDO: Parâmetro className -> classNameToDelete
     const handleDelete = (classNameToDelete) => {
         Swal.fire({
             title: 'Tem certeza?',
-            // CORRIGIDO: Texto do Alerta
             text: `Você não poderá reverter a exclusão da classe "${classNameToDelete}"!`,
             icon: 'warning',
             showCancelButton: true,
@@ -121,20 +126,18 @@ const Classes = () => {
             if (result.isConfirmed) {
                 setIsLoading(true);
                 try {
-                    // CORRIGIDO: Endpoint /classes
-                    const currentClasses = await (await fetch('/api/classes')).json();
-                    delete currentClasses[classNameToDelete];
-
-                    // CORRIGIDO: Endpoint /classes
-                    await fetch('/api/classes', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(currentClasses)
+                    // A API agora espera o nome como um query parameter para DELETE
+                    const response = await fetch(`/api/classes?name=${encodeURIComponent(classNameToDelete)}`, {
+                        method: 'DELETE'
                     });
 
-                    await refetchClasses();
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                    }
 
-                    // CORRIGIDO: Texto do Alerta
+                    await refetchClasses(); // Função do seu ClassesContext
+
                     Swal.fire(
                         'Deletado!',
                         `A classe "${classNameToDelete}" foi deletada.`,
@@ -143,7 +146,6 @@ const Classes = () => {
 
                 } catch (error) {
                     console.error("Erro ao deletar classe:", error);
-                    // CORRIGIDO: Texto do Alerta
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
@@ -161,27 +163,24 @@ const Classes = () => {
         <>
             <Header />
             <div>
-                {/* CORRIGIDO: Título da página */}
                 <div><h1 className='text-5xl font-bold text-center mt-10 mb-10'>Classes</h1></div>
                 <div className='flex justify-start ml-10 mb-4'>
-                    {/* CORRIGIDO: Texto do Botão */}
                     <Button variant='contained' sx={{ backgroundColor: 'red', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
                         Adicionar nova Classe
                     </Button>
                 </div>
                 <div className='flex flex-wrap justify-center gap-6 mb-10'>
                     {isLoading && <CircularProgress />}
-                    {/* CORRIGIDO: nomesDasRacas -> nomesDasClasses */}
                     {!isLoading && nomesDasClasses.length > 0 ? (
                         nomesDasClasses.map((nome) => (
                             <Card key={nome} sx={{ width: 320, display: 'flex', flexDirection: 'column' }}>
                                 <CardMedia sx={{ height: 140 }} image={`/images/classes/${nome}.jpg`} title={nome} />
                                 <CardContent className='text-center flex-grow'>
                                     <Typography variant='h5' component="div" className='capitalize'>{nome}</Typography>
-                                    {/* CORRIGIDO: Texto */}
                                     <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Classe:</Typography>
                                     <Box className='grid grid-cols-2 gap-x-4 gap-y-1'>
-                                        {Object.entries(classes[nome].bonus)
+                                        {/* Verifica se classes[nome] e classes[nome].bonus existem antes de tentar acessá-los */}
+                                        {classes[nome] && classes[nome].bonus && Object.entries(classes[nome].bonus)
                                             .filter(([_, valor]) => valor !== 0)
                                             .map(([atributo, valor]) => (
                                                 <Typography key={atributo} variant="body2" sx={{ color: 'text.secondary', textAlign: 'left' }}>
@@ -200,13 +199,11 @@ const Classes = () => {
                             </Card>
                         ))
                     ) : (
-                        // CORRIGIDO: Texto
                         !isLoading && <p>Nenhuma classe encontrada.</p>
                     )}
                 </div>
             </div>
 
-            {/* CORRIGIDO: onSubmit e textos do Dialog */}
             <Dialog open={open} onClose={handleClose} PaperProps={{ component: 'form', onSubmit: (e) => { e.preventDefault(); handleSaveClasse(); } }}>
                 <DialogTitle>{editingClassName ? 'Editar Classe' : 'Adicionar Nova Classe'}</DialogTitle>
                 <DialogContent>
@@ -217,6 +214,9 @@ const Classes = () => {
                         autoFocus required margin="dense" id="name" name="nome"
                         label="Nome da Classe" type="text" fullWidth variant="standard"
                         value={formData.nome} onChange={handleFormChange}
+                        // Desabilita o campo nome ao editar para evitar mudar a chave primária facilmente
+                        // Se a mudança de nome for permitida, o backend já lida com isso no nome da chave do objeto
+                        disabled={!!editingClassName}
                     />
                     <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                         {Object.keys(formData.bonus).map(bonusKey => (
