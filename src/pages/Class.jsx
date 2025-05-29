@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
 const initialFormState = {
     nome: '',
     bonus: {
-        forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0,
+        forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
         agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
     }
 };
