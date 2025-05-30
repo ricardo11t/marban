@@ -5,22 +5,60 @@ import { Link } from 'react-router-dom'
 
 const Header = () => {
   return (
-    <header className='flex justify-around p-6 bg-red-600'>
-        <div className='mt-1'>
-            Logo
+    <header className=''>
+      <div className='flex justify-around p-0 bg-red-600'>
+        <div className='mt-0 p-2'>
+          <a href="/"><img src="/public/img/logo-site.png" alt="" className='h-20' /></a>
         </div>
-        <div></div>
-        <div></div>
-        <div>
-            <Navbar />
-        </div>
-        <div className='flex gap-4'>
-            <div>
-                  <Link to={`/login`}><Button variant='contained' sx={{ backgroundColor: "darkgrey", color: "white" }}>Login</Button></Link>
+          <div className='flex gap-5'>
+            <div className='mt-5'>
+            <Link to={`/`}>            
+            <Button variant="contained"
+              sx={{
+                backgroundColor: 'darkgray',
+                color: 'white',
+                height: '38px',
+                paddingX: 2,
+                borderRadius: '6px',
+                '&:hover': {
+                  backgroundColor: 'gray',
+                }
+              }}>
+              Home
+            </Button></Link>
             </div>
             <div>
-                  <Link to={`/cadastro`}><Button variant='contained' sx={{ backgroundColor: "black" }}>Cadastrar</Button></Link>
+              <Navbar />
             </div>
+          </div>
+        <div></div>
+        <div></div>
+          <div className='flex gap-4 mt-5'>
+              <div>
+            <Link to={`/login`}><Button variant='contained' sx={{
+              backgroundColor: 'darkgray',
+              color: 'white',
+              height: '38px',
+              paddingX: 2,
+              borderRadius: '6px',
+              '&:hover': {
+                backgroundColor: 'gray',
+              }
+            }}>Login</Button></Link>
+              </div>
+              <div>
+            <Link to={`/cadastro`}><Button variant='contained' sx={{
+              backgroundColor: 'black',
+              color: 'white',
+              height: '38px',
+              paddingX: 2,
+              borderRadius: '6px',
+              '&:hover': {
+                backgroundColor: 'beige',
+              }
+            }}>Cadastrar</Button></Link>
+              </div>
+          </div>
         </div>
     </header>
   )
