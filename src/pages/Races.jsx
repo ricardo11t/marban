@@ -297,7 +297,7 @@ const Races = () => {
                         ))}
                     </Box>
 
-                    <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Pontos de Destino (PdD):</Typography>
+                    <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Pontos de Deslocamento (PdD):</Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px', alignItems: 'flex-end' }}>
                         <TextField
                             margin="dense"
@@ -313,7 +313,7 @@ const Races = () => {
                             margin="dense"
                             id="PdDFração"
                             name="PdDFração" // O 'name' do input TextField pode continuar assim
-                            label="PdD Fração" // Removi o "(JÁ CALCULADOPFV)" para limpeza
+                            label="PdD Fração (JÁCALCULADOPFV)" // Removi o "(JÁ CALCULADOPFV)" para limpeza
                             type="number"
                             variant="standard"
                             value={formData.pdd.PdDFração} // <<< ATUALIZADO AQUI
