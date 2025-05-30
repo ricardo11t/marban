@@ -174,7 +174,6 @@ const Classes = () => {
                     {!isLoading && nomesDasClasses.length > 0 ? (
                         nomesDasClasses.map((nome) => (
                             <Card key={nome} sx={{ width: 320, display: 'flex', flexDirection: 'column' }}>
-                                <CardMedia sx={{ height: 140 }} image={`/images/classes/${nome}.jpg`} title={nome} />
                                 <CardContent className='text-center flex-grow'>
                                     <Typography variant='h5' component="div" className='capitalize'>{nome}</Typography>
                                     <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Classe:</Typography>

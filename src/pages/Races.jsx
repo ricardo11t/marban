@@ -211,7 +211,6 @@ const Races = () => {
 
                             return (
                                 <Card key={nome} sx={{ width: 320, display: 'flex', flexDirection: 'column' }}>
-                                    <CardMedia sx={{ height: 140, backgroundSize: 'cover', backgroundPosition: 'center' }} image={`/images/races/${nome.toLowerCase()}.jpg`} title={nome} onError={(e) => { e.target.onerror = null; e.target.src = "/images/races/default.jpg" }} />
                                     <CardContent className='text-center flex-grow'>
                                         <Typography variant='h5' component="div" className='capitalize'>{nome}</Typography>
 
@@ -236,7 +235,7 @@ const Races = () => {
                                         {/* ATUALIZADO AQUI para race.pdd */}
                                         {race.pdd && (race.pdd.PdDFixo !== 0 || race.pdd.PdDFração !== 0 || race.pdd.AtributoUtilizado) && (
                                             <>
-                                                <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Destino:</Typography>
+                                                <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
                                                 <Box sx={{ textAlign: 'left', pl: 1 }}>
                                                     {/* ATUALIZADO AQUI para race.pdd */}
                                                     {race.pdd.PdDFixo !== undefined && race.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fixo: {race.pdd.PdDFixo}</Typography>}
