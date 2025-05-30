@@ -3,36 +3,45 @@ import { sql } from '@vercel/postgres';
 export default async function handler(req, res) {
     try {
         if (req.method === 'GET') {
-            const { rows } = await sql`SELECT name, bonus FROM races;`;
+            // 1. SELECT a coluna 'pdd' também
+            const { rows } = await sql`SELECT name, bonus, pdd FROM races;`;
+
             // Transforma o array de resultados no objeto que o frontend espera
             const racesData = rows.reduce((acc, row) => {
-                acc[row.name] = { bonus: row.bonus };
+                acc[row.name] = {
+                    bonus: row.bonus,
+                    pdd: row.pdd // 2. Adiciona 'pdd' ao objeto da raça
+                };
                 return acc;
             }, {});
             res.status(200).json(racesData);
         }
         else if (req.method === 'PUT') {
-            // A requisição PUT agora deve enviar UM objeto de raça para adicionar/atualizar
-            // Ex: req.body = { name: "novaRaca", bonus: { ... } }
-            const { name, bonus } = req.body;
-            if (!name || bonus === undefined) { // Verifica se bonus existe, mesmo que seja um objeto vazio
-                return res.status(400).json({ message: 'Nome e bônus são obrigatórios.' });
+            // 3. Extrai 'pdd' do corpo da requisição
+            const { name, bonus, pdd } = req.body;
+
+            // 4. Valida a presença de 'name', 'bonus', e 'pdd'
+            //    Considerando que 'pdd' pode ser um objeto (mesmo com valores padrão/nulos) ou null.
+            //    Se 'pdd' for sempre um objeto enviado pelo frontend, 'pdd === undefined' é uma boa checagem.
+            if (!name || bonus === undefined || pdd === undefined) {
+                return res.status(400).json({ message: 'Nome, bônus e PdD são obrigatórios.' });
             }
 
-            // UPSERT: Insere se não existir, atualiza se existir
-            // Garante que o nome seja salvo em minúsculas para consistência
             const raceNameDB = name.toLowerCase();
+
+            // 5. Inclui 'pdd' no INSERT e UPDATE
+            //    JSON.stringify(pdd) vai lidar corretamente com objetos PdD ou se pdd for null.
             await sql`
-        INSERT INTO races (name, bonus) 
-        VALUES (${raceNameDB}, ${JSON.stringify(bonus)})
-        ON CONFLICT (name) 
-        DO UPDATE SET bonus = ${JSON.stringify(bonus)};
-      `;
+                INSERT INTO races (name, bonus, pdd) 
+                VALUES (${raceNameDB}, ${JSON.stringify(bonus)}, ${JSON.stringify(pdd)})
+                ON CONFLICT (name) 
+                DO UPDATE SET 
+                    bonus = ${JSON.stringify(bonus)}, 
+                    pdd = ${JSON.stringify(pdd)};
+            `;
             res.status(200).json({ message: 'Raça salva com sucesso!' });
         }
         else if (req.method === 'DELETE') {
-            // Espera um parâmetro 'name' na URL query para deletar
-            // Ex: /api/races?name=nomedaraca
             const { name } = req.query;
             if (!name) {
                 return res.status(400).json({ message: 'Nome da raça é obrigatório para deletar.' });
