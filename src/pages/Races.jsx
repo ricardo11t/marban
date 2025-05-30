@@ -5,7 +5,7 @@ import { RacesContext } from '../context/RacesProvider';
 import {
     Card, CardContent, CardMedia, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,
-    Autocomplete // 1. Importar Autocomplete
+    Autocomplete
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
@@ -16,14 +16,13 @@ const initialFormState = {
         forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
         agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
     },
-    pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null } // null para Autocomplete ou '' se preferir
+    pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null } // Já está 'pdd' (minúsculo) - Ótimo!
 };
 
-// 2. Definir Opções para o Autocomplete (atributos)
 const attributeKeys = Object.keys(initialFormState.bonus);
 const attributeOptions = attributeKeys.map(key => ({
-    value: key, // O valor que será salvo (ex: "forca")
-    label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim() // Label para exibição (ex: "Forca", "Res Fisica")
+    value: key,
+    label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
 }));
 
 
@@ -48,7 +47,7 @@ const Races = () => {
         setFormData({
             nome,
             bonus: { ...(raceData.bonus || initialFormState.bonus) },
-            PdD: { ...(raceData.PdD || initialFormState.PdD) }
+            pdd: { ...(raceData.pdd || initialFormState.pdd) } // Já usa 'pdd' (minúsculo) - Ótimo!
         });
         setOpen(true);
     };
@@ -57,17 +56,17 @@ const Races = () => {
         setOpen(false);
     };
 
-    // 3. Ajustar handleFormChange ou criar handler específico para Autocomplete
-    const handleFormChange = (event, value, fieldName) => { // Adicionado 'value' e 'fieldName' para Autocomplete
-        if (fieldName === 'AtributoUtilizado') { // Tratamento específico para Autocomplete
+    const handleFormChange = (event, value, fieldName) => {
+        if (fieldName === 'AtributoUtilizado') {
             setFormData(prev => ({
                 ...prev,
-                PdD: { ...prev.PdD, AtributoUtilizado: value ? value.value : null } // Salva o 'value' do objeto da opção
+                pdd: { ...prev.pdd, AtributoUtilizado: value ? value.value : null } // Já usa 'pdd' (minúsculo) - Ótimo!
             }));
         } else {
             const { name, value: inputValue } = event.target;
             const isBonusField = Object.keys(initialFormState.bonus).includes(name);
-            const isPdDField = Object.keys(initialFormState.PdD).includes(name) && name !== 'AtributoUtilizado';
+            // As chaves internas de pdd (PdDFixo, etc.) continuam com seu casing original
+            const isPdDField = Object.keys(initialFormState.pdd).includes(name) && name !== 'AtributoUtilizado';
 
             if (name === 'nome') {
                 setFormData(prev => ({ ...prev, nome: inputValue }));
@@ -79,7 +78,7 @@ const Races = () => {
             } else if (isPdDField) {
                 setFormData(prev => ({
                     ...prev,
-                    PdD: { ...prev.PdD, [name]: Number(inputValue) || 0 }
+                    pdd: { ...prev.pdd, [name]: Number(inputValue) || 0 } // Já usa 'pdd' (minúsculo) - Ótimo!
                 }));
             }
         }
@@ -90,10 +89,9 @@ const Races = () => {
         setIsLoading(true);
         try {
             const raceDataToSave = {
-                // Garante que o nome seja enviado em minúsculas se for uma nova raça
                 name: editingRaceName ? formData.nome : formData.nome.toLowerCase(),
                 bonus: formData.bonus,
-                PdD: formData.PdD
+                pdd: formData.pdd // <<< CORRIGIDO AQUI: de 'PdD' para 'pdd'
             };
 
             if (!raceDataToSave.name.trim()) {
@@ -101,15 +99,14 @@ const Races = () => {
                 setIsLoading(false);
                 return;
             }
-            // Validação para AtributoUtilizado (opcional, mas bom ter)
-            if (formData.PdD.PdDFixo > 0 || formData.PdD.PdDFração > 0) { // Se PdD fixo ou fração for usado
-                if (!formData.PdD.AtributoUtilizado) {
+
+            if (formData.pdd.PdDFixo > 0 || formData.pdd.PdDFração > 0) {
+                if (!formData.pdd.AtributoUtilizado) {
                     Swal.fire({ icon: 'error', title: 'Erro!', text: 'Se PdD Fixo ou Fração for maior que zero, o Atributo Utilizado para PdD deve ser selecionado.' });
                     setIsLoading(false);
                     return;
                 }
             }
-
 
             await fetch('/api/races', {
                 method: 'PUT',
@@ -184,7 +181,6 @@ const Races = () => {
         });
     };
 
-    // Para encontrar o objeto de opção correto para o valor atual do Autocomplete
     const getAutocompleteValue = (attributeValue) => {
         if (!attributeValue) return null;
         return attributeOptions.find(option => option.value === attributeValue) || null;
@@ -206,11 +202,11 @@ const Races = () => {
                     {!isLoading && nomesDasRacas.length > 0 ? (
                         nomesDasRacas.map((nome) => {
                             const race = races[nome];
-                            if (!race) return null; // Segurança caso a raça não exista
+                            if (!race) return null;
 
-                            // Encontrar o label do atributo para exibição no card
-                            const atributoUtilizadoLabel = race.PdD?.AtributoUtilizado
-                                ? (attributeOptions.find(opt => opt.value === race.PdD.AtributoUtilizado)?.label || race.PdD.AtributoUtilizado)
+                            // ATUALIZADO AQUI para race.pdd
+                            const atributoUtilizadoLabel = race.pdd?.AtributoUtilizado
+                                ? (attributeOptions.find(opt => opt.value === race.pdd.AtributoUtilizado)?.label || race.pdd.AtributoUtilizado)
                                 : 'N/A';
 
                             return (
@@ -219,7 +215,7 @@ const Races = () => {
                                     <CardContent className='text-center flex-grow'>
                                         <Typography variant='h5' component="div" className='capitalize'>{nome}</Typography>
 
-                                        {race.bonus && Object.values(race.bonus).some(v => v !== 0) && ( // Verifica se há algum bônus diferente de zero
+                                        {race.bonus && Object.values(race.bonus).some(v => v !== 0) && (
                                             <>
                                                 <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                                                 <Box className='grid grid-cols-2 gap-x-4 gap-y-1'>
@@ -237,18 +233,20 @@ const Races = () => {
                                             </>
                                         )}
 
-                                        {race.PdD && (race.PdD.PdDFixo !== 0 || race.PdD.PdDFração !== 0 || race.PdD.AtributoUtilizado) && ( // Verifica se há dados de PdD para mostrar
+                                        {/* ATUALIZADO AQUI para race.pdd */}
+                                        {race.pdd && (race.pdd.PdDFixo !== 0 || race.pdd.PdDFração !== 0 || race.pdd.AtributoUtilizado) && (
                                             <>
                                                 <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Destino:</Typography>
                                                 <Box sx={{ textAlign: 'left', pl: 1 }}>
-                                                    {race.PdD.PdDFixo !== undefined && race.PdD.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fixo: {race.PdD.PdDFixo}</Typography>}
-                                                    {race.PdD.PdDFração !== undefined && race.PdD.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fração: {race.PdD.PdDFração}</Typography>}
-                                                    {race.PdD.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
+                                                    {/* ATUALIZADO AQUI para race.pdd */}
+                                                    {race.pdd.PdDFixo !== undefined && race.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fixo: {race.pdd.PdDFixo}</Typography>}
+                                                    {race.pdd.PdDFração !== undefined && race.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fração: {race.pdd.PdDFração}</Typography>}
+                                                    {race.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
                                                 </Box>
                                             </>
                                         )}
                                     </CardContent>
-                                    <Box className='flex justify-end gap-2 p-2 mt-auto'> {/* mt-auto para alinhar botões na base */}
+                                    <Box className='flex justify-end gap-2 p-2 mt-auto'>
                                         <Button size="small" onClick={() => handleOpenEdit(nome)}><Edit /></Button>
                                         <Button size="small" color="error" onClick={() => handleDelete(nome)}><Delete /></Button>
                                     </Box>
@@ -283,14 +281,14 @@ const Races = () => {
                     />
 
                     <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Bônus da Raça:</Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}> {/* Ajuste no gap */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
                         {Object.keys(formData.bonus).map(bonusKey => (
                             <TextField
                                 key={bonusKey}
                                 margin="dense"
                                 id={bonusKey}
                                 name={bonusKey}
-                                label={attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey} // Usa o label formatado
+                                label={attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey}
                                 type="number"
                                 variant="standard"
                                 value={formData.bonus[bonusKey]}
@@ -300,35 +298,34 @@ const Races = () => {
                     </Box>
 
                     <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Pontos de Destino (PdD):</Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px', alignItems: 'flex-end' }}> {/* alignItems para alinhar Autocomplete com TextFields */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px', alignItems: 'flex-end' }}>
                         <TextField
                             margin="dense"
                             id="PdDFixo"
-                            name="PdDFixo"
+                            name="PdDFixo" // O 'name' do input TextField pode continuar assim para o handleFormChange
                             label="PdD Fixo"
                             type="number"
                             variant="standard"
-                            value={formData.PdD.PdDFixo}
+                            value={formData.pdd.PdDFixo} // <<< ATUALIZADO AQUI
                             onChange={handleFormChange}
                         />
                         <TextField
                             margin="dense"
                             id="PdDFração"
-                            name="PdDFração"
-                            label="PdD Fração (JÁ CALCULADOPFV)"
+                            name="PdDFração" // O 'name' do input TextField pode continuar assim
+                            label="PdD Fração" // Removi o "(JÁ CALCULADOPFV)" para limpeza
                             type="number"
                             variant="standard"
-                            value={formData.PdD.PdDFração}
+                            value={formData.pdd.PdDFração} // <<< ATUALIZADO AQUI
                             onChange={handleFormChange}
                         />
-                        {/* 4. Substituir TextField por Autocomplete */}
                         <Autocomplete
                             id="AtributoUtilizado"
-                            options={attributeOptions} // Opções definidas acima
-                            getOptionLabel={(option) => option.label || ""} // Como exibir o nome da opção
-                            value={getAutocompleteValue(formData.PdD.AtributoUtilizado)} // Valor selecionado
+                            options={attributeOptions}
+                            getOptionLabel={(option) => option.label || ""}
+                            value={getAutocompleteValue(formData.pdd.AtributoUtilizado)} // <<< ATUALIZADO AQUI
                             onChange={(event, newValue) => {
-                                handleFormChange(event, newValue, 'AtributoUtilizado'); // Chama o handler adaptado
+                                handleFormChange(event, newValue, 'AtributoUtilizado');
                             }}
                             isOptionEqualToValue={(option, value) => option.value === value?.value}
                             renderInput={(params) => (
@@ -339,7 +336,7 @@ const Races = () => {
                                     margin="dense"
                                 />
                             )}
-                            sx={{ gridColumn: 'span 2', mt: 'dense' === 'dense' ? 1.3 : 0 }} // Ocupa duas colunas e ajusta margem superior
+                            sx={{ gridColumn: 'span 2', mt: 'dense' === 'dense' ? 1.3 : 0 }}
                         />
                     </Box>
                 </DialogContent>
