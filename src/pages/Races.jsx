@@ -5,7 +5,8 @@ import { RacesContext } from '../context/RacesProvider';
 import {
     Card, CardContent, CardMedia, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,
-    Autocomplete
+    Autocomplete,
+    InputLabel
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
@@ -210,13 +211,13 @@ const Races = () => {
                                 : 'N/A';
 
                             return (
-                                <Card key={nome} sx={{ width: 320, display: 'flex', flexDirection: 'column' }}>
+                                <Card key={nome} sx={{ backgroundColor:'#601b1c', width: 320, display: 'flex', flexDirection: 'column' }}>
                                     <CardContent className='text-center flex-grow'>
-                                        <Typography variant='h5' component="div" className='capitalize'>{nome}</Typography>
+                                        <Typography variant='h5' component="div" sx={{color:'white'}} className='capitalize text-white'>{nome}</Typography>
 
                                         {race.bonus && Object.values(race.bonus).some(v => v !== 0) && (
                                             <>
-                                                <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
+                                                <Typography variant='subtitle1' sx={{color:'white', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                                                 <Box className='grid grid-cols-2 gap-x-4 gap-y-1'>
                                                     {Object.entries(race.bonus)
                                                         .filter(([_, valor]) => valor !== 0)
@@ -235,9 +236,8 @@ const Races = () => {
                                         {/* ATUALIZADO AQUI para race.pdd */}
                                         {race.pdd && (race.pdd.PdDFixo !== 0 || race.pdd.PdDFração !== 0 || race.pdd.AtributoUtilizado) && (
                                             <>
-                                                <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
+                                                <Typography variant='subtitle1' sx={{color:'white', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
                                                 <Box sx={{ textAlign: 'left', pl: 1 }}>
-                                                    {/* ATUALIZADO AQUI para race.pdd */}
                                                     {race.pdd.PdDFixo !== undefined && race.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fixo: {race.pdd.PdDFixo}</Typography>}
                                                     {race.pdd.PdDFração !== undefined && race.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Fração: {race.pdd.PdDFração}</Typography>}
                                                     {race.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'text.secondary' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
@@ -258,10 +258,10 @@ const Races = () => {
                 </div>
             </div>
 
-            <Dialog open={open} onClose={handleClose} PaperProps={{ component: 'form', onSubmit: (e) => { e.preventDefault(); handleSaveRace(); } }}>
+            <Dialog open={open} onClose={handleClose} sx={{ backgroundColor:'#601b1c'}} PaperProps={{ component: 'form', onSubmit: (e) => { e.preventDefault(); handleSaveRace(); } }}>
                 <DialogTitle>{editingRaceName ? 'Editar Raça' : 'Adicionar Nova Raça'}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText sx={{ mb: 2 }}>
+                    <DialogContentText sx={{color:'white', mb: 2 }}>
                         {editingRaceName ? `Modifique as informações da raça ${editingRaceName}.` : 'Preencha as informações da nova raça.'}
                     </DialogContentText>
                     <TextField
@@ -277,47 +277,53 @@ const Races = () => {
                         value={formData.nome}
                         onChange={handleFormChange}
                         disabled={!!editingRaceName}
+                        sx={{color:'white'}}
                     />
 
                     <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Bônus da Raça:</Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
                         {Object.keys(formData.bonus).map(bonusKey => (
-                            <TextField
-                                key={bonusKey}
-                                margin="dense"
-                                id={bonusKey}
-                                name={bonusKey}
-                                label={attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey}
-                                type="number"
-                                variant="standard"
-                                value={formData.bonus[bonusKey]}
-                                onChange={handleFormChange}
-                            />
+                            <>
+                                <InputLabel sx={{color:'white'}} >{attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey}</InputLabel>
+                                <TextField
+                                    key={bonusKey}
+                                    margin="dense"
+                                    id={bonusKey}
+                                    name={bonusKey}
+                                    type="number"
+                                    variant="standard"
+                                    value={formData.bonus[bonusKey]}
+                                    onChange={handleFormChange}
+                                />
+                            </>
                         ))}
                     </Box>
 
                     <Typography variant='subtitle1' sx={{ mt: 3, mb: 0 }}>Pontos de Deslocamento (PdD):</Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px', alignItems: 'flex-end' }}>
+                        <InputLabel sx={{color:'white'}} >PdD Fixo</InputLabel>
                         <TextField
                             margin="dense"
                             id="PdDFixo"
-                            name="PdDFixo" // O 'name' do input TextField pode continuar assim para o handleFormChange
+                            name="PdDFixo"
                             label="PdD Fixo"
                             type="number"
                             variant="standard"
-                            value={formData.pdd.PdDFixo} // <<< ATUALIZADO AQUI
+                            value={formData.pdd.PdDFixo}
                             onChange={handleFormChange}
                         />
+                        <InputLabel sx={{color:'white'}}>PdD Fração (JÁCALCULADOPFV)</InputLabel>
                         <TextField
                             margin="dense"
                             id="PdDFração"
-                            name="PdDFração" // O 'name' do input TextField pode continuar assim
-                            label="PdD Fração (JÁCALCULADOPFV)" // Removi o "(JÁ CALCULADOPFV)" para limpeza
+                            name="PdDFração"
+                            label="PdD Fração (JÁCALCULADOPFV)"
                             type="number"
                             variant="standard"
-                            value={formData.pdd.PdDFração} // <<< ATUALIZADO AQUI
+                            value={formData.pdd.PdDFração}
                             onChange={handleFormChange}
                         />
+                        <InputLabel sx={{color:'white'}} >Atributo Utilizado</InputLabel>
                         <Autocomplete
                             id="AtributoUtilizado"
                             options={attributeOptions}
@@ -340,7 +346,7 @@ const Races = () => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ pt: 2, pb: 2, pr: 2 }}>
-                    <Button onClick={handleClose}>Cancelar</Button>
+                    <Button sx={{backgroundColor:'black'}} onClick={handleClose}>Cancelar</Button>
                     <Button type="submit" disabled={isLoading} variant="contained">
                         {isLoading ? <CircularProgress size={24} /> : 'Salvar'}
                     </Button>
