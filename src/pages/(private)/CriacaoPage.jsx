@@ -5,6 +5,99 @@ import { ClassesContext } from '../context/ClassesProvider';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+// Estilos para TextFields e Selects com fundo preto e texto branco (variant="filled")
+const blackFilledFieldStyles = {
+  variant: "filled", // Aplicar diretamente ou no componente
+  sx: {
+    '& .MuiFilledInput-root': {
+      backgroundColor: 'black',
+      color: 'white',
+      border: '1px solid rgba(255, 255, 255, 0.23)',
+      borderRadius: '4px',
+      '&:hover': {
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+      },
+      '&.Mui-focused': {
+        backgroundColor: 'black',
+        borderColor: 'white',
+      },
+      '&.Mui-disabled': {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        color: 'rgba(255, 255, 255, 0.5)',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+      },
+      '&:before, &:after': { // Remover sublinhado padrão do filled
+        borderBottom: 'none !important',
+      },
+    },
+    '& .MuiFilledInput-input': {
+      color: 'white',
+      padding: '12px 12px 10px',
+      '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active': {
+        WebkitBoxShadow: '0 0 0 1000px black inset !important',
+        WebkitTextFillColor: 'white !important',
+        caretColor: 'white !important',
+        borderRadius: 'inherit',
+      },
+    },
+    '& label.MuiInputLabel-filled': {
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
+    '& label.MuiInputLabel-filled.Mui-focused': {
+      color: 'white',
+    },
+    '& label.MuiInputLabel-filled.Mui-disabled': {
+      color: 'rgba(255, 255, 255, 0.4)',
+    },
+    // Para Selects, o ícone
+    '& .MuiSelect-icon': {
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
+  }
+};
+
+// Estilos para o Paper/Menu do Autocomplete e Select
+const blackPaperMenuStyles = {
+  PaperProps: {
+    sx: {
+      backgroundColor: 'black',
+      color: 'white',
+      border: '1px solid rgba(255, 255, 255, 0.3)',
+      '& .MuiMenuItem-root, & .MuiAutocomplete-option': { // Aplicar a ambos os tipos de item
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        },
+        '&.Mui-selected': { // Para Select
+          backgroundColor: 'rgba(255, 255, 255, 0.16) !important', // !important para Mui-selected
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.24) !important',
+          },
+        },
+        '&[aria-selected="true"]': { // Para Autocomplete
+          backgroundColor: 'rgba(255, 255, 255, 0.16) !important',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.24) !important',
+          },
+        }
+      },
+    },
+  },
+};
+
+// Estilos para o root do Autocomplete (ícones)
+const autocompleteRootStyles = {
+  '& .MuiOutlinedInput-root .MuiSvgIcon-root, & .MuiFilledInput-root .MuiSvgIcon-root, & .MuiInput-root .MuiSvgIcon-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  '& .MuiAutocomplete-clearIndicator:hover, & .MuiAutocomplete-popupIndicator:hover': {
+    '.MuiSvgIcon-root': { // Alvo mais específico para o ícone no hover do botão
+      color: 'white',
+    }
+  },
+};
+
+
 const CriacaoPage = () => {
   const [isHibrido, setIsHibrido] = useState(false);
   const [isSClasse, setIsSClasse] = useState(false);
@@ -24,8 +117,8 @@ const CriacaoPage = () => {
   const [PdAMagico, setPdAMagico] = useState(0);
   const [PdD, setPdD] = useState(0);
   const [nivel, setNivel] = useState(0);
-  const [pontos, setPontos] = useState(50); // Inicializa com pontos para nível 0
-  const [pontosDiff, setPontosDiff] = useState(50); // Inicializa com pontos para nível 0
+  const [pontos, setPontos] = useState(50);
+  const [pontosDiff, setPontosDiff] = useState(50);
 
   const [CAF, setCAF] = useState(0);
   const [CAM, setCAM] = useState(0);
@@ -45,7 +138,6 @@ const CriacaoPage = () => {
   const { races } = useContext(RacesContext);
   const { classes } = useContext(ClassesContext);
 
-  // Primeiro useEffect: Calcula bônus, atributos, PdV, PdE e PdD
   useEffect(() => {
     const calcularPdDParaUmaRaca = (dadosPddRaca, atributosAtuaisPersonagem) => {
       if (!dadosPddRaca) {
@@ -156,19 +248,13 @@ const CriacaoPage = () => {
     setCAM(Math.floor(camCalculado));
   }, [PdAFisico, PdAMagico, classeDeArmaduraF, classeDeArmaduraM, atributos, stats.CAB]);
 
-  // CORRIGIDO AQUI: Função para calcular o custo de um único atributo
   const calcularCustoStat = (valorStat) => {
     if (valorStat <= 0) return 0;
     let custoTotalParaOStat = 0;
 
     for (let i = 1; i <= valorStat; i++) {
-      let custoDoPontoEspecifico_i = 1; // Custo base para pontos <= 15
+      let custoDoPontoEspecifico_i = 1;
       if (i > 15) {
-        // Custo aumenta para 2 no 16º ponto.
-        // Aumenta em +1 a cada bloco de 3 pontos a partir do 16º.
-        // Bloco 0 (pontos 16,17,18): custo 1+1+0 = 2
-        // Bloco 1 (pontos 19,20,21): custo 1+1+1 = 3
-        // Bloco 2 (pontos 22,23,24): custo 1+1+2 = 4
         custoDoPontoEspecifico_i = 1 + 1 + Math.floor((i - 16) / 3);
       }
       custoTotalParaOStat += custoDoPontoEspecifico_i;
@@ -179,7 +265,7 @@ const CriacaoPage = () => {
   const handleStatChange = (event) => {
     const { name, value } = event.target;
     const valorInput = value === '' ? 0 : parseInt(value, 10);
-    const novoValorStat = isNaN(valorInput) ? 0 : Math.max(0, valorInput); // Garante que não seja negativo
+    const novoValorStat = isNaN(valorInput) ? 0 : Math.max(0, valorInput);
 
     const statsAtualizadosParaCalculo = {
       ...stats,
@@ -199,13 +285,12 @@ const CriacaoPage = () => {
 
   const handleNivelChange = (event) => {
     const valorNivelInput = event.target.value === '' ? 0 : parseInt(event.target.value, 10);
-    const novoNivel = isNaN(valorNivelInput) ? 0 : Math.max(0, valorNivelInput); // Garante que não seja negativo
+    const novoNivel = isNaN(valorNivelInput) ? 0 : Math.max(0, valorNivelInput);
     const novosPontosDisponiveis = 50 + (novoNivel * 5);
 
     setNivel(novoNivel);
     setPontos(novosPontosDisponiveis);
 
-    // Recalcula pontosDiff com os novos pontos totais e os custos atuais
     let somaDosCustosReais = 0;
     const atributosPrincipaisParaCusto = ['Vigor', 'Habilidade', 'Percepção', 'Domínio', 'Inteligência'];
     atributosPrincipaisParaCusto.forEach(statKey => {
@@ -276,7 +361,7 @@ const CriacaoPage = () => {
     <>
       <Header />
       <main className='bg-black'>
-        <div className='justify-center text-center text-4xl font-bold mt-5 mb-5'>
+        <div className='justify-center text-center text-4xl text-white font-bold mt-5 mb-5'> {/* Texto do H1 branco */}
           <h1>Criação de Personagens</h1>
         </div>
         <div className='flex flex-col items-center min-h-screen'>
@@ -291,14 +376,15 @@ const CriacaoPage = () => {
                 <h4 className='text-3xl mb-2'>Qual o nível do personagem?</h4>
                 <div className='flex justify-center items-center gap-4'>
                   <div>
-                    <InputLabel sx={{color:'white'}}>Nível</InputLabel>
+                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>Nível</InputLabel> {/* Label do nível branco */}
                     <TextField
                       name='nivel'
                       type='number'
+                      variant={blackFilledFieldStyles.variant} // Aplicando variant
                       value={nivel === 0 ? '' : nivel}
                       onChange={handleNivelChange}
                       onFocus={(e) => e.target.select()}
-                      sx={{ backgroundColor: 'white', borderRadius: 1, width: '100px' }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100px' }} // Aplicando estilos
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ min: 0 }}
                       autoComplete='off'
@@ -311,12 +397,12 @@ const CriacaoPage = () => {
 
             <div className='flex justify-evenly mb-6'>
               <FormControlLabel
-                control={<Checkbox checked={isHibrido} onChange={handleCheckboxChangeHib} sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                control={<Checkbox checked={isHibrido} onChange={handleCheckboxChangeHib} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />}
                 label="É híbrido?"
                 sx={{ color: 'white' }}
               />
               <FormControlLabel
-                control={<Checkbox checked={isSClasse} onChange={handleCheckboxChangeClass} sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                control={<Checkbox checked={isSClasse} onChange={handleCheckboxChangeClass} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />}
                 label="Tem segunda classe?"
                 sx={{ color: 'white' }}
               />
@@ -328,8 +414,15 @@ const CriacaoPage = () => {
                   onChange={(event, newValue) => setRacaPrimaria(newValue)}
                   options={nomesRacas}
                   getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                  sx={{ width: isHibrido ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                  renderInput={(params) => <TextField {...params} label="Raça Primária" />}
+                  PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
+                  sx={{ ...autocompleteRootStyles, width: isHibrido ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1 }}
+                  renderInput={(params) =>
+                    <TextField
+                      {...params}
+                      label="Raça Primária"
+                      variant={blackFilledFieldStyles.variant}
+                      sx={blackFilledFieldStyles.sx}
+                    />}
                 />
                 {isHibrido && (
                   <Autocomplete
@@ -337,8 +430,15 @@ const CriacaoPage = () => {
                     onChange={(event, newValue) => setRacaSecundaria(newValue)}
                     options={nomesRacas.filter(r => r !== racaPrimaria)}
                     getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                    sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                    renderInput={(params) => <TextField {...params} label="Raça Secundária" />}
+                    PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
+                    sx={{ ...autocompleteRootStyles, width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1 }}
+                    renderInput={(params) =>
+                      <TextField
+                        {...params}
+                        label="Raça Secundária"
+                        variant={blackFilledFieldStyles.variant}
+                        sx={blackFilledFieldStyles.sx}
+                      />}
                   />
                 )}
               </div>
@@ -348,8 +448,15 @@ const CriacaoPage = () => {
                   onChange={(event, newValue) => setClassePrimaria(newValue)}
                   options={nomesClasses}
                   getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                  sx={{ width: isSClasse ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                  renderInput={(params) => <TextField {...params} label="Classe Primária" />}
+                  PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
+                  sx={{ ...autocompleteRootStyles, width: isSClasse ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1 }}
+                  renderInput={(params) =>
+                    <TextField
+                      {...params}
+                      label="Classe Primária"
+                      variant={blackFilledFieldStyles.variant}
+                      sx={blackFilledFieldStyles.sx}
+                    />}
                 />
                 {isSClasse && (
                   <Autocomplete
@@ -357,8 +464,15 @@ const CriacaoPage = () => {
                     onChange={(event, newValue) => setClasseSecundaria(newValue)}
                     options={nomesClasses.filter(c => c !== classePrimaria)}
                     getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                    sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                    renderInput={(params) => <TextField {...params} label="Classe Secundária" />}
+                    PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
+                    sx={{ ...autocompleteRootStyles, width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1 }}
+                    renderInput={(params) =>
+                      <TextField
+                        {...params}
+                        label="Classe Secundária"
+                        variant={blackFilledFieldStyles.variant}
+                        sx={blackFilledFieldStyles.sx}
+                      />}
                   />
                 )}
               </div>
@@ -370,28 +484,20 @@ const CriacaoPage = () => {
               </div>
               <div className='flex justify-center items-center gap-5 mb-5'>
                 <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
-                <Button
-                  onClick={refreshPontosRestantes}
-                  variant="contained"
-                  size="small"
-                  sx={{ backgroundColor: '#0069c0', '&:hover': { backgroundColor: '#005cb2' } }}
-                >
-                  Atualizar Pontos
-                </Button>
               </div>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
                 {statusList.map((stat) => (
-                  <div className='flex-wrap'>
-                    <InputLabel sx={{color:'white'}}>{stat}</InputLabel>
+                  <div key={stat} className='flex-wrap'> {/* Adicionada key aqui */}
+                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>{stat}</InputLabel> {/* Label dos status branco */}
                     <TextField
-                      key={stat}
                       name={stat}
                       type="number"
+                      variant={blackFilledFieldStyles.variant}
                       value={stats[stat] === 0 && stat !== 'CAB' ? '' : stats[stat]}
                       onChange={handleStatChange}
                       onFocus={(e) => e.target.select()}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ width: '150px', backgroundColor: 'white', borderRadius: 1 }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '150px' }}
                       inputProps={{ min: "0" }}
                     />
                   </div>
@@ -404,8 +510,10 @@ const CriacaoPage = () => {
                     <Select
                       labelId="classe-armadura-fisica-label"
                       value={classeDeArmaduraF}
+                      variant={blackFilledFieldStyles.variant} // Aplicando variant
                       onChange={handleChangeF}
-                      sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }} // Aplicando estilos
+                      MenuProps={blackPaperMenuStyles} // Estilos para o menu dropdown
                     >
                       <MenuItem value={1}>Sem Armaduras</MenuItem>
                       <MenuItem value={0.75}>Armaduras Leves</MenuItem>
@@ -419,8 +527,10 @@ const CriacaoPage = () => {
                     <Select
                       labelId="classe-armadura-magica-label"
                       value={classeDeArmaduraM}
+                      variant={blackFilledFieldStyles.variant}
                       onChange={handleChangeM}
-                      sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
+                      MenuProps={blackPaperMenuStyles}
                     >
                       <MenuItem value={1}>Sem Armaduras</MenuItem>
                       <MenuItem value={0.75}>Armaduras Leves</MenuItem>
@@ -435,7 +545,8 @@ const CriacaoPage = () => {
                     <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Físico (Base)</InputLabel>
                     <TextField
                       value={PdAFisico === 0 ? '' : PdAFisico}
-                      sx={{ backgroundColor: 'white', width: '300px', borderRadius: 1 }}
+                      variant={blackFilledFieldStyles.variant}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
                       type="number"
                       onChange={handlePdAFisicoChange}
                       onFocus={(e) => e.target.select()}
@@ -446,7 +557,8 @@ const CriacaoPage = () => {
                     <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Mágico (Base)</InputLabel>
                     <TextField
                       value={PdAMagico === 0 ? '' : PdAMagico}
-                      sx={{ color:'white', backgroundColor: 'white', width: '300px', borderRadius: 1 }}
+                      variant={blackFilledFieldStyles.variant}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
                       type="number"
                       onChange={handlePdAMagicoChange}
                       onFocus={(e) => e.target.select()}
@@ -470,10 +582,10 @@ const CriacaoPage = () => {
 
           {statsShown && (
             <Box
-              sx={{ width: '1200px', borderRadius: '10px', padding: '20px', marginTop: '20px', backgroundColor: '#601b1c', marginBottom:5 }}
+              sx={{ width: '1200px', borderRadius: '10px', padding: '20px', marginTop: '20px', backgroundColor: '#601b1c', marginBottom: 5 }}
             >
               <Box className={"mb-5"}>
-                <TableContainer sx={{backgroundColor:'black'}} component={Paper}>
+                <TableContainer sx={{ backgroundColor: 'black' }} component={Paper}>
                   <Table size="small">
                     <TableHead>
                       <TableRow sx={{ backgroundColor: 'black' }}>
@@ -486,9 +598,9 @@ const CriacaoPage = () => {
                     </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell sx={{color:'white'}}>{PdV}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{PdV}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{PdE}</TableCell>
-                        <TableCell sx={{color:'white'}}>{PdAFisico}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{PdAFisico}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{PdAMagico}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{PdD}</TableCell>
                       </TableRow>
@@ -497,17 +609,17 @@ const CriacaoPage = () => {
                 </TableContainer>
               </Box>
               <Box className={"mb-5"}>
-                <TableContainer component={Paper}>
+                <TableContainer sx={{ backgroundColor: 'black' }} component={Paper}>
                   <Table size="small">
                     <TableHead>
                       <TableRow sx={{ backgroundColor: 'black' }}>
-                        <TableCell sx={{ color:'crimson', fontWeight: 'bold' }}>CAF</TableCell>
-                        <TableCell sx={{ color:'royalblue' , fontWeight: 'bold' }}>CAM</TableCell>
-                        <TableCell sx={{ color:'bisque' , fontWeight: 'bold' }}>CAB</TableCell>
+                        <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>CAF</TableCell>
+                        <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>CAM</TableCell>
+                        <TableCell sx={{ color: 'bisque', fontWeight: 'bold' }}>CAB</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      <TableRow sx={{backgroundColor:'black'}}>
+                      <TableRow sx={{ backgroundColor: 'black' }}>
                         <TableCell sx={{ color: 'white' }}>{CAF}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{CAM}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{stats.CAB}</TableCell>
@@ -516,11 +628,11 @@ const CriacaoPage = () => {
                   </Table>
                 </TableContainer>
               </Box>
-              <TableContainer component={Paper}>
+              <TableContainer sx={{ backgroundColor: 'black' }} component={Paper}>
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ backgroundColor: 'black' }}>
-                      <TableCell sx={{ color:'white', fontWeight: 'bold' }}>Atributo</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Atributo</TableCell>
                       <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Base (Status)</TableCell>
                       <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Bônus Raça</TableCell>
                       <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Bônus Classe</TableCell>
@@ -532,13 +644,13 @@ const CriacaoPage = () => {
                       <TableRow key={row.name} sx={{ backgroundColor: 'black' }}>
                         <TableCell sx={{ color: 'white' }} component="th" scope="row">{row.name}</TableCell>
                         <TableCell sx={{ color: 'white' }} align="center">{row.base}</TableCell>
-                        <TableCell align="center" sx={{ color: row.racaBonus > 0 ? 'green' : row.racaBonus < 0 ? 'red' : 'white' }}>
+                        <TableCell align="center" sx={{ color: row.racaBonus > 0 ? 'lightgreen' : row.racaBonus < 0 ? 'lightcoral' : 'white' }}>
                           {row.racaBonus > 0 ? `+${row.racaBonus}` : row.racaBonus}
                         </TableCell>
-                        <TableCell align="center" sx={{ color: row.classeBonus > 0 ? 'green' : row.classeBonus < 0 ? 'red' : 'white' }}>
+                        <TableCell align="center" sx={{ color: row.classeBonus > 0 ? 'lightgreen' : row.classeBonus < 0 ? 'lightcoral' : 'white' }}>
                           {row.classeBonus > 0 ? `+${row.classeBonus}` : row.classeBonus}
                         </TableCell>
-                        <TableCell align="center" sx={{ color:'white', fontWeight: 'bold' }}>{row.total}</TableCell>
+                        <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>{row.total}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
