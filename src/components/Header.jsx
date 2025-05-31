@@ -8,7 +8,7 @@ const Header = () => {
     <header className=''>
       <div className='flex justify-around p-0 bg-red-600'>
         <div className='mt-0 p-2'>
-          <a href="/"><img src="/public/img/logo-site.png" alt="" className='h-20' /></a>
+          <a href="/"><img src="/img/logo-site.png" alt="" className='h-20' /></a>
         </div>
           <div className='flex gap-5'>
             <div className='mt-5'>

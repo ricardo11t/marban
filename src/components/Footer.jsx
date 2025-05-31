@@ -6,7 +6,7 @@ const Footer = () => {
       <div className='max-w-7xl p-6 mx-auto'>
         <div className='flex flex-wrap ml-4 justify-between gap-4'>
           <div>
-            <div className="text-xl font-bold mb-2"><a href=""><img src="/public/img/logo-site.png" alt="" className='h-20' /></a></div>
+            <div className="text-xl font-bold mb-2"><a href=""><img src="/img/logo-site.png" alt="" className='h-20' /></a></div>
             <p>Feito pelo ricardao.</p>
           </div>
           <div>
