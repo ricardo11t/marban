@@ -192,7 +192,6 @@ const CriacaoPage = () => {
     atributosPrincipaisParaCusto.forEach(statKey => {
       somaDosCustosReais += calcularCustoStat(statsAtualizadosParaCalculo[statKey]);
     });
-    somaDosCustosReais += (statsAtualizadosParaCalculo.CAB || 0);
 
     setPontosDiff(pontos - somaDosCustosReais);
     setStats(statsAtualizadosParaCalculo);
@@ -212,7 +211,6 @@ const CriacaoPage = () => {
     atributosPrincipaisParaCusto.forEach(statKey => {
       somaDosCustosReais += calcularCustoStat(stats[statKey]);
     });
-    somaDosCustosReais += (stats.CAB || 0);
     setPontosDiff(novosPontosDisponiveis - somaDosCustosReais);
   };
 
@@ -222,7 +220,6 @@ const CriacaoPage = () => {
     atributosPrincipaisParaCusto.forEach(statKey => {
       somaDosCustosReais += calcularCustoStat(stats[statKey]);
     });
-    somaDosCustosReais += (stats.CAB || 0);
     setPontosDiff(pontos - somaDosCustosReais);
   };
 
@@ -278,272 +275,279 @@ const CriacaoPage = () => {
   return (
     <>
       <Header />
-      <div className='justify-center text-center text-4xl font-bold mt-5 mb-5'>
-        <h1>Criação de Personagens</h1>
-      </div>
-      <div className='flex flex-col items-center min-h-screen'>
-        <Box
-          component="form"
-          onSubmit={handleFormSubmit}
-          className='bg-red-600 text-white mb-6'
-          sx={{ height: 'fit-content', width: '1200px', borderRadius: '10px', padding: '20px' }}
-        >
-          <div className='flex justify-center items-center mb-6'>
-            <div className='text-center'>
-              <h4 className='text-3xl mb-2'>Qual o nível do personagem?</h4>
-              <div className='flex justify-center items-center gap-4'>
-                <TextField
-                  name='nivel'
-                  label={'Nível'}
-                  type='number'
-                  value={nivel === 0 ? '' : nivel}
-                  onChange={handleNivelChange}
-                  onFocus={(e) => e.target.select()}
-                  sx={{ backgroundColor: 'white', borderRadius: 1, width: '100px' }}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ min: 0 }}
-                />
-                <h5 className='text-3xl'>Pontos Totais: {pontos}</h5>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex justify-evenly mb-6'>
-            <FormControlLabel
-              control={<Checkbox checked={isHibrido} onChange={handleCheckboxChangeHib} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />}
-              label="É híbrido?"
-              sx={{ color: 'white' }}
-            />
-            <FormControlLabel
-              control={<Checkbox checked={isSClasse} onChange={handleCheckboxChangeClass} sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }} />}
-              label="Tem segunda classe?"
-              sx={{ color: 'white' }}
-            />
-          </div>
-          <div>
-            <div className='flex justify-evenly gap-4'>
-              <Autocomplete
-                value={racaPrimaria}
-                onChange={(event, newValue) => setRacaPrimaria(newValue)}
-                options={nomesRacas}
-                getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                sx={{ width: isHibrido ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                renderInput={(params) => <TextField {...params} label="Raça Primária" />}
-              />
-              {isHibrido && (
-                <Autocomplete
-                  value={racaSecundaria}
-                  onChange={(event, newValue) => setRacaSecundaria(newValue)}
-                  options={nomesRacas.filter(r => r !== racaPrimaria)}
-                  getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                  sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                  renderInput={(params) => <TextField {...params} label="Raça Secundária" />}
-                />
-              )}
-            </div>
-            <div className='flex justify-evenly gap-4 mt-5 mb-5'>
-              <Autocomplete
-                value={classePrimaria}
-                onChange={(event, newValue) => setClassePrimaria(newValue)}
-                options={nomesClasses}
-                getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                sx={{ width: isSClasse ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                renderInput={(params) => <TextField {...params} label="Classe Primária" />}
-              />
-              {isSClasse && (
-                <Autocomplete
-                  value={classeSecundaria}
-                  onChange={(event, newValue) => setClasseSecundaria(newValue)}
-                  options={nomesClasses.filter(c => c !== classePrimaria)}
-                  getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
-                  sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
-                  renderInput={(params) => <TextField {...params} label="Classe Secundária" />}
-                />
-              )}
-            </div>
-          </div>
-
-          <section className='mt-10'>
-            <div className='flex justify-center mb-2'>
-              <h2 className='text-2xl'>Definição dos Status Base:</h2>
-            </div>
-            <div className='flex justify-center items-center gap-5 mb-5'>
-              <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
-              <Button
-                onClick={refreshPontosRestantes}
-                variant="contained"
-                size="small"
-                sx={{ backgroundColor: '#0069c0', '&:hover': { backgroundColor: '#005cb2' } }}
-              >
-                Atualizar Pontos
-              </Button>
-            </div>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
-              {statusList.map((stat) => (
-                <TextField
-                  key={stat}
-                  label={stat}
-                  name={stat}
-                  type="number"
-                  value={stats[stat] === 0 && stat !== 'CAB' ? '' : stats[stat]}
-                  onChange={handleStatChange}
-                  onFocus={(e) => e.target.select()}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ width: '150px', backgroundColor: 'white', borderRadius: 1 }}
-                  inputProps={{ min: "0" }}
-                />
-              ))}
-            </Box>
-            <Box>
-              <div className='flex justify-center gap-5 mt-4'>
-                <div>
-                  <InputLabel id="classe-armadura-fisica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Física</InputLabel>
-                  <Select
-                    labelId="classe-armadura-fisica-label"
-                    value={classeDeArmaduraF}
-                    onChange={handleChangeF}
-                    sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
-                  >
-                    <MenuItem value={1}>Sem Armaduras</MenuItem>
-                    <MenuItem value={0.75}>Armaduras Leves</MenuItem>
-                    <MenuItem value={0.5}>Armaduras Médias</MenuItem>
-                    <MenuItem value={0.25}>Armaduras Pesadas</MenuItem>
-                    <MenuItem value={0}>Armaduras Extra-Pesadas</MenuItem>
-                  </Select>
-                </div>
-                <div>
-                  <InputLabel id="classe-armadura-magica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Mágica</InputLabel>
-                  <Select
-                    labelId="classe-armadura-magica-label"
-                    value={classeDeArmaduraM}
-                    onChange={handleChangeM}
-                    sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
-                  >
-                    <MenuItem value={1}>Sem Armaduras</MenuItem>
-                    <MenuItem value={0.75}>Armaduras Leves</MenuItem>
-                    <MenuItem value={0.5}>Armaduras Médias</MenuItem>
-                    <MenuItem value={0.25}>Armaduras Pesadas</MenuItem>
-                    <MenuItem value={0}>Armaduras Extra-Pesadas</MenuItem>
-                  </Select>
-                </div>
-              </div>
-              <div className='flex justify-center mt-5 gap-5'>
-                <div>
-                  <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Físico (Base)</InputLabel>
-                  <TextField
-                    value={PdAFisico === 0 ? '' : PdAFisico}
-                    sx={{ backgroundColor: 'white', width: '300px', borderRadius: 1 }}
-                    type="number"
-                    onChange={handlePdAFisicoChange}
-                    onFocus={(e) => e.target.select()}
-                    inputProps={{ min: "0" }}
-                  />
-                </div>
-                <div>
-                  <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Mágico (Base)</InputLabel>
-                  <TextField
-                    value={PdAMagico === 0 ? '' : PdAMagico}
-                    sx={{ backgroundColor: 'white', width: '300px', borderRadius: 1 }}
-                    type="number"
-                    onChange={handlePdAMagicoChange}
-                    onFocus={(e) => e.target.select()}
-                    inputProps={{ min: "0" }}
-                  />
-                </div>
-              </div>
-            </Box>
-          </section>
-
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ padding: '10px 30px', fontSize: '1.1rem', backgroundColor: '#b91c1c', '&:hover': { backgroundColor: '#991b1b' } }}
-            >
-              Calcular Atributos e Mostrar Ficha
-            </Button>
-          </Box>
-        </Box>
-
-        {statsShown && (
+      <main className='bg-black'>
+        <div className='justify-center text-center text-4xl font-bold mt-5 mb-5'>
+          <h1>Criação de Personagens</h1>
+        </div>
+        <div className='flex flex-col items-center min-h-screen'>
           <Box
-            sx={{ width: '1200px', borderRadius: '10px', padding: '20px', marginTop: '20px', backgroundColor: 'rgba(255,255,255,0.9)' }}
+            component="form"
+            onSubmit={handleFormSubmit}
+            className='bg-[#601b1c] text-white mb-6'
+            sx={{ height: 'fit-content', width: '1200px', borderRadius: '10px', padding: '20px' }}
           >
-            <Box className={"mb-5"}>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: '#cfcfcf' }}>
-                      <TableCell sx={{ color: 'red', fontWeight: 'bold' }}>PdV</TableCell>
-                      <TableCell sx={{ color: 'blue', fontWeight: 'bold' }}>PdE</TableCell>
-                      <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>PdA Físico (Base)</TableCell>
-                      <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>PdA Mágico (Base)</TableCell>
-                      <TableCell sx={{ color: 'chocolate', fontWeight: 'bold' }}>PdD</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>{PdV}</TableCell>
-                      <TableCell>{PdE}</TableCell>
-                      <TableCell>{PdAFisico}</TableCell>
-                      <TableCell>{PdAMagico}</TableCell>
-                      <TableCell>{PdD}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+            <div className='flex justify-center items-center mb-6'>
+              <div className='text-center'>
+                <h4 className='text-3xl mb-2'>Qual o nível do personagem?</h4>
+                <div className='flex justify-center items-center gap-4'>
+                  <div>
+                    <InputLabel sx={{color:'white'}}>Nível</InputLabel>
+                    <TextField
+                      name='nivel'
+                      type='number'
+                      value={nivel === 0 ? '' : nivel}
+                      onChange={handleNivelChange}
+                      onFocus={(e) => e.target.select()}
+                      sx={{ backgroundColor: 'white', borderRadius: 1, width: '100px' }}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: 0 }}
+                      autoComplete='off'
+                    />
+                  </div>
+                  <h5 className='text-3xl'>Pontos Totais: {pontos}</h5>
+                </div>
+              </div>
+            </div>
+
+            <div className='flex justify-evenly mb-6'>
+              <FormControlLabel
+                control={<Checkbox checked={isHibrido} onChange={handleCheckboxChangeHib} sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                label="É híbrido?"
+                sx={{ color: 'white' }}
+              />
+              <FormControlLabel
+                control={<Checkbox checked={isSClasse} onChange={handleCheckboxChangeClass} sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }} />}
+                label="Tem segunda classe?"
+                sx={{ color: 'white' }}
+              />
+            </div>
+            <div>
+              <div className='flex justify-evenly gap-4'>
+                <Autocomplete
+                  value={racaPrimaria}
+                  onChange={(event, newValue) => setRacaPrimaria(newValue)}
+                  options={nomesRacas}
+                  getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
+                  sx={{ width: isHibrido ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
+                  renderInput={(params) => <TextField {...params} label="Raça Primária" />}
+                />
+                {isHibrido && (
+                  <Autocomplete
+                    value={racaSecundaria}
+                    onChange={(event, newValue) => setRacaSecundaria(newValue)}
+                    options={nomesRacas.filter(r => r !== racaPrimaria)}
+                    getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
+                    sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
+                    renderInput={(params) => <TextField {...params} label="Raça Secundária" />}
+                  />
+                )}
+              </div>
+              <div className='flex justify-evenly gap-4 mt-5 mb-5'>
+                <Autocomplete
+                  value={classePrimaria}
+                  onChange={(event, newValue) => setClassePrimaria(newValue)}
+                  options={nomesClasses}
+                  getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
+                  sx={{ width: isSClasse ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
+                  renderInput={(params) => <TextField {...params} label="Classe Primária" />}
+                />
+                {isSClasse && (
+                  <Autocomplete
+                    value={classeSecundaria}
+                    onChange={(event, newValue) => setClasseSecundaria(newValue)}
+                    options={nomesClasses.filter(c => c !== classePrimaria)}
+                    getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
+                    sx={{ width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1, backgroundColor: 'white', borderRadius: 1 }}
+                    renderInput={(params) => <TextField {...params} label="Classe Secundária" />}
+                  />
+                )}
+              </div>
+            </div>
+
+            <section className='mt-10'>
+              <div className='flex justify-center mb-2'>
+                <h2 className='text-2xl'>Definição dos Status Base:</h2>
+              </div>
+              <div className='flex justify-center items-center gap-5 mb-5'>
+                <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
+                <Button
+                  onClick={refreshPontosRestantes}
+                  variant="contained"
+                  size="small"
+                  sx={{ backgroundColor: '#0069c0', '&:hover': { backgroundColor: '#005cb2' } }}
+                >
+                  Atualizar Pontos
+                </Button>
+              </div>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
+                {statusList.map((stat) => (
+                  <div className='flex-wrap'>
+                    <InputLabel sx={{color:'white'}}>{stat}</InputLabel>
+                    <TextField
+                      key={stat}
+                      name={stat}
+                      type="number"
+                      value={stats[stat] === 0 && stat !== 'CAB' ? '' : stats[stat]}
+                      onChange={handleStatChange}
+                      onFocus={(e) => e.target.select()}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ width: '150px', backgroundColor: 'white', borderRadius: 1 }}
+                      inputProps={{ min: "0" }}
+                    />
+                  </div>
+                ))}
+              </Box>
+              <Box>
+                <div className='flex justify-center gap-5 mt-4'>
+                  <div>
+                    <InputLabel id="classe-armadura-fisica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Física</InputLabel>
+                    <Select
+                      labelId="classe-armadura-fisica-label"
+                      value={classeDeArmaduraF}
+                      onChange={handleChangeF}
+                      sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
+                    >
+                      <MenuItem value={1}>Sem Armaduras</MenuItem>
+                      <MenuItem value={0.75}>Armaduras Leves</MenuItem>
+                      <MenuItem value={0.5}>Armaduras Médias</MenuItem>
+                      <MenuItem value={0.25}>Armaduras Pesadas</MenuItem>
+                      <MenuItem value={0}>Armaduras Extra-Pesadas</MenuItem>
+                    </Select>
+                  </div>
+                  <div>
+                    <InputLabel id="classe-armadura-magica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Mágica</InputLabel>
+                    <Select
+                      labelId="classe-armadura-magica-label"
+                      value={classeDeArmaduraM}
+                      onChange={handleChangeM}
+                      sx={{ width: '300px', backgroundColor: 'white', borderRadius: 1 }}
+                    >
+                      <MenuItem value={1}>Sem Armaduras</MenuItem>
+                      <MenuItem value={0.75}>Armaduras Leves</MenuItem>
+                      <MenuItem value={0.5}>Armaduras Médias</MenuItem>
+                      <MenuItem value={0.25}>Armaduras Pesadas</MenuItem>
+                      <MenuItem value={0}>Armaduras Extra-Pesadas</MenuItem>
+                    </Select>
+                  </div>
+                </div>
+                <div className='flex justify-center mt-5 gap-5'>
+                  <div>
+                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Físico (Base)</InputLabel>
+                    <TextField
+                      value={PdAFisico === 0 ? '' : PdAFisico}
+                      sx={{ backgroundColor: 'white', width: '300px', borderRadius: 1 }}
+                      type="number"
+                      onChange={handlePdAFisicoChange}
+                      onFocus={(e) => e.target.select()}
+                      inputProps={{ min: "0" }}
+                    />
+                  </div>
+                  <div>
+                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Mágico (Base)</InputLabel>
+                    <TextField
+                      value={PdAMagico === 0 ? '' : PdAMagico}
+                      sx={{ color:'white', backgroundColor: 'white', width: '300px', borderRadius: 1 }}
+                      type="number"
+                      onChange={handlePdAMagicoChange}
+                      onFocus={(e) => e.target.select()}
+                      inputProps={{ min: "0" }}
+                    />
+                  </div>
+                </div>
+              </Box>
+            </section>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ padding: '10px 30px', fontSize: '1.1rem', backgroundColor: '#b91c1c', '&:hover': { backgroundColor: '#991b1b' } }}
+              >
+                Calcular Atributos e Mostrar Ficha
+              </Button>
             </Box>
-            <Box className={"mb-5"}>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: '#cfcfcf' }}>
-                      <TableCell sx={{ fontWeight: 'bold' }}>CAF</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>CAM</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>CAB (Base)</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>{CAF}</TableCell>
-                      <TableCell>{CAM}</TableCell>
-                      <TableCell>{stats.CAB}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-            <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#cfcfcf' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Atributo</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">Base (Status)</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">Bônus Raça</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">Bônus Classe</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">Total</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tableRows.map((row) => (
-                    <TableRow key={row.name} hover>
-                      <TableCell component="th" scope="row">{row.name}</TableCell>
-                      <TableCell align="center">{row.base}</TableCell>
-                      <TableCell align="center" sx={{ color: row.racaBonus > 0 ? 'green' : row.racaBonus < 0 ? 'red' : 'inherit' }}>
-                        {row.racaBonus > 0 ? `+${row.racaBonus}` : row.racaBonus}
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: row.classeBonus > 0 ? 'green' : row.classeBonus < 0 ? 'red' : 'inherit' }}>
-                        {row.classeBonus > 0 ? `+${row.classeBonus}` : row.classeBonus}
-                      </TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{row.total}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
           </Box>
-        )}
-      </div>
+
+          {statsShown && (
+            <Box
+              sx={{ width: '1200px', borderRadius: '10px', padding: '20px', marginTop: '20px', backgroundColor: '#601b1c', marginBottom:5 }}
+            >
+              <Box className={"mb-5"}>
+                <TableContainer sx={{backgroundColor:'black'}} component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'black' }}>
+                        <TableCell sx={{ color: 'red', fontWeight: 'bold' }}>PdV</TableCell>
+                        <TableCell sx={{ color: 'blue', fontWeight: 'bold' }}>PdE</TableCell>
+                        <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>PdA Físico (Base)</TableCell>
+                        <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>PdA Mágico (Base)</TableCell>
+                        <TableCell sx={{ color: 'chocolate', fontWeight: 'bold' }}>PdD</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell sx={{color:'white'}}>{PdV}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{PdE}</TableCell>
+                        <TableCell sx={{color:'white'}}>{PdAFisico}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{PdAMagico}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{PdD}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+              <Box className={"mb-5"}>
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'black' }}>
+                        <TableCell sx={{ color:'crimson', fontWeight: 'bold' }}>CAF</TableCell>
+                        <TableCell sx={{ color:'royalblue' , fontWeight: 'bold' }}>CAM</TableCell>
+                        <TableCell sx={{ color:'bisque' , fontWeight: 'bold' }}>CAB</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow sx={{backgroundColor:'black'}}>
+                        <TableCell sx={{ color: 'white' }}>{CAF}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{CAM}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{stats.CAB}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+              <TableContainer component={Paper}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: 'black' }}>
+                      <TableCell sx={{ color:'white', fontWeight: 'bold' }}>Atributo</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Base (Status)</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Bônus Raça</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Bônus Classe</TableCell>
+                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Total</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {tableRows.map((row) => (
+                      <TableRow key={row.name} sx={{ backgroundColor: 'black' }}>
+                        <TableCell sx={{ color: 'white' }} component="th" scope="row">{row.name}</TableCell>
+                        <TableCell sx={{ color: 'white' }} align="center">{row.base}</TableCell>
+                        <TableCell align="center" sx={{ color: row.racaBonus > 0 ? 'green' : row.racaBonus < 0 ? 'red' : 'white' }}>
+                          {row.racaBonus > 0 ? `+${row.racaBonus}` : row.racaBonus}
+                        </TableCell>
+                        <TableCell align="center" sx={{ color: row.classeBonus > 0 ? 'green' : row.classeBonus < 0 ? 'red' : 'white' }}>
+                          {row.classeBonus > 0 ? `+${row.classeBonus}` : row.classeBonus}
+                        </TableCell>
+                        <TableCell align="center" sx={{ color:'white', fontWeight: 'bold' }}>{row.total}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </div>
+      </main>
       <Footer />
     </>
   );

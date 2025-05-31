@@ -191,9 +191,9 @@ const Races = () => {
         <>
             <Header />
             <div>
-                <div><h1 className='text-5xl font-bold text-center mt-10 mb-10'>Raças</h1></div>
+                <div><h1 className='text-5xl font-bold text-center text-white mt-10 mb-10'>Raças</h1></div>
                 <div className='flex justify-start ml-10 mb-4'>
-                    <Button variant='contained' sx={{ backgroundColor: 'red', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
+                    <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
                         Adicionar nova Raça
                     </Button>
                 </div>
@@ -253,7 +253,7 @@ const Races = () => {
                             )
                         })
                     ) : (
-                        !isLoading && <p>Nenhuma raça encontrada.</p>
+                        !isLoading && <p className='text-white'>Nenhuma raça encontrada.</p>
                     )}
                 </div>
             </div>

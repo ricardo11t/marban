@@ -3,7 +3,4 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
-    height: 100%;
-    margin: 0;
-  }
+@custom-variant dark (&:where(.dark, .dark *));

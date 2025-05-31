@@ -163,9 +163,9 @@ const Classes = () => {
         <>
             <Header />
             <div>
-                <div><h1 className='text-5xl font-bold text-center mt-10 mb-10'>Classes</h1></div>
+                <div><h1 className='text-5xl font-bold text-white text-center mt-10 mb-10'>Classes</h1></div>
                 <div className='flex justify-start ml-10 mb-4'>
-                    <Button variant='contained' sx={{ backgroundColor: 'red', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
+                    <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
                         Adicionar nova Classe
                     </Button>
                 </div>
@@ -184,7 +184,7 @@ const Classes = () => {
                                             .map(([atributo, valor]) => (
                                                 <Typography key={atributo} variant="body2" sx={{ color: 'text.secondary', textAlign: 'left' }}>
                                                     <span className='capitalize'>{atributo}:</span>
-                                                    <span style={{ color: valor > 0 ? 'green' : 'red', marginLeft: '4px', fontWeight: 'bold' }}>
+                                                    <span style={{ color: valor > 0 ? 'green' : '#601b1c', marginLeft: '4px', fontWeight: 'bold' }}>
                                                         {valor > 0 ? `+${valor}` : valor}
                                                     </span>
                                                 </Typography>
@@ -198,7 +198,7 @@ const Classes = () => {
                             </Card>
                         ))
                     ) : (
-                        !isLoading && <p>Nenhuma classe encontrada.</p>
+                        !isLoading && <p className='text-white'>Nenhuma classe encontrada.</p>
                     )}
                 </div>
             </div>

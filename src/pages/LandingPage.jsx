@@ -16,8 +16,8 @@ const LandingPage = () => {
                   <h1 className='text-center text-white text-xl font-bold'>Logue para acessar as funcionalidades.</h1>
                   <br />
                   <div className='text-center gap-5'>
-                    <Link to={`/login`}><Button variant='contained' sx={{ backgroundColor: 'red', marginRight: 2 }}>Login</Button></Link>
-                    <Link to={`/cadastro`}><Button variant='contained' sx={{ backgroundColor: 'red' }}>Cadastre-se</Button></Link>
+                  <Link to={`/login`}><Button variant='contained' sx={{ backgroundColor: '#601b1c', marginRight: 2 }}>Login</Button></Link>
+                  <Link to={`/cadastro`}><Button variant='contained' sx={{ backgroundColor: '#601b1c' }}>Cadastre-se</Button></Link>
                   </div>
                 </div>
               </div>
