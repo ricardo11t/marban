@@ -1,4 +1,4 @@
-import { sql } from '../modules/shared/db';
+import { sql } from '../../modules/shared/db.js';
 import errorHandler from '../modules/shared/errorHandler';
 import UserRepository from '../modules/users/user.repository.js';
 import AuthService from '../modules/auth/auth.service.js';

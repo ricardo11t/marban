@@ -1,8 +1,8 @@
-import { sql } from '../shared/db.js';
-import errorHandler from '../shared/errorHandler.js';
-import UserRepository from '../users/user.repository.js';
-import AuthService from './auth.service.js';
-import AuthController from './auth.service.js';
+import { sql } from '../../modules/shared/db.js';
+import errorHandler from '../../modules/shared/errorHandler.js';
+import UserRepository from '../../modules/users/user.repository.js';
+import AuthService from '../../modules/auth/auth.service.js';
+import AuthController from '../../modules/auth/auth.service.js';
 
 const userRepository = new UserRepository(sql);
 const authService = new AuthService(userRepository);
