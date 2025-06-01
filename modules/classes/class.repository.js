@@ -7,12 +7,12 @@ export default class ClassRepository {
     }
 
     async findAll() {
-        const { rows } = await this.db`SELECT name, bonus, pdd FROM ${this.db(this.tableName)}`;
+        const { rows } = await this.db(`SELECT name, bonus, pdd FROM ${this.db(this.tableName)}`);
         return rows.map(row => new ClassModel(row));
     }
 
     async findByName(name) {
-        const { rows } = await this.db`SELECT name, bonus, pdd FROM ${this.db(this.tableName)} WHERE name = ${name}`;
+        const { rows } = await this.db(`SELECT name, bonus, pdd FROM ${this.db(this.tableName)} WHERE name = ${name}`);
         if (rows.length === 0) {
             return null;
         }
@@ -21,19 +21,19 @@ export default class ClassRepository {
 
     async create({ name, bonus, pdd }) {
 
-        const { rows } = await this.db`
+        const { rows } = await this.db(`
             INSERT INTO ${this.db(this.tableName)} (name, bonus, pdd) 
             VALUES (${name}, ${bonus}, ${pdd}) 
-            RETURNING name, bonus, pdd`;
+            RETURNING name, bonus, pdd`);
         return new ClassModel(rows[0]);
     }
 
     async update(name, { bonus, pdd }) {
-        const { rows } = await this.db`
+        const { rows } = await this.db(`
             UPDATE ${this.db(this.tableName)} 
             SET bonus = ${bonus}, pdd = ${pdd}
             WHERE name = ${name}
-            RETURNING name, bonus, pdd`;
+            RETURNING name, bonus, pdd`);
         if (rows.length === 0) {
             return null;
         }
@@ -41,7 +41,7 @@ export default class ClassRepository {
     }
 
     async delete(name) {
-        const { rowCount } = await this.db`DELETE FROM ${this.db(this.tableName)} WHERE name = ${name}`;
+        const { rowCount } = await this.db(`DELETE FROM ${this.db(this.tableName)} WHERE name = ${name};`);
         return rowCount > 0;
     }
 }
