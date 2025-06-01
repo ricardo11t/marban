@@ -5,6 +5,10 @@ import config from '../shared/config.js';
 export default class AuthService {
     constructor(userRepository) {
         this.userRepository = userRepository;
+        console.log('[AuthService CONSTRUCTOR] userRepository recebido:', this.userRepository);
+        if (this.userRepository) {
+            console.log('[AuthService CONSTRUCTOR] typeof this.userRepository.findByEmail:', typeof this.userRepository.findByEmail);
+        }
     }
 
     async register(userData) {
@@ -24,7 +28,13 @@ export default class AuthService {
     }
 
     async login(email, senha) {
-        const userInstance = await this.userRepository.findByEmail(email); // Retorna instância de User
+        console.log('[AuthService LOGIN] this.userRepository:', this.userRepository);
+        if (this.userRepository) {
+            console.log('[AuthService LOGIN] typeof this.userRepository.findByEmail:', typeof this.userRepository.findByEmail);
+        }
+
+        // Linha onde o erro acontece:
+        const userInstance = await this.userRepository.findByEmail(email); 
 
         if (!userInstance || !userInstance.hash_senha) {
             const error = new Error('Credenciais inválidas.');
