@@ -1,9 +1,9 @@
 import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, Select, MenuItem, InputLabel } from '@mui/material';
 import React, { useContext, useState, useEffect } from 'react';
-import { RacesContext } from '.../context/RacesProvider';
-import { ClassesContext } from '.../context/ClassesProvider';
-import Header from '.../components/Header';
-import Footer from '.../components/Footer';
+import { RacesContext } from '../context/RacesProvider';
+import { ClassesContext } from '../context/ClassesProvider';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 // Estilos para TextFields e Selects com fundo preto e texto branco (variant="filled")
 const blackFilledFieldStyles = {

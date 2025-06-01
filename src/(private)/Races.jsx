@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
-import Header from '.../components/Header';
-import Footer from '.../components/Footer';
-import { RacesContext } from '.../context/RacesProvider';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { RacesContext } from '../context/RacesProvider';
 import {
     Card, CardContent, CardMedia, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,

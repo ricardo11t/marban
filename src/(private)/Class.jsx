@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
-import Header from '.../components/Header';
-import Footer from '.../components/Footer';
-import { ClassesContext } from '.../context/ClassesProvider'; // Certifique-se que o caminho está correto
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { ClassesContext } from '../context/ClassesProvider'; // Certifique-se que o caminho está correto
 import {
     Card, CardContent, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress
