@@ -1,6 +1,8 @@
 import { sql } from '../modules/shared/db.js';
 import errorHandler from '../modules/shared/errorHandler.js';
-import { verifyTokenAndExtractUser, isAdmin } from '../modules/shared/authorization.utils.js'; // Importe as novas funções
+import { verifyTokenAndExtractUser, isAdmin, authMiddleware } from '../modules/shared/authorization.utils.js'; // Importe as novas funções
+
+import express from 'express';
 
 import UserRepository from '../modules/users/user.repository.js';
 import UserService from '../modules/users/user.service.js';
@@ -10,6 +12,10 @@ import UserController from '../modules/users/user.controller.js';
 const userRepository = new UserRepository(sql);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
+
+const router = express.Router();
+
+router.get('/', authMiddleware, userController.getUserById())
 
 export default async function handler(req, res) {
     try {

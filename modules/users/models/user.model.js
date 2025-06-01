@@ -1,10 +1,10 @@
 export default class User {
-    constructor({ id, username, email, hash_senha, role, data_criacao, data_atualizacao, ativo, ultimo_login, email_verificado }) { // Adicionado 'role'
+    constructor({ id, username, email, hash_senha, role, data_criacao, data_atualizacao, ativo, ultimo_login, email_verificado }) { // Alterado aqui
         this.id = id;
-        this.username = username;
+        this.username = username; // Alterado aqui
         this.email = email;
-        this.hash_senha = hash_senha; // Lembre-se de não expor isso
-        this.role = role; // Nova propriedade
+        this.hash_senha = hash_senha;
+        this.role = role;
         this.data_criacao = data_criacao;
         this.data_atualizacao = data_atualizacao;
         this.ativo = ativo;
@@ -15,20 +15,19 @@ export default class User {
     toClientJSON() {
         return {
             id: this.id,
-            username: this.username,
+            username: this.username, // Alterado aqui
             email: this.email,
-            role: this.role, // Expor a role para o cliente pode ser útil
+            role: this.role,
             ativo: this.ativo,
             ultimo_login: this.ultimo_login,
             data_criacao: this.data_criacao
         };
     }
 
-    // Este método é mais para uso interno do backend, por isso pode conter hash_senha
-    getFullData() {
+    getFullData() { // Para uso interno do backend
         return {
             id: this.id,
-            username: this.username,
+            username: this.username, // Alterado aqui
             email: this.email,
             hash_senha: this.hash_senha,
             role: this.role,

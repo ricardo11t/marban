@@ -8,7 +8,7 @@ export default class AuthService {
     }
 
     async register(userData) {
-        const { username, email, senha } = userData;
+        const { username, email, senha } = userData; // Espera username aqui
 
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
@@ -20,8 +20,7 @@ export default class AuthService {
         const salt = await bcrypt.genSalt(10);
         const hash_senha = await bcrypt.hash(senha, salt);
 
-        // O repositório ou o DB definirão a role como 'user' por padrão
-        return await this.userRepository.create({ username, email, hash_senha });
+        return await this.userRepository.create({ username, email, hash_senha }); // Passa username
     }
 
     async login(email, senha) {
