@@ -7,7 +7,7 @@ export default class RaceRepository {
     }
 
     async findAll() {
-        const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)};`;
+        const { rows } = await this.db`SELECT * FROM public.races;`;
         if (rows.length === 0) {
             return null;
         } 
@@ -15,7 +15,7 @@ export default class RaceRepository {
     }
 
     async findByName(name) {
-        const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)} WHERE name = ${name.toLowerCase()};`;
+        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
         if (rows.length === 0) {
             return null;
         }
@@ -24,7 +24,7 @@ export default class RaceRepository {
 
     async create({name, bonus, pdd}) {
         const { rows } = await this.db`
-            INSERT INTO ${this.db(this.tableName)} (name, bonus, pdd)
+            INSERT INTO public.races (name, bonus, pdd)
             VALUES (${name.toLowerCase()}, ${bonus}, ${pdd})
             RETURNING name, bonus, pdd;`
         return new Race(rows[0]);
@@ -32,7 +32,7 @@ export default class RaceRepository {
 
     async update(name, { bonus, pdd }) {
         const { rows } = await this.db`
-            UPDATE ${this.db(this.tableName)} 
+            UPDATE public.races 
             SET bonus = ${bonus}, pdd = ${pdd}
             WHERE name = ${name}
             RETURNING name, bonus, pdd;`;
@@ -45,7 +45,7 @@ export default class RaceRepository {
     }
 
     async delete(name) {
-        const { rowCount } = await this.db`DELETE FROM ${this.db(this.tableName)} WHERE name = ${name};`;
+        const { rowCount } = await this.db`DELETE FROM public.races WHERE name = ${name};`;
         return rowCount > 0;
     }
 }

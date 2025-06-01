@@ -8,13 +8,31 @@ export default class UserRepository {
         console.log('[UserRepository CONSTRUCTOR] typeof this.db:', typeof this.db);
     }
 
+    async create({ nome_completo, email, hash_senha, role = 'user' }) { // Adicionei nome_completo
+        console.log('[UserRepository create] Criando usuário:', { nome_completo, email, role });
+        try {
+            const { rows } = await this.db`
+                INSERT INTO private.users (nome_completo, email, hash_senha, role) 
+                VALUES (${nome_completo}, ${email.toLowerCase()}, ${hash_senha}, ${role}) 
+                RETURNING id, nome_completo, email, role, ativo, data_criacao;`;
+
+            console.log('[UserRepository create] Usuário criado no DB:', rows[0]);
+            return new User(rows[0]); // Retorne a instância completa para o AuthService
+        } catch (error) {
+            console.error('[UserRepository create] Erro ao criar usuário:', error);
+            throw error;
+        }
+    }
+
     async findAll() {
-        console.log('[UserRepository findAll] typeof this.db:', typeof this.db);
-        // Se this.tableName é 'private.users', você pode hardcodar temporariamente também:
-        // const { rows } = await this.db`SELECT id, nome_completo, email, role, ativo, data_criacao, ultimo_login FROM private.users;`;
-        // Ou, mantendo a forma correta com this.db(this.tableName) se a Variação 2 do findByEmail funcionar:
-        const { rows } = await this.db`SELECT id, nome_completo, email, role, ativo, data_criacao, ultimo_login FROM ${this.db(this.tableName)};`;
-        return rows.map(row => new User(row).toClientJSON());
+        console.log('[UserRepository findAll] Buscando todos os usuários...');
+        try {
+            const { rows } = await this.db`SELECT id, nome_completo, email, role, ativo, data_criacao, ultimo_login FROM private.users;`;
+            return rows.map(row => new User(row).toClientJSON());
+        } catch (error) {
+            console.error('[UserRepository findAll] Erro ao buscar todos os usuários:', error);
+            throw error;
+        }
     }
 
     async findByEmail(email) {
