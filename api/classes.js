@@ -2,7 +2,7 @@ import { sql } from '../modules/shared/db.js';
 import errorHandler from '../modules/shared/errorHandler.js';
 import { verifyTokenAndExtractUser, isAdmin } from '../modules/shared/authorization.utils.js';
 
-import ClassRepository from '../modules/classes/class.repository.js'; // Supondo que você criou estes
+import ClassRepository from '../modules/classes/class.repository.js' 
 import ClassService from '../modules/classes/class.service.js';
 import ClassController from '../modules/classes/class.controller.js';
 

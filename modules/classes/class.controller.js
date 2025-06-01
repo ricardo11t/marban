@@ -1,5 +1,3 @@
-
-
 export default class ClassController {
     constructor(classService) {
         this.classService = classService;
@@ -12,7 +10,7 @@ export default class ClassController {
 
     async getAll(req, res) {
         const classes = await this.classService.getAll();
-        res.status(200).json(classes);
+        res.status(200).json(res, classes, 200);
     }
 
     async getByName(req, res) {
