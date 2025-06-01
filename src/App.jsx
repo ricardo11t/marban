@@ -1,9 +1,9 @@
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
-import LandingPage from './pages/(public)/LandingPage'
-import CriacaoPage from './pages/(private)/CriacaoPage'
-import Races from './pages/(private)/Races'
-import Classes from './pages/(private)/Class'
+import LandingPage from './public-pages/LandingPage'
+import CriacaoPage from './private-pages/CriacaoPage'
+import Races from './private-pages/Races'
+import Classes from './private-pages/Class'
 
 function App() {
 
