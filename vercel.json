@@ -4,16 +4,5 @@
             "source": "/((?!api/).*)",
             "destination": "/index.html"
         }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "methods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE"
-            ]
-        }
     ]
 }
