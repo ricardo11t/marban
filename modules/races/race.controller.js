@@ -34,6 +34,15 @@ export default class RaceController {
     }
 
     async update(req, res) {
+        const { name, stats } = req.query;
+        if (!name) {
+            return res.status(400).json({ message: '"Name" Param is obrigatory to exclude.' })
+        }
+        const result = this.raceService.updateRace(name, stats);
+        res.status(200).json(result);
+    }
+
+    async delete(req, res) {
         const { name } = req.query;
         if (!name) {
             return res.status(400).json({ message: '"Name" Param is obrigatory to exclude.' })
