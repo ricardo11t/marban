@@ -12,23 +12,22 @@ const classController = new ClassController(classService);
 
 export default async function handler(req, res) {
     try {
-        const userDataFromToken = verifyTokenAndExtractUser(req); // Todos os endpoints de classes exigem login
+        // const userDataFromToken = verifyTokenAndExtractUser(req); // Todos os endpoints de classes exigem login
 
         if (req.method === 'GET') {
-            // Qualquer usuário logado pode ver as classes
             if (req.query.name) {
                 await classController.getByName(req, res);
             } else {
                 await classController.getAll(req, res);
             }
         } else if (req.method === 'POST') {
-            isAdmin(userDataFromToken); // Apenas admin pode criar
+            // isAdmin(userDataFromToken); // Apenas admin pode criar
             await classController.create(req, res);
         } else if (req.method === 'PUT') {
-            isAdmin(userDataFromToken); // Apenas admin pode atualizar
+            // isAdmin(userDataFromToken); // Apenas admin pode atualizar
             await classController.update(req, res);
         } else if (req.method === 'DELETE') {
-            isAdmin(userDataFromToken); // Apenas admin pode deletar
+            // isAdmin(userDataFromToken); // Apenas admin pode deletar
             await classController.delete(req, res);
         } else {
             res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
