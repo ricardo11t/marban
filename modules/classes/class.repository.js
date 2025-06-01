@@ -7,33 +7,33 @@ export default class ClassRepository {
     }
 
     async findAll() {
-        const { rows } = await this.db`SELECT name, bonus, pdd FROM public.classes`;
+        const { rows } = await this.db`SELECT name, bonus, tipo FROM public.classes`;
         return rows.map(row => new ClassModel(row));
     }
 
     async findByName(name) {
-        const { rows } = await this.db`SELECT name, bonus, pdd FROM public.classes WHERE name = ${name}`;
+        const { rows } = await this.db`SELECT name, bonus, tipo FROM public.classes WHERE name = ${name}`;
         if (rows.length === 0) {
             return null;
         }
         return new ClassModel(rows[0]);
     }
 
-    async create({ name, bonus, pdd }) {
+    async create({ name, bonus, tipo }) {
 
         const { rows } = await this.db`
-            INSERT INTO public.classes (name, bonus, pdd) 
-            VALUES (${name}, ${bonus}, ${pdd}) 
-            RETURNING name, bonus, pdd`;
+            INSERT INTO public.classes (name, bonus, tipo) 
+            VALUES (${name}, ${bonus}, ${tipo}) 
+            RETURNING name, bonus, tipo`;
         return new ClassModel(rows[0]);
     }
 
-    async update(name, { bonus, pdd }) {
+    async update(name, { bonus, tipo }) {
         const { rows } = await this.db`
             UPDATE public.classes 
-            SET bonus = ${bonus}, pdd = ${pdd}
+            SET bonus = ${bonus}, tipo = ${tipo}
             WHERE name = ${name}
-            RETURNING name, bonus, pdd`;
+            RETURNING name, bonus, tipo`;
         if (rows.length === 0) {
             return null;
         }
