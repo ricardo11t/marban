@@ -4,8 +4,8 @@ import { sql } from '../shared/db.js'
 export default class UserRepository {
     constructor() {
         this.db = sql;
-        this.tableName = 'privado.users'; // Corrigido para 'privado.users' se for o schema correto
-        console.log('[UserRepository] Constructor: typeof this.db =', typeof this.db);
+        this.tableName = 'private.users';
+        console.log('[UserRepository CONSTRUCTOR] typeof this.db:', typeof this.db);
     }
 
     async findAll() {
@@ -14,24 +14,32 @@ export default class UserRepository {
     }
 
     async findByEmail(email) {
-        console.log('[UserRepository] findByEmail: Buscando por email =', email);
-        console.log('[UserRepository] findByEmail: typeof this.db =', typeof this.db);
+        console.log('[UserRepository findByEmail] Buscando por email =', email);
+        console.log('[UserRepository findByEmail] typeof this.db:', typeof this.db);
+
         try {
-            const query = `SELECT * FROM <span class="math-inline">\{this\.tableName\} WHERE email \= '</span>{email.toLowerCase().replace(/'/g, "''")}'`; // Logging da query (cuidado com SQL injection aqui, apenas para log)
-            console.log('[UserRepository] findByEmail: Query construída (para log) =', query);
+            // VERSÃO SIMPLIFICADA PARA TESTE:
+            const nomeDaTabelaHardcoded = 'privado.users'; // OU 'public.users', QUAL FOR O CORRETO
+            console.log(`[UserRepository findByEmail] Tentando query com tabela hardcoded: ${nomeDaTabelaHardcoded}`);
 
-            const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)} WHERE email = ${email.toLowerCase()}`;
+            // Tente esta linha, substituindo ${this.db(this.tableName)} pelo nome da tabela diretamente
+            const { rows } = await this.db`SELECT * FROM ${this.db(nomeDaTabelaHardcoded)} WHERE email = ${email.toLowerCase()}`;
+            // OU, mais direto ainda, sem a função sql para o nome da tabela, já que é um nome fixo no exemplo:
+            // const { rows } = await this.db`SELECT * FROM privado.users WHERE email = ${email.toLowerCase()}`;
+            // Por favor, teste primeiro a linha acima com this.db(nomeDaTabelaHardcoded)
+            // Se ela ainda falhar, tente a próxima com o nome totalmente hardcoded.
 
-            console.log('[UserRepository] findByEmail: Rows encontradas =', rows);
+            console.log('[UserRepository findByEmail] Rows encontradas =', rows);
             if (rows.length === 0) {
-                console.log('[UserRepository] findByEmail: Nenhum usuário encontrado.');
+                console.log('[UserRepository findByEmail] Nenhum usuário encontrado.');
                 return null;
             }
-            console.log('[UserRepository] findByEmail: Usuário encontrado, dados brutos =', rows[0]);
-            return new User(rows[0]); // Retorna a instância completa
+            console.log('[UserRepository findByEmail] Usuário encontrado, dados brutos =', rows[0]);
+            return new User(rows[0]);
         } catch (error) {
-            console.error('[UserRepository] findByEmail: Erro na query =', error);
-            throw error; // Re-lança o erro para ser pego pelo errorHandler
+            console.error('[UserRepository findByEmail] Erro na query =', error);
+            console.error('[UserRepository findByEmail] Stack do erro na query =', error.stack);
+            throw error;
         }
     }
 
