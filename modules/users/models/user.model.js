@@ -1,7 +1,7 @@
 export default class User {
-    constructor({ id, nome_completo, email, hash_senha, role, data_criacao, data_atualizacao, ativo, ultimo_login, email_verificado }) { // Adicionado 'role'
+    constructor({ id, username, email, hash_senha, role, data_criacao, data_atualizacao, ativo, ultimo_login, email_verificado }) { // Adicionado 'role'
         this.id = id;
-        this.nome_completo = nome_completo;
+        this.username = username;
         this.email = email;
         this.hash_senha = hash_senha; // Lembre-se de não expor isso
         this.role = role; // Nova propriedade
@@ -15,7 +15,7 @@ export default class User {
     toClientJSON() {
         return {
             id: this.id,
-            nome_completo: this.nome_completo,
+            username: this.username,
             email: this.email,
             role: this.role, // Expor a role para o cliente pode ser útil
             ativo: this.ativo,
@@ -28,7 +28,7 @@ export default class User {
     getFullData() {
         return {
             id: this.id,
-            nome_completo: this.nome_completo,
+            username: this.username,
             email: this.email,
             hash_senha: this.hash_senha,
             role: this.role,

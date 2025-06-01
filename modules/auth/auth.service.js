@@ -50,7 +50,7 @@ export default class AuthService {
         const payload = {
             userId: user.id,
             email: user.email,
-            nomeCompleto: user.nome_completo,
+            username: user.username,
             role: user.role // <<< ADICIONADO A ROLE AO PAYLOAD DO JWT
         };
         const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' }); // Use config.jwtSecret

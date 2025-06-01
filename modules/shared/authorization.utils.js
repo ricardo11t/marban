@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import config from './config.js'; // Para JWT_SECRET
+import errorHandler from '../shared/errorHandler.js';
 
 /**
  * Verifica o token JWT da requisição e retorna o payload do usuário.
@@ -30,6 +31,25 @@ export function verifyTokenAndExtractUser(req) {
     }
 }
 
+export function requireAuth(req, res, next) {
+    try {
+        req.user = verifyTokenAndExtractUser(req);
+        next();
+    } catch (err) {
+        errorHandler(err, res);
+    }
+}
+
+export function requireAdmin(req, res, next) {
+    try {
+        req.user = verifyTokenAndExtractUser(req);
+        isAdmin(req.user);
+        next();
+    } catch (err) {
+        errorHandler(err, res);
+    }
+  }
+
 /**
  * Verifica se o usuário (do payload do token decodificado) possui a role de 'admin'.
  * Lança um erro 403 Forbidden se não for admin.
@@ -58,3 +78,19 @@ export function hasRole(requiredRole) {
         }
     };
 }
+
+export function authMiddleware(req, res, next) {
+    const isPreview = process.env.VERCEL_ENV === 'preview';
+
+    if (isPreview) {
+        return next(); // pula autenticação no preview
+    }
+
+    const token = req.headers.authorization;
+
+    if (!token || token !== 'seu-token-aqui') {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
+
+    next();
+  }
