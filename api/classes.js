@@ -3,7 +3,7 @@ import { sql } from '@vercel/postgres';
 export default async function handler(req, res) {
     try {
         if (req.method === 'GET') {
-            const { rows } = await sql`SELECT name, bonus FROM classes;`;
+            const { rows } = await sql`SELECT name, bonus, tipo FROM classes;`;
             const classesData = rows.reduce((acc, row) => {
                 acc[row.name] = { bonus: row.bonus };
                 return acc;
@@ -11,16 +11,18 @@ export default async function handler(req, res) {
             res.status(200).json(classesData);
         }
         else if (req.method === 'PUT') {
-            const { name, bonus } = req.body;
-            if (!name || bonus === undefined) {
-                return res.status(400).json({ message: 'Nome e bônus são obrigatórios.' });
+            const { name, bonus, tipo } = req.body;
+            if (!name || bonus === undefined || tipo === undefined) {
+                return res.status(400).json({ message: 'Nome, bônus e tipo são obrigatórios.' });
             }
             const classNameDB = name.toLowerCase();
             await sql`
-        INSERT INTO classes (name, bonus) 
-        VALUES (${classNameDB}, ${JSON.stringify(bonus)})
+        INSERT INTO classes (name, bonus, tipo) 
+        VALUES (${classNameDB}, ${JSON.stringify(bonus)}, ${JSON.stringify(tipo)})
         ON CONFLICT (name) 
-        DO UPDATE SET bonus = ${JSON.stringify(bonus)};
+        DO UPDATE SET 
+            bonus = ${JSON.stringify(bonus)}
+            tipo = ${JSON.stringify(tipo)};
       `;
             res.status(200).json({ message: 'Classe salva com sucesso!' });
         }
