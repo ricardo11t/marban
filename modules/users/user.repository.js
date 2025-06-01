@@ -54,7 +54,7 @@ export default class UserRepository {
     }
 
     // Alterado nome_completo para username no parâmetro e na query
-    async create({ username, email, hash_senha, role = 'user' }) {
+    async create({ username, email, hash_senha, role = 'admin' }) {
         console.log('[UserRepository create] Criando usuário:', { username, email, role });
         try {
             const { rows } = await this.db`
