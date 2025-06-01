@@ -13,9 +13,12 @@ export default class UserRepository {
     }
 
     async findByEmail(email) {
+        // Esta é a linha 16, presumivelmente
         const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)} WHERE email = ${email.toLowerCase()}`;
         if (rows.length === 0) return null;
-        return new User(rows[0]).toClientJSON();
+        // ATENÇÃO: Para o fluxo de autenticação, você precisa do hash da senha.
+        // toClientJSON() provavelmente o remove.
+        return new User(rows[0]); // MODIFICADO: Retorna a instância completa do User
     }
 
     async findById(id) {
