@@ -9,7 +9,7 @@ export default class ClassController {
     }
 
     async getAll(req, res) {
-        const classes = await this.classService.getAll();
+        const classes = await this.classService.getAllClasses();
         res.status(200).json(res, classes, 200);
     }
 
