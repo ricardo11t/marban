@@ -1,5 +1,4 @@
-import errorHandler from "../shared/errorHandler";
-import responseHandler from "../shared/responseHandler";
+import responseHandler from "../shared/responseHandler.js";
 
 export default class RaceController {
     constructor(raceService) {

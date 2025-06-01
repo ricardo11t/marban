@@ -1,4 +1,4 @@
-import Race from './models/race.model';
+import Race from './models/race.model.js';
 
 export default class RaceRepository {
     constructor(dbClient) {

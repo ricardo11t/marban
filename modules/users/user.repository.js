@@ -1,5 +1,5 @@
-import User from "./models/user.model";
-import { sql } from '../shared/db' 
+import User from "./models/user.model.js";
+import { sql } from '../shared/db.js' 
 
 export default class UserRepository {
     constructor () {

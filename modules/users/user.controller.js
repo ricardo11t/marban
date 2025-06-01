@@ -1,4 +1,4 @@
-import responseHandler from "../shared/responseHandler";
+import responseHandler from "../shared/responseHandler.js";
 
 export default class UserController {
     constructor (userService) {

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
-import config from '../shared/config';
+import config from '../shared/config.js';
 
 export default class AuthService {
     constructor(userRepository) {

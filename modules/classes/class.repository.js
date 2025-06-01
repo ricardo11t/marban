@@ -1,4 +1,4 @@
-import ClassModel from './models/class.model';
+import ClassModel from './models/class.model.js';
 
 export default class ClassRepository {
     constructor(dbClient) {
