@@ -1,25 +1,23 @@
-import logger from './logger.js'; // <--- CERTIFIQUE-SE QUE TEM '.js' AQUI
+import logger from './logger.js';
 
-export default function errorHandler(error, res) {
-    // Log detalhado do erro no servidor
-    // O logger.error agora espera múltiplos argumentos e os formata
+export default function errorHandler(error, res, req) { // Adicione req como parâmetro opcional
+    const path = error.path || (req && req.url ? req.url : 'N/A'); // Use o req passado
+
     logger.error(
         `Message: ${error.message}`,
         `StatusCode: ${error.statusCode || 500}`,
-        `Path: ${error.path || (res && req ? req.url : 'N/A')}`, // Adicionando req.url se disponível
+        `Path: ${path}`, // Usa a variável path
         `Details: ${error.details ? JSON.stringify(error.details) : 'N/A'}`,
         `Stack: ${error.stack}`
     );
 
     const statusCode = error.statusCode || 500;
-    let message = error.message || `An internal server error occurred.`; // Corrigido 'occured' para 'occurred'
+    let message = error.message || `An internal server error occurred.`;
 
-    // Em produção, para erros 500, não exponha a mensagem de erro original detalhada
     if (process.env.NODE_ENV === 'production' && statusCode === 500) {
-        message = 'An unexpected error occurred. Please, try again later.'; // Corrigido 'ocurred' para 'occurred'
+        message = 'An unexpected error occurred. Please, try again later.';
     }
 
-    // Verifica se os headers já foram enviados antes de tentar enviar uma resposta
     if (res && !res.headersSent) {
         const responseBody = {
             status: 'error',
@@ -27,8 +25,6 @@ export default function errorHandler(error, res) {
             message,
         };
 
-        // Apenas adiciona detalhes ao corpo da resposta se não for um erro 500 em produção
-        // ou se error.details existir
         if ((statusCode !== 500 || process.env.NODE_ENV !== 'production') && error.details) {
             responseBody.details = error.details;
         }
@@ -37,7 +33,6 @@ export default function errorHandler(error, res) {
     } else if (res && res.headersSent) {
         logger.warn('errorHandler was called, but the headers were already sent.');
     } else {
-        // Se res não for fornecido (ex: erro em um script de background, improvável no contexto da Vercel API)
-        logger.error('errorHandler was called without a response object, or headers were already sent.');
+        logger.error('errorHandler was called without a response object, or headers were already sent. Original error path:', path);
     }
 }
