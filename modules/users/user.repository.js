@@ -9,25 +9,24 @@ export default class UserRepository {
     }
 
     async findAll() {
-        const { rows } = await this.db`SELECT id, username, email, ativo, data_criacao, ultimo_login FROM ${this.db(this.tableName)};`;
+        console.log('[UserRepository findAll] typeof this.db:', typeof this.db);
+        // Se this.tableName é 'private.users', você pode hardcodar temporariamente também:
+        // const { rows } = await this.db`SELECT id, nome_completo, email, role, ativo, data_criacao, ultimo_login FROM private.users;`;
+        // Ou, mantendo a forma correta com this.db(this.tableName) se a Variação 2 do findByEmail funcionar:
+        const { rows } = await this.db`SELECT id, nome_completo, email, role, ativo, data_criacao, ultimo_login FROM ${this.db(this.tableName)};`;
         return rows.map(row => new User(row).toClientJSON());
     }
 
     async findByEmail(email) {
+        console.log('[UserRepository findByEmail] Testando VARIAÇÃO 2');
         console.log('[UserRepository findByEmail] Buscando por email =', email);
         console.log('[UserRepository findByEmail] typeof this.db:', typeof this.db);
 
         try {
-            // VERSÃO SIMPLIFICADA PARA TESTE:
-            const nomeDaTabelaHardcoded = 'privado.users'; // OU 'public.users', QUAL FOR O CORRETO
-            console.log(`[UserRepository findByEmail] Tentando query com tabela hardcoded: ${nomeDaTabelaHardcoded}`);
+            console.log(`[UserRepository findByEmail] Tentando query com tabela TOTALMENTE hardcoded: private.users`);
 
-            // Tente esta linha, substituindo ${this.db(this.tableName)} pelo nome da tabela diretamente
-            const { rows } = await this.db`SELECT * FROM ${this.db(nomeDaTabelaHardcoded)} WHERE email = ${email.toLowerCase()}`;
-            // OU, mais direto ainda, sem a função sql para o nome da tabela, já que é um nome fixo no exemplo:
-            // const { rows } = await this.db`SELECT * FROM privado.users WHERE email = ${email.toLowerCase()}`;
-            // Por favor, teste primeiro a linha acima com this.db(nomeDaTabelaHardcoded)
-            // Se ela ainda falhar, tente a próxima com o nome totalmente hardcoded.
+            // VARIAÇÃO 2: Nome da tabela diretamente na string SQL
+            const { rows } = await this.db`SELECT * FROM private.users WHERE email = ${email.toLowerCase()}`;
 
             console.log('[UserRepository findByEmail] Rows encontradas =', rows);
             if (rows.length === 0) {
@@ -35,10 +34,10 @@ export default class UserRepository {
                 return null;
             }
             console.log('[UserRepository findByEmail] Usuário encontrado, dados brutos =', rows[0]);
-            return new User(rows[0]);
+            return new User(rows[0]); // Retorna a instância completa do User
         } catch (error) {
-            console.error('[UserRepository findByEmail] Erro na query =', error);
-            console.error('[UserRepository findByEmail] Stack do erro na query =', error.stack);
+            console.error('[UserRepository findByEmail VARIAÇÃO 2] Erro na query =', error);
+            console.error('[UserRepository findByEmail VARIAÇÃO 2] Stack do erro na query =', error.stack);
             throw error;
         }
     }
