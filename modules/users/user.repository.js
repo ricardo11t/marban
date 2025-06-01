@@ -37,7 +37,7 @@ export default class UserRepository {
             UPDATE ${this.db(this.tableName)}
             SET role = ${newRole}, data_atualizacao = CURRENT_TIMESTAMP
             WHERE id = ${userId}
-            RETURNING id, nome_completo, email, role;
+            RETURNING id, username, email, role;
         `;
         if (rows.length === 0) return null;
         return new User(rows[0]).toClientJSON();
