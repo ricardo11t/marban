@@ -18,7 +18,7 @@ export default class ClassController {
         if (!name) {
             return res.status(400).json({message: '"name" param is obrigatory.'});
         }
-        const classe = await this.classService.getByName(name);
+        const classe = await this.classService.getClassByName(name);
         res.status(200).json(classe);
     }
 
