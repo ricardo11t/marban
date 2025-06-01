@@ -5,7 +5,10 @@ export default async function handler(req, res) {
         if (req.method === 'GET') {
             const { rows } = await sql`SELECT name, bonus, tipo FROM classes;`;
             const classesData = rows.reduce((acc, row) => {
-                acc[row.name] = { bonus: row.bonus };
+                acc[row.name] = {
+                    bonus: row.bonus,
+                    tipo: row.tipo
+                };
                 return acc;
             }, {});
             res.status(200).json(classesData);
@@ -17,13 +20,13 @@ export default async function handler(req, res) {
             }
             const classNameDB = name.toLowerCase();
             await sql`
-        INSERT INTO classes (name, bonus, tipo) 
-        VALUES (${classNameDB}, ${JSON.stringify(bonus)}, ${JSON.stringify(tipo)})
-        ON CONFLICT (name) 
-        DO UPDATE SET 
-            bonus = ${JSON.stringify(bonus)}
-            tipo = ${JSON.stringify(tipo)};
-      `;
+            INSERT INTO classes (name, bonus, tipo) 
+            VALUES (${classNameDB}, ${JSON.stringify(bonus)}, ${JSON.stringify(tipo)})
+            ON CONFLICT (name) 
+            DO UPDATE SET 
+                bonus = ${JSON.stringify(bonus)},
+                tipo = ${JSON.stringify(tipo)};
+        `;
             res.status(200).json({ message: 'Classe salva com sucesso!' });
         }
         else if (req.method === 'DELETE') {
