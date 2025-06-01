@@ -2,9 +2,10 @@ import User from "./models/user.model.js";
 import { sql } from '../shared/db.js' 
 
 export default class UserRepository {
-    constructor () {
+    constructor() {
         this.db = sql;
-        this.tableName = 'private.users'
+        this.tableName = 'privado.users'; // Corrigido para 'privado.users' se for o schema correto
+        console.log('[UserRepository] Constructor: typeof this.db =', typeof this.db);
     }
 
     async findAll() {
@@ -13,12 +14,25 @@ export default class UserRepository {
     }
 
     async findByEmail(email) {
-        // Esta é a linha 16, presumivelmente
-        const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)} WHERE email = ${email.toLowerCase()}`;
-        if (rows.length === 0) return null;
-        // ATENÇÃO: Para o fluxo de autenticação, você precisa do hash da senha.
-        // toClientJSON() provavelmente o remove.
-        return new User(rows[0]); // MODIFICADO: Retorna a instância completa do User
+        console.log('[UserRepository] findByEmail: Buscando por email =', email);
+        console.log('[UserRepository] findByEmail: typeof this.db =', typeof this.db);
+        try {
+            const query = `SELECT * FROM <span class="math-inline">\{this\.tableName\} WHERE email \= '</span>{email.toLowerCase().replace(/'/g, "''")}'`; // Logging da query (cuidado com SQL injection aqui, apenas para log)
+            console.log('[UserRepository] findByEmail: Query construída (para log) =', query);
+
+            const { rows } = await this.db`SELECT * FROM ${this.db(this.tableName)} WHERE email = ${email.toLowerCase()}`;
+
+            console.log('[UserRepository] findByEmail: Rows encontradas =', rows);
+            if (rows.length === 0) {
+                console.log('[UserRepository] findByEmail: Nenhum usuário encontrado.');
+                return null;
+            }
+            console.log('[UserRepository] findByEmail: Usuário encontrado, dados brutos =', rows[0]);
+            return new User(rows[0]); // Retorna a instância completa
+        } catch (error) {
+            console.error('[UserRepository] findByEmail: Erro na query =', error);
+            throw error; // Re-lança o erro para ser pego pelo errorHandler
+        }
     }
 
     async findById(id) {
