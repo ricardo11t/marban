@@ -1,9 +1,9 @@
-import errorHandler from './modules/shared/errorHandler.js';
-import { sql } from './modules/shared/db.js'
+import errorHandler from '../modules/shared/errorHandler.js';
+import { sql } from '../modules/shared/db.js'
 
-import RaceRepository from './modules/races/race.repository.js';
-import RaceService from './modules/races/race.service.js';
-import RaceController from './modules/races/race.controller.js';
+import RaceRepository from '../modules/races/race.repository.js';
+import RaceService from '../modules/races/race.service.js';
+import RaceController from '../modules/races/race.controller.js';
 
 const raceRepository = new RaceRepository(sql);
 const raceService = new RaceService(raceRepository);
