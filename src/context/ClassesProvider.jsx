@@ -7,9 +7,7 @@ export const ClassesProvider = ({ children }) => {
 
   const fetchClasses = async () => {
     try {
-      // ANTES: const response = await fetch('http://localhost:3000/classes');
-      // DEPOIS:
-      const response = await fetch('/api/classes'); // <<< CORREÇÃO APLICADA AQUI
+      const response = await fetch('/api/classes');
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
