@@ -222,8 +222,8 @@ const Classes = () => {
                 <div className='flex flex-wrap justify-center gap-6 mb-10'>
                     {isLoading && <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}><CircularProgress sx={{ color: '#601b1c' }} /></Box>}
                     {!isLoading && nomesDasClasses.length > 0 ? (
-                        nomesDasClasses.map((nome) => {
-                            const classeAtual = classes[nome];
+                        nomesDasClasses.map((id) => {
+                            const classeAtual = classes[id];
                             if (!classeAtual) return null;
 
                             const tipoClasseLabel = classeAtual.tipo?.tipoClasse
@@ -231,9 +231,9 @@ const Classes = () => {
                                 : 'N/A';
 
                             return (
-                                <Card key={nome} sx={{ backgroundColor: '#601b1c', color: 'white', width: 320, display: 'flex', flexDirection: 'column' }}>
+                                <Card key={id} sx={{ backgroundColor: '#601b1c', color: 'white', width: 320, display: 'flex', flexDirection: 'column' }}>
                                     <CardContent className='text-center flex-grow'>
-                                        <Typography variant='h5' component="div" sx={{ color: 'white' }} className='capitalize'>{nome}</Typography>
+                                        <Typography variant='h5' component="div" sx={{ color: 'white' }} className='capitalize'>{id.name}</Typography>
                                         {classeAtual.bonus && Object.values(classeAtual.bonus).some(v => v !== 0) && (
                                             <>
                                                 <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold', color: 'white' }}>
@@ -262,8 +262,8 @@ const Classes = () => {
                                         )}
                                     </CardContent>
                                     <Box className='flex justify-end gap-2 p-2 mt-auto'>
-                                        <Button size="small" onClick={() => handleOpenEdit(nome)} sx={{ color: 'white' }}><Edit /></Button>
-                                        <Button size="small" onClick={() => handleDelete(nome)} sx={{ color: 'lightcoral' }}><Delete /></Button>
+                                        <Button size="small" onClick={() => handleOpenEdit(id)} sx={{ color: 'white' }}><Edit /></Button>
+                                        <Button size="small" onClick={() => handleDelete(id)} sx={{ color: 'lightcoral' }}><Delete /></Button>
                                     </Box>
                                 </Card>
                             );
