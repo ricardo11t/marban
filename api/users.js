@@ -27,6 +27,9 @@ export default async function handler(req, res) {
             } else {
                 await userController.getAllUsers(req, res);
             }
+        } else if (req.method = 'POST') {
+            isAdmin(userDataFromToken);
+            await userController.
         } else if (req.method === 'DELETE') {
             isAdmin(userDataFromToken);
             await userController.deleteUser(req, res);

@@ -20,4 +20,9 @@ export default class UserService {
     async createUser(userData) {
         return await this.userRepository.create(userData);
     }
+
+    async deleteUser(email) {
+        const user = await this.userRepository.findByEmail(email);
+        
+    }
 }

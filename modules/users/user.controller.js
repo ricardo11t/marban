@@ -1,3 +1,4 @@
+import errorHandler from "../shared/errorHandler.js";
 import responseHandler from "../shared/responseHandler.js";
 
 export default class UserController {
@@ -22,5 +23,21 @@ export default class UserController {
     async createUser(req, res) {
         const newUser = await this.userService.createUser(req.body);
         responseHandler.created(res, newUser, 'User successfully created.');
+    }
+
+    async updateUserRole(req, res) {
+        const currentUser = localStorage.getItem('userData');
+        const userToUpdate = await this.userService.getUserById(req.body);
+        if (userToUpdate ===  currentUser) {
+            const error = new Error('Não é possível alterar a própria role');
+            error.statusCode = 400;
+            return errorHandler(error, res, req);
+        }
+
+        responseHandler.success(res, user, 'User successfully updated.');
+    }
+
+    async deleteUser(req, res) {
+        
     }
 }

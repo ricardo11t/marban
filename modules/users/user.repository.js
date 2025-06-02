@@ -1,5 +1,6 @@
 import User from "./models/user.model.js";
 import { sql } from '../shared/db.js'; // Certifique-se que o caminho está correto
+import responseHandler from "../shared/responseHandler.js";
 
 export default class UserRepository {
     constructor() { // Removido dbClient do construtor se sql é importado diretamente
@@ -43,7 +44,6 @@ export default class UserRepository {
     async findById(id) {
         console.log('[UserRepository findById] Buscando por ID =', id);
         try {
-            // Alterado nome_completo para username
             const { rows } = await this.db`SELECT id, username, email, role, ativo, data_criacao, ultimo_login FROM private.users WHERE id = ${id};`;
             if (rows.length === 0) return null;
             return new User(rows[0]).toClientJSON();
@@ -53,7 +53,6 @@ export default class UserRepository {
         }
     }
 
-    // Alterado nome_completo para username no parâmetro e na query
     async create({ username, email, hash_senha, role = 'user' }) {
         console.log('[UserRepository create] Criando usuário:', { username, email, role });
         try {
@@ -81,11 +80,41 @@ export default class UserRepository {
                 RETURNING id, username, email, role;`;
             if (rows.length === 0) return null;
             return new User(rows[0]).toClientJSON();
-        } catch (error) {
-            console.error(`[UserRepository updateRole] Erro ao atualizar role para usuário ID ${userId}:`, error);
-            throw error;
+        } catch (err) {
+            console.error(`[UserRepository updateRole] Erro ao atualizar role para usuário ID ${userId}:`, err);
+            throw err;
         }
     }
-    // Adicione outros métodos como updateLastLogin, updateUser, deleteUser conforme necessário,
-    // sempre usando 'username' onde for apropriado.
+
+    async updateLastLogin(username) {
+        const now = new Date();
+        try {
+            const { rows } = await this.db`
+                UPDATE private.users
+                SET ultimo_login = ${now}
+                WHERE username = ${username.toLowerCase()}
+                RETURNING username, ultimo_login;`
+            if (rows.length === 0) return null;
+            return new User(rows[0]).toClientJSON();
+        } catch (err) {
+            console.error(`[UserRepository updateLastLogin] Erro ao atualizar o ultimo login para usuário ID ${id}`, err);
+            throw err;
+        }
+    }
+
+    async delete(id, username, email) {
+        try {
+            const { rowCount } = await this.db`
+                DELETE FROM private.users WHERE id = '${id}', username = '${username}', email = '${email}';
+            `
+            if (rowCount > 0) {
+                const error = new Error('Falha ao deletar usuário.')
+                error.statusCode = 500;
+                throw error;
+            }
+            return console.log(`Usuário `)
+        } catch (err) {
+
+        }
+    }
 }
