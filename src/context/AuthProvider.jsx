@@ -137,7 +137,7 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
     setUser(null);
     setAuthHeader(null); // Remove o header do Axios
     setAuthError(null);
-    navigate('/login'); // Ou para a página inicial
+    navigate('/'); // Ou para a página inicial
   }, [navigate, setAuthHeader]);
 
   // Valor a ser fornecido pelo Contexto

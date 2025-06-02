@@ -45,22 +45,27 @@ const Header = () => {
           <div className='flex gap-4 mt-8'>
               <div>
             {isAuthenticated ? (
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: 'darkgray',
-                  color: 'white',
-                  height: '38px',
-                  paddingX: 2,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: 'gray',
-                  }
-                }}
-                onClick={logout}
-              >
-                Logout
-              </Button>
+              <div className='gap-5'>
+                <div>
+                  <h2 className='text-serif text-white'>Seja bem vindo, <span className='text-sans text-emerald-700'>{user.toUpperCase()}</span></h2>
+                </div>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: 'darkgray',
+                    color: 'white',
+                    height: '38px',
+                    paddingX: 2,
+                    borderRadius: '6px',
+                    '&:hover': {
+                      backgroundColor: 'gray',
+                    }
+                  }}
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              </div>
             ) : (
               <>
                 <Link to={`/login`}>
