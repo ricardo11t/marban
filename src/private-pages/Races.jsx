@@ -235,11 +235,11 @@ const Races = () => {
                                         <CardContent className='text-center flex-grow'>
                                             <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{raceNameKey}</Typography>
 
-                                            {raceItem.bonus && Object.values(raceItem.bonus).some(v => v !== 0) && (
+                                            {raceItem.bonus && Object.values(raceItem.name.bonus).some(v => v !== 0) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                                                     <Box className='grid grid-cols-2 gap-x-4 gap-y-1 px-2'>
-                                                        {Object.entries(raceItem.bonus)
+                                                        {Object.entries(raceItem.name.bonus)
                                                             .filter(([_, valor]) => valor !== 0)
                                                             .map(([atributo, valor]) => (
                                                                 <Typography key={atributo} variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', textAlign: 'left' }}>
@@ -253,13 +253,13 @@ const Races = () => {
                                                 </>
                                             )}
 
-                                            {raceItem.pdd && (raceItem.pdd.PdDFixo !== 0 || raceItem.pdd.PdDFração !== 0 || raceItem.pdd.AtributoUtilizado) && (
+                                            {raceItem.name.pdd && (raceItem.name.pdd.PdDFixo !== 0 || raceItem.name.pdd.PdDFração !== 0 || raceItem.name.pdd.AtributoUtilizado) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
                                                     <Box sx={{ textAlign: 'left', pl: 3, pr: 2 }}>
-                                                        {raceItem.pdd.PdDFixo !== undefined && raceItem.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fixo: {raceItem.pdd.PdDFixo}</Typography>}
-                                                        {raceItem.pdd.PdDFração !== undefined && raceItem.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fração: {raceItem.pdd.PdDFração}</Typography>}
-                                                        {raceItem.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
+                                                        {raceItem.name.pdd.PdDFixo !== undefined && raceItem.name.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fixo: {raceItem.name.pdd.PdDFixo}</Typography>}
+                                                        {raceItem.name.pdd.PdDFração !== undefined && raceItem.name.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fração: {raceItem.name.pdd.PdDFração}</Typography>}
+                                                        {raceItem.name.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
                                                     </Box>
                                                 </>
                                             )}
