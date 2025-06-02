@@ -47,7 +47,7 @@ const Header = () => {
             {isAuthenticated ? (
               <div className='gap-5'>
                 <div>
-                  <h2 className='text-serif text-white'>Seja bem vindo, <span className='text-sans text-emerald-700'>{user}</span></h2>
+                  <h2 className='text-serif text-white'>Seja bem vindo, <span className='text-sans text-emerald-700'>{user.username}</span></h2>
                 </div>
                 <Button
                   variant="contained"
@@ -67,32 +67,36 @@ const Header = () => {
                 </Button>
               </div>
             ) : (
-              <>
-                <Link to={`/login`}>
-                  <Button variant='contained' sx={{
-                    backgroundColor: 'darkgray',
-                    color: 'white',
-                    height: '38px',
-                    paddingX: 2,
-                    borderRadius: '6px',
-                    '&:hover': {
-                      backgroundColor: 'gray',
-                    }
-                  }}>Login</Button>
-                </Link>
-                <Link to={`/cadastro`}>
-                  <Button variant='contained' sx={{
-                    backgroundColor: 'black',
-                    color: 'white',
-                    height: '38px',
-                    paddingX: 2,
-                    borderRadius: '6px',
-                    '&:hover': {
-                      backgroundColor: 'beige',
-                    }
-                  }}>Cadastrar</Button>
-                </Link>
-              </>
+              <div className='gap-5'>
+                <div>
+                    <Link to={`/login`}>
+                      <Button variant='contained' sx={{
+                        backgroundColor: 'darkgray',
+                        color: 'white',
+                        height: '38px',
+                        paddingX: 2,
+                        borderRadius: '6px',
+                        '&:hover': {
+                          backgroundColor: 'gray',
+                        }
+                      }}>Login</Button>
+                    </Link>
+                </div>
+                <div>
+                    <Link to={`/cadastro`}>
+                      <Button variant='contained' sx={{
+                        backgroundColor: 'black',
+                        color: 'white',
+                        height: '38px',
+                        paddingX: 2,
+                        borderRadius: '6px',
+                        '&:hover': {
+                          backgroundColor: 'beige',
+                        }
+                      }}>Cadastrar</Button>
+                    </Link>
+                </div>
+              </div>
             )}
         </div>
           </div>
