@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, Select, MenuItem, InputLabel } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, Select, MenuItem, InputLabel, Typography } from '@mui/material';
 import React, { useContext, useState, useEffect } from 'react';
 import { RacesContext } from '../context/RacesProvider';
 import { ClassesContext } from '../context/ClassesProvider';
