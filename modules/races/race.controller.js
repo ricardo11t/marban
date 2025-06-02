@@ -18,9 +18,9 @@ export default class RaceController {
     async getByName(req, res) {
         const { name } = req.query;
         if (!name) {
-            return res.status(400).json({ message: '"Name" Param is obrigatory.'});
+            return res.status(400).json({ message: '"Name" Param is obrigatory.' });
         }
-        const race = await this.raceService.getRaceByName();
+        const race = await this.raceService.getRaceByName(name);
         res.status(200).json(race);
     }
 
@@ -30,16 +30,20 @@ export default class RaceController {
             throw {statusCode: 400, message: 'Name text field is obrigatory.'};
         }
         const newRace = await this.raceService.createRace(raceData);
-        res.status(200).json(newRace);
+        res.status(201).json(newRace);
     }
 
     async update(req, res) {
-        const { name, stats } = req.query;
+        const { name } = req.query;
+        const raceData = req.body;
         if (!name) {
-            return res.status(400).json({ message: '"Name" Param is obrigatory to exclude.' })
+            return res.status(400).json({ message: '"Name" Param in query is obrigatory to identify race to update.' });
         }
-        const result = this.raceService.updateRace(name, stats);
-        res.status(200).json(result);
+        if (Object.keys(raceData).length === 0) {
+            return res.status(400).json({ message: 'Request body cannot be empty for update.' });
+        }
+        const updatedRace = await this.raceService.updateRace(name, raceData);
+        res.status(200).json(updatedRace);
     }
 
     async delete(req, res) {

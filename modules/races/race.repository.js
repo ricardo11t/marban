@@ -15,8 +15,7 @@ export default class RaceRepository {
     }
 
     async findByName(name) {
-        const nome = name.toLowerCase();
-        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${nome};`;
+        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
         if (rows.length === 0) {
             return null;
         }
