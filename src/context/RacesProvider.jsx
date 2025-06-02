@@ -14,7 +14,12 @@ export const RacesProvider = ({ children }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setRaces(data.data);
+      const dataRaces = Object.values(data.data).map((race) => ({
+        name: race.name,
+        bonus: race.bonus,
+        pdd: race.pdd
+      }));
+      setRaces(dataRaces);
     } catch (error) {
       console.error("Falha ao buscar as raças no provider:", error);
       setRaces({}); // Define como objeto vazio em caso de erro
