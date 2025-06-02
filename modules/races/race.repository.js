@@ -15,11 +15,12 @@ export default class RaceRepository {
     }
 
     async findByName(name) {
-        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
+        const nome = name.toLowerCase();
+        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${nome};`;
         if (rows.length === 0) {
             return null;
         }
-        return new Race(rows[0]);
+        return new Race(rows[0].toLowerCase());
     }
 
     async create({name, bonus, pdd}) {
