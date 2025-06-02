@@ -226,7 +226,7 @@ const Races = () => {
                                     return null;
                                 }
                                 const raceNameKey = raceItem.name.name;
-                                const atributoUtilizadoLabel = raceItem.pdd?.AtributoUtilizado
+                                const atributoUtilizadoLabel = raceItem.name.pdd?.AtributoUtilizado
                                     ? (attributeOptions.find(opt => opt.value === raceItem.pdd.AtributoUtilizado)?.label || raceItem.pdd.AtributoUtilizado)
                                     : 'N/A';
 
@@ -235,7 +235,7 @@ const Races = () => {
                                         <CardContent className='text-center flex-grow'>
                                             <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{raceNameKey}</Typography>
 
-                                            {raceItem.bonus && Object.values(raceItem.name.bonus).some(v => v !== 0) && (
+                                            {raceItem.name.bonus && Object.values(raceItem.name.bonus).some(v => v !== 0) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                                                     <Box className='grid grid-cols-2 gap-x-4 gap-y-1 px-2'>
