@@ -1,9 +1,14 @@
 import { Button } from '@mui/material'
-import React from 'react'
+import React, { useContext } from 'react'
 import Navbar from './Navbar'
 import { Link } from 'react-router-dom'
+import { AuthContext } from '../context/AuthProvider'
 
 const Header = () => {
+  const { isAuthenticated, user , logout, loading } = useContext(AuthContext);
+
+
+
   return (
     <header>
       <div className='flex justify-around p-0 bg-[#601b1c]'>
@@ -39,29 +44,52 @@ const Header = () => {
         <div></div>
           <div className='flex gap-4 mt-8'>
               <div>
-            <Link to={`/login`}><Button variant='contained' sx={{
-              backgroundColor: 'darkgray',
-              color: 'white',
-              height: '38px',
-              paddingX: 2,
-              borderRadius: '6px',
-              '&:hover': {
-                backgroundColor: 'gray',
-              }
-            }}>Login</Button></Link>
-              </div>
-              <div>
-            <Link to={`/cadastro`}><Button variant='contained' sx={{
-              backgroundColor: 'black',
-              color: 'white',
-              height: '38px',
-              paddingX: 2,
-              borderRadius: '6px',
-              '&:hover': {
-                backgroundColor: 'beige',
-              }
-            }}>Cadastrar</Button></Link>
-              </div>
+            {isAuthenticated ? (
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: 'darkgray',
+                  color: 'white',
+                  height: '38px',
+                  paddingX: 2,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: 'gray',
+                  }
+                }}
+                onClick={logout}
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Link to={`/login`}>
+                  <Button variant='contained' sx={{
+                    backgroundColor: 'darkgray',
+                    color: 'white',
+                    height: '38px',
+                    paddingX: 2,
+                    borderRadius: '6px',
+                    '&:hover': {
+                      backgroundColor: 'gray',
+                    }
+                  }}>Login</Button>
+                </Link>
+                <Link to={`/cadastro`}>
+                  <Button variant='contained' sx={{
+                    backgroundColor: 'black',
+                    color: 'white',
+                    height: '38px',
+                    paddingX: 2,
+                    borderRadius: '6px',
+                    '&:hover': {
+                      backgroundColor: 'beige',
+                    }
+                  }}>Cadastrar</Button>
+                </Link>
+              </>
+            )}
+        </div>
           </div>
         </div>
     </header>
