@@ -1,20 +1,60 @@
-import React, { useContext, useState, useEffect } from 'react'; // Adicionado useEffect
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import { RacesContext } from '../context/RacesProvider';
-import { /* ...seus imports do MUI ... */ } from '@mui/material';
-// ... (initialFormState, attributeOptions, filledTextFieldStyles, etc.) ...
+import React, { useContext, useState, useEffect } from 'react';
+import Header from '../components/Header'; // Ajuste o caminho
+import Footer from '../components/Footer'; // Ajuste o caminho
+import { RacesContext } from '../context/RacesProvider'; // Ajuste o caminho
+import {
+    Card, CardContent, Typography, Box, Button,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,
+    Autocomplete,
+    // InputLabel // InputLabel não é mais necessário separadamente se usar variant="filled" nos TextFields
+} from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
+import Swal from 'sweetalert2';
+
+// Este estado inicial é para o formulário no Dialog
+const initialFormState = {
+    nome: '', // Este será o nome da raça (string)
+    bonus: {
+        forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
+        agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
+    },
+    pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null }
+};
+
+const attributeKeys = Object.keys(initialFormState.bonus);
+const attributeOptions = attributeKeys.map(key => ({
+    value: key,
+    label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
+}));
+
+const filledTextFieldStyles = {
+    '& .MuiFilledInput-root': {
+        backgroundColor: '#601b1c', color: 'white', borderTopLeftRadius: 4, borderTopRightRadius: 4,
+        '&:hover': { backgroundColor: '#752d2e' },
+        '&.Mui-focused': { backgroundColor: '#601b1c' },
+        '&:before': { borderBottom: '1px solid rgba(255, 255, 255, 0.2)' },
+        '&:after': { borderBottom: '2px solid white' },
+        '&.Mui-disabled': { backgroundColor: 'rgba(96, 27, 28, 0.5)', color: 'rgba(255, 255, 255, 0.5)' }
+    },
+    '& .MuiFilledInput-input': {
+        color: 'white',
+        '&:-webkit-autofill': { WebkitBoxShadow: '0 0 0 1000px #601b1c inset !important', WebkitTextFillColor: 'white !important', caretColor: 'white !important' },
+    },
+    '& label.MuiInputLabel-filled': { color: 'rgba(255, 255, 255, 0.7)' },
+    '& label.MuiInputLabel-filled.Mui-focused': { color: 'white' },
+    '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)' }
+};
+
+const API_BASE_URL = '/api'; // Ou sua URL completa da Vercel
 
 const Races = () => {
-    // Agora races é um array, isLoading e error também vêm do contexto
     const { races, isLoading: isLoadingRaces, error: racesError, refetchRaces } = useContext(RacesContext);
 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
-    const [editingRaceName, setEditingRaceName] = useState(null); // Nome da raça (string) que está sendo editada
-    const [isSubmitting, setIsSubmitting] = useState(false); // Loading para o dialog/save
+    const [editingRaceName, setEditingRaceName] = useState(null); // Armazena o NOME da raça original ao editar
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Limpar o formulário quando o dialog fecha ou abre para adicionar
     useEffect(() => {
         if (!open) {
             setFormData(initialFormState);
@@ -23,57 +63,43 @@ const Races = () => {
     }, [open]);
 
     const handleOpenAdd = () => {
-        setEditingRaceName(null); // Garante que não estamos no modo de edição
-        setFormData(initialFormState); // Limpa o formulário
+        setEditingRaceName(null);
+        setFormData(initialFormState);
         setOpen(true);
     };
 
     const handleOpenEdit = (raceObject) => {
-        // raceObject é o item do array: { name: { name: "humano" }, bonus: {...}, pdd: {...} }
         if (!raceObject || !raceObject.name || typeof raceObject.name.name === 'undefined') {
-            console.error("Tentou editar uma raça com dados inválidos:", raceObject);
-            Swal.fire('Erro', 'Não foi possível carregar os dados desta raça para edição.', 'error');
+            Swal.fire('Erro', 'Dados da raça inválidos para edição.', 'error');
             return;
         }
         const currentRaceName = raceObject.name.name;
-        setEditingRaceName(currentRaceName);
+        setEditingRaceName(currentRaceName); // Guarda o nome original para identificar na API de PUT
         setFormData({
-            nome: currentRaceName, // 'nome' no formulário recebe o nome da raça
+            nome: currentRaceName, // O campo 'nome' do formulário recebe o nome atual
             bonus: { ...(raceObject.bonus || initialFormState.bonus) },
             pdd: { ...(raceObject.pdd || initialFormState.pdd) }
         });
         setOpen(true);
     };
 
-    // handleClose, handleFormChange, getAutocompleteValue permanecem os mesmos
-    const handleClose = () => {
-        setOpen(false);
-    };
+    const handleClose = () => setOpen(false);
 
     const handleFormChange = (event, value, fieldName) => {
-        // ... (seu código handleFormChange existente) ...
+        const target = event.target;
         if (fieldName === 'AtributoUtilizado') {
-            setFormData(prev => ({
-                ...prev,
-                pdd: { ...prev.pdd, AtributoUtilizado: value ? value.value : null }
-            }));
+            setFormData(prev => ({ ...prev, pdd: { ...prev.pdd, AtributoUtilizado: value ? value.value : null } }));
         } else {
-            const { name, value: inputValue } = event.target;
+            const { name, value: inputValue } = target;
             const isBonusField = Object.keys(initialFormState.bonus).includes(name);
             const isPdDField = Object.keys(initialFormState.pdd).includes(name) && name !== 'AtributoUtilizado';
 
             if (name === 'nome') {
                 setFormData(prev => ({ ...prev, nome: inputValue }));
             } else if (isBonusField) {
-                setFormData(prev => ({
-                    ...prev,
-                    bonus: { ...prev.bonus, [name]: Number(inputValue) || 0 },
-                }));
+                setFormData(prev => ({ ...prev, bonus: { ...prev.bonus, [name]: Number(inputValue) || 0 } }));
             } else if (isPdDField) {
-                setFormData(prev => ({
-                    ...prev,
-                    pdd: { ...prev.pdd, [name]: Number(inputValue) || 0 }
-                }));
+                setFormData(prev => ({ ...prev, pdd: { ...prev.pdd, [name]: Number(inputValue) || 0 } }));
             }
         }
     };
@@ -83,76 +109,56 @@ const Races = () => {
         return attributeOptions.find(option => option.value === attributeValue) || null;
     };
 
-
     const handleSaveRace = async () => {
-        setIsSubmitting(true); // Usar isSubmitting para o loading do dialog
+        setIsSubmitting(true);
         try {
-            const raceDataToSave = {
-                // O nome da raça para a API deve ser o 'nome' do formulário.
-                // Se estiver editando, o nome original é editingRaceName.
-                // Se for um novo, é formData.nome.
-                // Sua API de PUT /api/races espera o nome no corpo.
-                name: formData.nome.toLowerCase().trim(), // Normaliza o nome para salvar
+            // A API espera um objeto com name (string), bonus (objeto), pdd (objeto)
+            // O campo 'name' no JSON enviado para a API deve ser a string do nome da raça.
+            const racePayload = {
+                name: formData.nome.trim(), // O nome que vai para a API
                 bonus: formData.bonus,
                 pdd: formData.pdd
             };
 
-            if (!raceDataToSave.name) {
+            if (!racePayload.name) {
                 Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da raça não pode ser vazio.' });
                 setIsSubmitting(false);
                 return;
             }
-
-            // ... (sua validação de PdD existente) ...
             if ((formData.pdd.PdDFixo > 0 || formData.pdd.PdDFração > 0) && !formData.pdd.AtributoUtilizado) {
-                Swal.fire({ icon: 'error', title: 'Erro!', text: 'Se PdD Fixo ou Fração for maior que zero, o Atributo Utilizado para PdD deve ser selecionado.' });
+                Swal.fire({ icon: 'error', title: 'Erro!', text: 'Se PdD Fixo ou Fração for maior que zero, o Atributo Utilizado deve ser selecionado.' });
                 setIsSubmitting(false);
                 return;
             }
 
-            // A API de PUT espera o nome no corpo, não como query param para identificar
-            // Se a sua API de PUT realmente espera o nome antigo como query param para identificar
-            // e o novo nome (se mudou) e dados no corpo, ajuste o fetch.
-            // Assumindo que o nome é a chave e não pode ser mudado via PUT (ou a API lida com isso):
-            let url = '/api/races';
-            let method = 'POST'; // Assume criação por padrão
-
-            if (editingRaceName) { // Se estiver editando
-                // Se sua API de PUT precisa do nome antigo na URL e o novo no corpo:
-                // url = `/api/races?name=${encodeURIComponent(editingRaceName)}`;
-                // Ou se o nome é imutável e a API de PUT usa o nome do corpo para encontrar:
-                method = 'PUT';
-                // Se o nome pode ser alterado, você precisa de um identificador estável (ID) ou lidar
-                // com a renomeação no backend. Por simplicidade, vamos assumir que o nome é a chave.
-                // A API precisa saber qual raça atualizar. Se o nome é a chave primária e pode ser editado,
-                // você geralmente passa o NOME ANTIGO para identificar e os NOVOS DADOS no corpo.
-                // Sua API de PUT (PUT /api/races) no handler 'races.js' usa req.query.name para identificar.
-                // E o controller usa req.body para os novos dados.
-                // Então, se o nome PODE ser editado, precisamos passar o nome antigo na query.
-                // Se o nome NÃO PODE ser editado, formData.nome == editingRaceName.
-                url = `/api/races?name=${encodeURIComponent(editingRaceName)}`;
-                // E os dados no body são os novos dados. Se o nome foi editado no form, raceDataToSave.name será o novo nome.
+            let response;
+            if (editingRaceName) { // Modo de Edição
+                // A API de PUT usa o nome antigo na query para identificar e os novos dados no corpo
+                response = await fetch(`${API_BASE_URL}/races?name=${encodeURIComponent(editingRaceName)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', /* Adicionar header de Auth se necessário */ },
+                    body: JSON.stringify(racePayload) // Envia o payload com o nome (potencialmente novo)
+                });
+            } else { // Modo de Criação
+                response = await fetch(`${API_BASE_URL}/races`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', /* Adicionar header de Auth se necessário */ },
+                    body: JSON.stringify(racePayload)
+                });
             }
-
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(raceDataToSave) // Envia todos os dados, incluindo o nome (novo ou o mesmo)
-            });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({})); // Tenta pegar JSON, senão objeto vazio
-                throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                throw new Error(errorData.message || `Erro ao salvar raça: ${response.statusText}`);
             }
 
-            await refetchRaces();
-            handleClose();
+            await refetchRaces(); // Atualiza a lista de raças
+            handleClose(); // Fecha o dialog
 
             Swal.fire({
                 icon: 'success',
                 title: editingRaceName ? 'Atualizado!' : 'Criado!',
-                text: `A raça "${raceDataToSave.name}" foi salva com sucesso.`,
+                text: `A raça "${racePayload.name}" foi salva com sucesso.`,
                 showConfirmButton: false,
                 timer: 1500
             });
@@ -160,24 +166,28 @@ const Races = () => {
         } catch (error) {
             console.error("Erro ao salvar raça:", error);
             Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
+                icon: 'error', title: 'Oops...',
                 text: 'Algo deu errado ao salvar a raça!',
-                footer: `Erro: ${error.message || 'Verifique o console para mais detalhes.'}`
+                footer: `Erro: ${error.message}`
             });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDelete = (raceNameString) => { // raceNameString é o nome como "humano"
-        // ... (seu código handleDelete existente, ele já recebe o nome como string) ...
-        Swal.fire({ /* ... */ }).then(async (result) => {
+    const handleDelete = (raceNameString) => {
+        Swal.fire({
+            title: `Deletar ${raceNameString}?`,
+            text: `Você não poderá reverter a exclusão da raça "${raceNameString}"!`,
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, deletar!', cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                setIsSubmitting(true); // Reutilizar isSubmitting para feedback de loading
+                setIsSubmitting(true);
                 try {
-                    const response = await fetch(`/api/races?name=${encodeURIComponent(raceNameString)}`, {
-                        method: 'DELETE'
+                    const response = await fetch(`${API_BASE_URL}/races?name=${encodeURIComponent(raceNameString)}`, {
+                        method: 'DELETE',
+                        // Adicionar header de Auth se necessário
                     });
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
@@ -186,7 +196,8 @@ const Races = () => {
                     await refetchRaces();
                     Swal.fire('Deletado!', `A raça "${raceNameString}" foi deletada.`, 'success');
                 } catch (error) {
-                    // ... seu tratamento de erro ...
+                    console.error("Erro ao deletar raça:", error);
+                    Swal.fire({ icon: 'error', title: 'Oops...', text: 'Algo deu errado ao deletar a raça!', footer: `Erro: ${error.message}` });
                 } finally {
                     setIsSubmitting(false);
                 }
@@ -197,81 +208,174 @@ const Races = () => {
     return (
         <>
             <Header />
-            <div>
-                <div><h1 className='text-5xl font-bold text-center text-white mt-10 mb-10'>Raças</h1></div>
-                <div className='flex justify-start ml-10 mb-4'>
-                    <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
-                        Adicionar nova Raça
-                    </Button>
+            <div className="min-h-screen bg-gray-900 text-white"> {/* Ajuste do fundo para melhor contraste */}
+                <div className="container mx-auto px-4 py-8">
+                    <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Raças</Typography>
+                    <div className='flex justify-start mb-6'>
+                        <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
+                            Adicionar nova Raça
+                        </Button>
+                    </div>
+                    <div className='flex flex-wrap justify-center gap-6 mb-10'>
+                        {isLoadingRaces && <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', py: 5 }}><CircularProgress sx={{ color: '#601b1c' }} size={60} /></Box>}
+                        {racesError && <Typography color="error" className="w-full text-center">Erro ao carregar raças: {racesError}</Typography>}
+
+                        {!isLoadingRaces && !racesError && races && races.length > 0 ? (
+                            races.map((raceItem) => {
+                                if (!raceItem || !raceItem.name || typeof raceItem.name.name === 'undefined') {
+                                    return null;
+                                }
+                                const raceNameKey = raceItem.name.name;
+                                const atributoUtilizadoLabel = raceItem.pdd?.AtributoUtilizado
+                                    ? (attributeOptions.find(opt => opt.value === raceItem.pdd.AtributoUtilizado)?.label || raceItem.pdd.AtributoUtilizado)
+                                    : 'N/A';
+
+                                return (
+                                    <Card key={raceNameKey} sx={{ backgroundColor: '#601b1c', width: 320, display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
+                                        <CardContent className='text-center flex-grow'>
+                                            <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{raceNameKey}</Typography>
+
+                                            {raceItem.bonus && Object.values(raceItem.bonus).some(v => v !== 0) && (
+                                                <>
+                                                    <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
+                                                    <Box className='grid grid-cols-2 gap-x-4 gap-y-1 px-2'>
+                                                        {Object.entries(raceItem.bonus)
+                                                            .filter(([_, valor]) => valor !== 0)
+                                                            .map(([atributo, valor]) => (
+                                                                <Typography key={atributo} variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', textAlign: 'left' }}>
+                                                                    <span className='capitalize'>{attributeOptions.find(opt => opt.value === atributo)?.label || atributo}:</span>
+                                                                    <span style={{ color: valor > 0 ? 'lightgreen' : 'lightcoral', marginLeft: '4px', fontWeight: 'bold' }}>
+                                                                        {valor > 0 ? `+${valor}` : valor}
+                                                                    </span>
+                                                                </Typography>
+                                                            ))}
+                                                    </Box>
+                                                </>
+                                            )}
+
+                                            {raceItem.pdd && (raceItem.pdd.PdDFixo !== 0 || raceItem.pdd.PdDFração !== 0 || raceItem.pdd.AtributoUtilizado) && (
+                                                <>
+                                                    <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
+                                                    <Box sx={{ textAlign: 'left', pl: 3, pr: 2 }}>
+                                                        {raceItem.pdd.PdDFixo !== undefined && raceItem.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fixo: {raceItem.pdd.PdDFixo}</Typography>}
+                                                        {raceItem.pdd.PdDFração !== undefined && raceItem.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fração: {raceItem.pdd.PdDFração}</Typography>}
+                                                        {raceItem.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
+                                                    </Box>
+                                                </>
+                                            )}
+                                        </CardContent>
+                                        <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
+                                            <Button size="small" onClick={() => handleOpenEdit(raceItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}><Edit fontSize="small" /></Button>
+                                            <Button size="small" onClick={() => handleDelete(raceNameKey)} sx={{ color: 'lightcoral', '&:hover': { backgroundColor: 'rgba(255,100,100,0.1)' } }}><Delete fontSize="small" /></Button>
+                                        </Box>
+                                    </Card>
+                                );
+                            })
+                        ) : (
+                            !isLoadingRaces && !racesError && <Typography className='w-full text-center'>Nenhuma raça encontrada.</Typography>
+                        )}
+                    </div>
                 </div>
-                <div className='flex flex-wrap justify-center gap-6 mb-10'>
-                    {/* Usa isLoadingRaces do contexto para a lista principal */}
-                    {isLoadingRaces && <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}><CircularProgress sx={{ color: '#601b1c' }} /></Box>}
-                    {racesError && <p className='text-red-500'>Erro ao carregar raças: {racesError}</p>}
 
-                    {!isLoadingRaces && !racesError && races && races.length > 0 ? (
-                        races.map((raceItem) => { // Itera sobre o ARRAY 'races'
-                            // Verifica se a estrutura é válida antes de tentar acessar
-                            if (!raceItem || !raceItem.name || typeof raceItem.name.name === 'undefined') {
-                                console.warn("Item de raça inválido no array:", raceItem);
-                                return null; // Pula este item
-                            }
-                            const raceNameKey = raceItem.name.name; // O nome real da raça
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                    PaperProps={{
+                        component: 'form',
+                        onSubmit: (e) => { e.preventDefault(); handleSaveRace(); },
+                        sx: { backgroundColor: 'black', color: 'white', minWidth: { xs: '90%', sm: '400px', md: '500px' }, borderRadius: 2 }
+                    }}
+                >
+                    <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                        {editingRaceName ? `Editar Raça: ${editingRaceName}` : 'Adicionar Nova Raça'}
+                    </DialogTitle>
+                    <DialogContent sx={{ pt: '20px !important' }}> {/* Adiciona padding top ao DialogContent */}
+                        {/* Removido DialogContentText, pois não era usado e o título já informa */}
+                        <TextField
+                            autoFocus={!editingRaceName} // Autofocus apenas ao adicionar nova
+                            required
+                            margin="dense"
+                            id="racename" // mudado de 'name' para 'racename' para evitar conflito com 'name' do evento.
+                            name="nome" // 'nome' é a chave no formData
+                            label="Nome da Raça"
+                            type="text"
+                            fullWidth
+                            variant="filled"
+                            value={formData.nome}
+                            onChange={handleFormChange}
+                            // Não desabilitar o nome ao editar se o nome pode ser a chave de identificação
+                            // Se o nome for imutável após criação, então `disabled={!!editingRaceName}` está OK.
+                            // Se o nome for a PK e PODE ser alterado, a API de PUT precisa do nome antigo e do novo.
+                            // Para este exemplo, vamos assumir que o nome pode ser editado no formulário.
+                            sx={filledTextFieldStyles}
+                        />
 
-                            // A lógica para atributoUtilizadoLabel pode precisar ser ajustada se raceItem.pdd não existir
-                            const atributoUtilizadoLabel = raceItem.pdd?.AtributoUtilizado
-                                ? (attributeOptions.find(opt => opt.value === raceItem.pdd.AtributoUtilizado)?.label || raceItem.pdd.AtributoUtilizado)
-                                : 'N/A';
+                        <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>
+                            Bônus da Raça:
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+                            {Object.keys(formData.bonus).map(bonusKey => (
+                                <TextField
+                                    key={bonusKey} margin="dense" id={bonusKey} name={bonusKey}
+                                    label={attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey}
+                                    type="number" variant="filled" value={formData.bonus[bonusKey]}
+                                    onChange={handleFormChange} sx={filledTextFieldStyles}
+                                />
+                            ))}
+                        </Box>
 
-                            return (
-                                <Card key={raceNameKey} sx={{ backgroundColor: '#601b1c', width: 320, display: 'flex', flexDirection: 'column' }}>
-                                    <CardContent className='text-center flex-grow'>
-                                        <Typography variant='h5' component="div" sx={{ color: 'white' }} className='capitalize'>{raceNameKey}</Typography>
-
-                                        {/* Exibir Bônus - usando raceItem.bonus */}
-                                        {raceItem.bonus && Object.values(raceItem.bonus).some(v => v !== 0) && (
-                                            <>
-                                                <Typography variant='subtitle1' sx={{ color: 'white', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
-                                                <Box className='grid grid-cols-2 gap-x-4 gap-y-1'>
-                                                    {Object.entries(raceItem.bonus)
-                                                        .filter(([_, valor]) => valor !== 0)
-                                                        .map(([atributo, valor]) => (
-                                                            <Typography key={atributo} /* ... */ >
-                                                                {/* ... seu código de exibição de bônus ... */}
-                                                            </Typography>
-                                                        ))}
-                                                </Box>
-                                            </>
-                                        )}
-
-                                        {/* Exibir PdD - usando raceItem.pdd */}
-                                        {raceItem.pdd && (raceItem.pdd.PdDFixo !== 0 || raceItem.pdd.PdDFração !== 0 || raceItem.pdd.AtributoUtilizado) && (
-                                            <>
-                                                <Typography variant='subtitle1' sx={{ color: 'white', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
-                                                <Box sx={{ textAlign: 'left', pl: 1 }}>
-                                                    {/* ... seu código de exibição de pdd ... */}
-                                                </Box>
-                                            </>
-                                        )}
-                                    </CardContent>
-                                    <Box className='flex justify-end gap-2 p-2 mt-auto'>
-                                        {/* Passa o objeto 'raceItem' inteiro para handleOpenEdit */}
-                                        <Button size="small" onClick={() => handleOpenEdit(raceItem)} sx={{ color: 'white' }}><Edit /></Button>
-                                        {/* Passa 'raceNameKey' (string) para handleDelete */}
-                                        <Button size="small" color="error" onClick={() => handleDelete(raceNameKey)} sx={{ color: 'lightcoral' }}><Delete /></Button>
-                                    </Box>
-                                </Card>
-                            );
-                        })
-                    ) : (
-                        !isLoadingRaces && !racesError && <p className='text-white'>Nenhuma raça encontrada.</p>
-                    )}
-                </div>
+                        <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>
+                            Pontos de Deslocamento (PdD):
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', alignItems: 'flex-start' }}>
+                            <TextField
+                                margin="dense" id="PdDFixo" name="PdDFixo" label="PdD Fixo"
+                                type="number" variant="filled" value={formData.pdd.PdDFixo}
+                                onChange={handleFormChange} sx={filledTextFieldStyles}
+                            />
+                            <TextField
+                                margin="dense" id="PdDFração" name="PdDFração" label="PdD Fração (Valor)"
+                                type="number" variant="filled" value={formData.pdd.PdDFração}
+                                onChange={handleFormChange} sx={filledTextFieldStyles}
+                            />
+                            <Autocomplete
+                                id="AtributoUtilizado"
+                                options={attributeOptions}
+                                getOptionLabel={(option) => option.label || ""}
+                                value={getAutocompleteValue(formData.pdd.AtributoUtilizado)}
+                                onChange={(event, newValue) => handleFormChange(event, newValue, 'AtributoUtilizado')}
+                                isOptionEqualToValue={(option, value) => option.value === value?.value}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Atributo para Fração PdD"
+                                        variant="filled" margin="dense" sx={filledTextFieldStyles} />
+                                )}
+                                PaperComponentProps={{ sx: { backgroundColor: 'black', color: 'white', border: '1px solid rgba(255,255,255,0.2)' } }}
+                                sx={{
+                                    gridColumn: 'span 2',
+                                    '& .MuiAutocomplete-option': {
+                                        color: 'white',
+                                        '&[aria-selected="true"]': { backgroundColor: 'rgba(255, 255, 255, 0.2) !important' },
+                                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1) !important' },
+                                    },
+                                    '& .MuiSvgIcon-root': { color: 'rgba(255, 255, 255, 0.7)' }
+                                }}
+                            />
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ p: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                        <Button onClick={handleClose} sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' } }}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting} variant="contained" sx={{
+                            backgroundColor: '#007bff', color: 'white',
+                            '&:hover': { backgroundColor: '#0056b3' },
+                            '&.Mui-disabled': { backgroundColor: 'rgba(0, 123, 255, 0.3)', color: 'rgba(255,255,255,0.5)' }
+                        }}>
+                            {isSubmitting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : (editingRaceName ? 'Salvar Alterações' : 'Criar Raça')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
-            {/* Seu Dialog para Adicionar/Editar Raças (o código do dialog parece OK) */}
-            <Dialog open={open} onClose={handleClose} PaperProps={{ ...}} >
-                {/* ... (seu código do dialog) ... */}
-            </Dialog>
             <Footer />
         </>
     );

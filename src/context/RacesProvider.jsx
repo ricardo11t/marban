@@ -1,46 +1,47 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react'; // Adicionado useCallback
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios'; // Usando axios para consistência, se você o usa em outros providers
 
-export const RacesContext = createContext({ // Melhor definir um valor padrão para o contexto
+// Define um valor padrão mais completo para o contexto, útil para autocompletar e testes
+export const RacesContext = createContext({
   races: [],
-  isLoading: true, // Adicionar estado de loading
-  error: null,     // Adicionar estado de erro
-  refetchRaces: () => { }
+  isLoading: true,
+  error: null,
+  refetchRaces: () => Promise.resolve(), // Função no-op que retorna uma promise resolvida
+  // Você pode adicionar outras funções que o provider exporá aqui, como createRace, updateRace, deleteRace
+  // se quiser centralizar todas as chamadas de API relacionadas a raças no provider.
+  // Por enquanto, manteremos apenas o fetch e refetch.
 });
 
 export const RacesProvider = ({ children }) => {
   const [races, setRaces] = useState([]); // Inicializa como ARRAY VAZIO
-  const [isLoading, setIsLoading] = useState(true); // Estado de carregamento
-  const [error, setError] = useState(null);       // Estado de erro
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchRaces = useCallback(async () => { // Envolvido em useCallback
+  const API_BASE_URL = '/api'; // Ou sua URL completa da Vercel se necessário
+
+  const fetchRaces = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/races'); // Use Axios se estiver usando em outros lugares para consistência
-
-      if (!response.ok) {
-        // Tenta pegar a mensagem de erro do corpo da resposta, se houver
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          errorData = { message: `HTTP error! status: ${response.status}` };
-        }
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
+      const response = await axios.get(`${API_BASE_URL}/races`);
       // A API retorna: { status: "success", message: 200, data: [ {...}, {...} ] }
-      // Onde data.data é o ARRAY de raças
-      if (data && Array.isArray(data.data)) {
-        setRaces(data.data);
+      // ou diretamente o array, ou um objeto com uma chave 'data' contendo o array.
+      // Ajuste conforme a resposta real da sua API de GET /api/races
+
+      let racesArray = [];
+      if (response.data && Array.isArray(response.data.data)) { // Se a resposta for { ..., data: [...] }
+        racesArray = response.data.data;
+      } else if (Array.isArray(response.data)) { // Se a resposta for diretamente o array [...]
+        racesArray = response.data;
       } else {
-        console.warn("API não retornou um array em data.data:", data);
-        setRaces([]); // Garante que seja um array
+        console.warn("API /api/races não retornou um array esperado:", response.data);
       }
+      setRaces(racesArray);
+
     } catch (err) {
       console.error("Falha ao buscar as raças no provider:", err);
-      setError(err.message || "Erro desconhecido ao buscar raças.");
+      const errorMessage = err.response?.data?.message || err.message || "Erro desconhecido ao buscar raças.";
+      setError(errorMessage);
       setRaces([]); // Define como array vazio em caso de erro
     } finally {
       setIsLoading(false);
@@ -50,6 +51,9 @@ export const RacesProvider = ({ children }) => {
   useEffect(() => {
     fetchRaces();
   }, [fetchRaces]); // fetchRaces é agora uma dependência estável
+
+  // Funções para CRUD podem ser adicionadas aqui e expostas no contexto
+  // Ex: const createRaceOnServer = async (raceData) => { ... }
 
   return (
     <RacesContext.Provider value={{ races, isLoading, error, refetchRaces: fetchRaces }}>
