@@ -1,108 +1,91 @@
-import { Button } from '@mui/material'
-import React, { useContext } from 'react'
-import Navbar from './Navbar'
-import { Link } from 'react-router-dom'
-import { AuthContext } from '../context/AuthProvider'
+import { Button, CircularProgress } from '@mui/material'; // Adicionado CircularProgress
+import React, { useContext } from 'react';
+import Navbar from './Navbar'; // Assumindo que Navbar está no mesmo nível ou caminho correto
+import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthProvider';
 
 const Header = () => {
-  const { isAuthenticated, user , logout, loading } = useContext(AuthContext);
+  const { isAuthenticated, user, logout, loading } = useContext(AuthContext);
 
-
+  // Estilo comum para botões de navegação para evitar repetição
+  const navButtonStyle = {
+    backgroundColor: 'darkgray',
+    color: 'white',
+    height: '38px',
+    paddingX: 2,
+    borderRadius: '6px',
+    '&:hover': {
+      backgroundColor: 'gray',
+    }
+  };
 
   return (
     <header>
-      <div className='flex justify-around p-0 bg-[#601b1c]'>
-        <div className='mt-0 p-2'>
-          <a href="/"><img src="/img/logo-site.png" alt="" className='h-20' /></a>
+      {/* Container Principal do Header */}
+      <div className='flex justify-between items-center p-2 md:p-4 bg-[#601b1c]'> {/* Ajustado para justify-between e items-center */}
+
+        {/* 1. Logo */}
+        <div>
+          <Link to="/"><img src="/img/logo-site.png" alt="Logo Marban" className='h-16 md:h-20' /></Link> {/* Usado Link para navegação SPA */}
         </div>
-          <div className='flex gap-5'>
-            <div className='flex mt-8 gap-4'>
-              <div>
-                <Link to={`/`}>            
-                <Button variant="contained"
-                  sx={{
-                    backgroundColor: 'darkgray',
-                    color: 'white',
-                    height: '38px',
-                    paddingX: 2,
-                    borderRadius: '6px',
-                    '&:hover': {
-                      backgroundColor: 'gray',
-                    }
-                  }}>
-                  Home
-                </Button></Link>
-              </div>
-            <div>
-              <Navbar />
+
+        {/* 2. Navegação Central */}
+        <div className='flex items-center gap-3 md:gap-4'>
+          <Link to={`/`}>
+            <Button variant="contained" sx={navButtonStyle}>
+              Home
+            </Button>
+          </Link>
+          <Navbar /> {/* Seu componente Navbar */}
+        </div>
+
+        {/* 3. Seção de Autenticação */}
+        <div className='flex items-center gap-3 md:gap-4'>
+          {loading ? (
+            <CircularProgress size={24} sx={{ color: 'white' }} />
+          ) : isAuthenticated && user ? ( // Adicionada verificação para user não ser null
+            <div className='flex flex-col sm:flex-row items-center gap-2 md:gap-4'> {/* Itens lado a lado em telas maiores */}
+              <Typography variant="subtitle1" sx={{ color: 'white', fontFamily: 'serif' }}> {/* Usando Typography do MUI */}
+                Olá, <span className='font-sans text-emerald-400 font-semibold'>{user.username || user.nomeCompleto || user.email}</span>! {/* Prioriza username, depois nome_completo, depois email */}
+              </Typography>
+              <Button
+                variant="contained"
+                sx={navButtonStyle}
+                onClick={logout}
+              >
+                Logout
+              </Button>
             </div>
-            </div>
-            <div>
-            </div>
-          </div>
-        <div></div>
-        <div></div>
-          <div className='flex gap-4 mt-8'>
-              <div>
-            {isAuthenticated ? (
-              <div className='gap-5'>
-                <div>
-                  <h2 className='text-serif text-white'>Seja bem vindo, <span className='text-sans text-emerald-700'>{user.username}</span></h2>
-                </div>
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: 'darkgray',
-                    color: 'white',
-                    height: '38px',
-                    paddingX: 2,
-                    borderRadius: '6px',
-                    '&:hover': {
-                      backgroundColor: 'gray',
-                    }
-                  }}
-                  onClick={logout}
-                >
-                  Logout
+          ) : (
+            <div className='flex items-center gap-3 md:gap-4'>
+              <Link to={`/login`}>
+                <Button variant='contained' sx={navButtonStyle}>
+                  Login
                 </Button>
-              </div>
-            ) : (
-              <div className='gap-5'>
-                <div>
-                    <Link to={`/login`}>
-                      <Button variant='contained' sx={{
-                        backgroundColor: 'darkgray',
-                        color: 'white',
-                        height: '38px',
-                        paddingX: 2,
-                        borderRadius: '6px',
-                        '&:hover': {
-                          backgroundColor: 'gray',
-                        }
-                      }}>Login</Button>
-                    </Link>
-                </div>
-                <div>
-                    <Link to={`/cadastro`}>
-                      <Button variant='contained' sx={{
-                        backgroundColor: 'black',
-                        color: 'white',
-                        height: '38px',
-                        paddingX: 2,
-                        borderRadius: '6px',
-                        '&:hover': {
-                          backgroundColor: 'beige',
-                        }
-                      }}>Cadastrar</Button>
-                    </Link>
-                </div>
-              </div>
-            )}
+              </Link>
+              <Link to={`/cadastro`}>
+                <Button variant='contained' sx={{
+                  ...navButtonStyle, // Reutiliza o estilo base
+                  backgroundColor: 'black', // Sobrescreve o que for diferente
+                  '&:hover': {
+                    backgroundColor: '#333', // Um hover mais escuro para o botão preto
+                  }
+                }}>
+                  Cadastrar
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
-          </div>
-        </div>
+
+      </div>
     </header>
-  )
+  );
 }
 
-export default Header
+// Se Typography não estiver importado, adicione:
+// import { Typography } from '@mui/material';
+// Certifique-se de que Navbar é importado corretamente ou defina-o se for simples.
+// Se Navbar for complexo, pode precisar de seus próprios items condicionais de autenticação.
+
+export default Header;
