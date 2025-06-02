@@ -1,4 +1,4 @@
-import { Button, CircularProgress } from '@mui/material'; // Adicionado CircularProgress
+import { Button, CircularProgress, Typography } from '@mui/material'; // Adicionado CircularProgress
 import React, { useContext } from 'react';
 import Navbar from './Navbar'; // Assumindo que Navbar está no mesmo nível ou caminho correto
 import { Link } from 'react-router-dom';
