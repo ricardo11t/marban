@@ -227,7 +227,7 @@ const Races = () => {
                                 }
                                 const raceNameKey = raceItem.name.name;
                                 const atributoUtilizadoLabel = raceItem.name.pdd?.AtributoUtilizado
-                                    ? (attributeOptions.find(opt => opt.value === raceItem.pdd.AtributoUtilizado)?.label || raceItem.pdd.AtributoUtilizado)
+                                    ? (attributeOptions.find(opt => opt.value === raceItem.name.pdd.AtributoUtilizado)?.label || raceItem.name.pdd.AtributoUtilizado)
                                     : 'N/A';
 
                                 return (
