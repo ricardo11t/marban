@@ -20,7 +20,7 @@ export default class RaceController {
         if (!name) {
             return res.status(400).json({ message: '"Name" Param is obrigatory.'});
         }
-        const race = await this.raceService.getByName();
+        const race = await this.raceService.getRaceByName();
         res.status(200).json(race);
     }
 
