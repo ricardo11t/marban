@@ -11,6 +11,8 @@ const HeaderPLC = () => {
           <a href="/"><img src="/img/logo-site.png" alt="" className='h-20' /></a>
         </div>
         <div className='flex gap-5'>
+          <div></div>
+          <div></div>
           <div className='flex mt-8 gap-4'>
             <div>
               <Link to={`/`}>
@@ -31,8 +33,6 @@ const HeaderPLC = () => {
             <div>
               <Navbar />
             </div>
-          </div>
-          <div>
           </div>
         </div>
         <div></div>

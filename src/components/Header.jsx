@@ -25,7 +25,7 @@ const Header = () => {
       <div className='flex justify-between items-center p-2 md:p-4 bg-[#601b1c]'> {/* Ajustado para justify-between e items-center */}
 
         {/* 1. Logo */}
-        <div>
+        <div className='ml-10'>
           <Link to="/"><img src="/img/logo-site.png" alt="Logo Marban" className='h-16 md:h-20' /></Link> {/* Usado Link para navegação SPA */}
         </div>
 

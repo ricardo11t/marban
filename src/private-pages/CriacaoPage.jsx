@@ -484,14 +484,6 @@ const CriacaoPage = () => {
               </div>
               <div className='flex justify-center items-center gap-5 mb-5'>
                 <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
-                <Button
-                  onClick={refreshPontosRestantes}
-                  variant="contained"
-                  size="small"
-                  sx={{ backgroundColor: '#0069c0', '&:hover': { backgroundColor: '#005cb2' } }}
-                >
-                  Atualizar Pontos
-                </Button>
               </div>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
                 {statusList.map((stat) => (
