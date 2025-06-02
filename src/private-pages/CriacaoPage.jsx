@@ -362,7 +362,7 @@ const CriacaoPage = () => {
       <Header />
       <main className='bg-black'>
         <div className='justify-center text-center text-4xl text-white font-bold mt-5 mb-5'> {/* Texto do H1 branco */}
-          <h1>Criação de Personagens</h1>
+          <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Criação de Personagens</Typography>
         </div>
         <div className='flex flex-col items-center min-h-screen'>
           <Box
