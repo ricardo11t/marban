@@ -20,7 +20,7 @@ export default class RaceRepository {
         if (rows.length === 0) {
             return null;
         }
-        return new Race(rows[0].toLowerCase());
+        return new Race(rows[0]);
     }
 
     async create({name, bonus, pdd}) {
