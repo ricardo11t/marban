@@ -27,14 +27,12 @@ const Login = () => {
 
   // Correção 2: handleSubmit como um event handler para o formulário
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Previne o recarregamento padrão da página pelo formulário
-    if (!email || !password) {
-      setAuthError("Email e senha são obrigatórios."); // Seta um erro local se campos vazios
+    event.preventDefault();
+    if (!email || !password) { // 'email' e 'password' aqui são do estado do componente
+      setAuthError("Email e senha são obrigatórios.");
       return;
     }
-    // Chama a função login do contexto
-    // A função login no AuthProvider já lida com a navegação e erros
-    await login(email, password);
+    await login(email, password); // 'email' e 'password' são passados corretamente
   };
 
   return (

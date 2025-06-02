@@ -57,9 +57,12 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
     setLoading(true);
     setAuthError(null);
     try {
-      const response = await axios.post(`${API_URL}/login`, { // Ou /api/auth?action=login
-        email,
-        password, // Corrigido: nome da propriedade é 'password', não 'senha' se a API espera 'password'
+      // Certifique-se de que 'email' e 'password' aqui têm os valores dos campos
+      console.log("Enviando para login:", { email, password }); // Adicione este log
+
+      const response = await axios.post(`${API_URL}/login`, { // Ou o endpoint correto
+        email: email, // O nome da propriedade deve ser 'email'
+        password: password // O nome da propriedade deve ser 'password' (ou 'senha' se sua API espera 'senha')
       });
 
       // Axios coloca a resposta no campo 'data'

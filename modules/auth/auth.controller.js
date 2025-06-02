@@ -19,14 +19,18 @@ export default class AuthController {
     }
 
     async login(req, res) {
-        const { email, senha } = req.body;
-        if (!email || !senha) {
-            const error = new Error('Email and password are obrigatory.');
+        // O Next.js/Vercel geralmente já faz o parse do corpo JSON para req.body
+        // Adicione um log aqui para ver o que está chegando:
+        console.log("REQ.BODY no AuthController.login:", req.body);
+
+        const { email, password } = req.body; // A API espera 'email' e 'password' ou 'email' e 'senha'?
+        if (!email || !password) {
+            const error = new Error('Email and password are obrigatory.'); // Mensagem original
             error.statusCode = 400;
             throw error;
         }
 
-        const { token, user } = await this.authService.login(email, senha);
+        const { token, user } = await this.authService.login(email, password);
 
         res.status(200).json({
             message: 'Successful login',
