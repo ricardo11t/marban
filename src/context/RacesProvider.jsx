@@ -8,15 +8,13 @@ export const RacesProvider = ({ children }) => {
   // Esta é a função que precisa ser corrigida
   const fetchRaces = async () => {
     try {
-      // ANTES: const response = await fetch('http://localhost:3000/racas');
-      // DEPOIS:
-      const response = await fetch('/api/races'); // <<< CORREÇÃO APLICADA AQUI
+      const response = await fetch('/api/races');
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setRaces(data);
+      setRaces(data.data);
     } catch (error) {
       console.error("Falha ao buscar as raças no provider:", error);
       setRaces({}); // Define como objeto vazio em caso de erro
