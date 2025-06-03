@@ -303,10 +303,7 @@ const Races = () => {
                             variant="filled"
                             value={formData.nome}
                             onChange={handleFormChange}
-                            // Não desabilitar o nome ao editar se o nome pode ser a chave de identificação
-                            // Se o nome for imutável após criação, então `disabled={!!editingRaceName}` está OK.
-                            // Se o nome for a PK e PODE ser alterado, a API de PUT precisa do nome antigo e do novo.
-                            // Para este exemplo, vamos assumir que o nome pode ser editado no formulário.
+                            disabled={!!editingRaceName}
                             sx={filledTextFieldStyles}
                         />
 

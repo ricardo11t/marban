@@ -4,7 +4,7 @@ import Footer from '../components/Footer';
 import { ClassesContext } from '../context/ClassesProvider';
 import {
     Card, CardContent, Typography, Box, Button,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,
+    Dialog, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress,
     Autocomplete
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
@@ -356,8 +356,7 @@ const Classes = () => {
                             autoFocus={!editingClassName}
                             required margin="dense" id="classname" name="nome" label="Nome da Classe" type="text"
                             fullWidth variant="filled" value={formData.nome} onChange={handleFormChange}
-                            // Se o nome for a PK e não puder ser editado após a criação:
-                            // disabled={!!editingClassName} 
+                            disabled={!!editingClassName} 
                             sx={filledTextFieldStyles}
                         />
                         <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>
