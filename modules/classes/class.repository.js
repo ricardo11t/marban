@@ -32,7 +32,7 @@ export default class ClassRepository {
         const { rows } = await this.db`
             UPDATE public.classes 
             SET bonus = ${bonus}, tipo = ${tipo}
-            WHERE name = ${name}  // Usa o 'name' parâmetro para o WHERE
+            WHERE name = ${name}
             RETURNING name, bonus, tipo`;
         if (rows.length === 0) {
             return null;
