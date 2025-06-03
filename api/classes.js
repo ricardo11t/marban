@@ -12,7 +12,7 @@ const classController = new ClassController(classService);
 
 export default async function handler(req, res) {
     const userDataFromToken = verifyTokenAndExtractUser(req);
-
+    console.log('[API /api/classes] Headers recebidos:', JSON.stringify(req.headers)); // LOG DOS HEADERS NO BACKEND
     try {
         if (req.method === 'GET') {
             if (req.query.name) {
