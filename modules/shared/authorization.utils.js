@@ -2,25 +2,17 @@ import jwt from 'jsonwebtoken';
 import config from './config.js'; // Para JWT_SECRET
 import errorHandler from '../shared/errorHandler.js';
 
-/**
- * Verifica o token JWT da requisição e retorna o payload do usuário.
- * Lança um erro se o token for inválido, expirado ou não fornecido.
- * @param {object} req - O objeto de requisição do Next.js/Vercel.
- * @returns {object} O payload decodificado do token (contendo userId, email, role, etc.).
- */
 export function verifyTokenAndExtractUser(req) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = localStorage.getItem('authToken');
+    if (!token || !authHeader.startsWith('Bearer ')) {
         const error = new Error('Token de autenticação não fornecido ou malformatado.');
         error.statusCode = 401; // Unauthorized
         throw error;
     }
 
-    const token = authHeader; // Remove "Bearer "
-
     try {
         const decoded = jwt.verify(token, config.jwtSecret);
-        return decoded; // ex: { userId: ..., email: ..., role: 'admin' }
+        return decoded;
     } catch (err) {
         const error = new Error('Token inválido ou expirado.');
         error.statusCode = 401; // Unauthorized
