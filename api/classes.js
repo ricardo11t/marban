@@ -11,6 +11,8 @@ const classService = new ClassService(classRepository);
 const classController = new ClassController(classService);
 
 export default async function handler(req, res) {
+    const userDataFromToken = verifyTokenAndExtractUser(req);
+
     try {
         if (req.method === 'GET') {
             if (req.query.name) {
@@ -19,15 +21,12 @@ export default async function handler(req, res) {
                 await classController.getAll(req, res);
             }
         } else if (req.method === 'POST') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken); 
             await classController.create(req, res);
         } else if (req.method === 'PUT') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken);
             await classController.update(req, res);
         } else if (req.method === 'DELETE') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken);
             await classController.delete(req, res);
         } else {

@@ -11,6 +11,8 @@ const raceService = new RaceService(raceRepository);
 const raceController = new RaceController(raceService);
 
 export default async function handler(req, res) {
+    const userDataFromToken = verifyTokenAndExtractUser(req);
+
     try {
         if (req.method === 'GET') {
             if (req.query.name) {
@@ -19,15 +21,12 @@ export default async function handler(req, res) {
                 await raceController.getAll(req, res);
             }
         } else if (req.method === 'POST') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken);
             await raceController.create(req, res);
         } else if (req.method === 'PUT') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken);
             await raceController.update(req, res);
         } else if (req.method === 'DELETE') {
-            const userDataFromToken = verifyTokenAndExtractUser(req);
             isAdmin(userDataFromToken);
             await raceController.delete(req, res);
         } else {
