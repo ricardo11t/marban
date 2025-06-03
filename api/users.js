@@ -19,7 +19,7 @@ router.get('/', authMiddleware, userController.getUserById())
 export default async function handler(req, res) {
     try {
         const userDataFromToken = verifyTokenAndExtractUser(req);
-
+        
         if (req.method === 'GET') {
             if (req.query.id) {
                 await userController.getUserById(req, res);

@@ -2,26 +2,43 @@ import jwt from 'jsonwebtoken';
 import config from './config.js'; // Para JWT_SECRET
 import errorHandler from '../shared/errorHandler.js';
 
+/**
+ * Verifica o token JWT do header Authorization da requisição e retorna o payload do usuário.
+ * Lança um erro se o token for inválido, expirado ou não fornecido.
+ * @param {object} req - O objeto de requisição do Next.js/Vercel.
+ * @returns {object} O payload decodificado do token (contendo userId, email, role, etc.).
+ */
 export function verifyTokenAndExtractUser(req) {
-    const token = localStorage.getItem('authToken');
-    if (!token || !authHeader.startsWith('Bearer ')) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
         const error = new Error('Token de autenticação não fornecido ou malformatado.');
         error.statusCode = 401; // Unauthorized
         throw error;
     }
 
+    // Extrai o token do header (removendo o prefixo "Bearer ")
+    const token = authHeader.substring(7); 
+
     try {
-        const decoded = jwt.verify(token, config.jwtSecret);
-        return decoded;
+        // Verifica o token usando a chave secreta
+        // Certifique-se que config.jwtSecret ou process.env.JWT_SECRET está acessível e definido
+        const decoded = jwt.verify(token, config.jwtSecret || process.env.JWT_SECRET);
+        return decoded; // ex: { userId: ..., email: ..., role: 'admin', iat: ..., exp: ... }
     } catch (err) {
         const error = new Error('Token inválido ou expirado.');
         error.statusCode = 401; // Unauthorized
         if (err.name === 'TokenExpiredError') {
-            error.message = 'Token expirado.';
+            error.message = 'Sessão expirada, por favor faça login novamente.';
+        } else if (err.name === 'JsonWebTokenError') {
+            error.message = 'Token inválido.';
         }
+        // Você pode querer logar o erro original 'err' no servidor para debugging
+        // logger.error('Falha na verificação do JWT:', err);
         throw error;
     }
 }
+
 
 export function requireAuth(req, res, next) {
     try {
