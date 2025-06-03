@@ -1,6 +1,5 @@
 import { sql } from '../modules/shared/db.js';
 import errorHandler from '../modules/shared/errorHandler.js';
-import { verifyTokenAndExtractUser, isAdmin } from '../modules/shared/authorization.utils.js';
 
 import ClassRepository from '../modules/classes/class.repository.js' 
 import ClassService from '../modules/classes/class.service.js';
@@ -11,8 +10,6 @@ const classService = new ClassService(classRepository);
 const classController = new ClassController(classService);
 
 export default async function handler(req, res) {
-    const userDataFromToken = verifyTokenAndExtractUser(req);
-    console.log('[API /api/classes] Headers recebidos:', JSON.stringify(req.headers)); // LOG DOS HEADERS NO BACKEND
     try {
         if (req.method === 'GET') {
             if (req.query.name) {
@@ -21,13 +18,10 @@ export default async function handler(req, res) {
                 await classController.getAll(req, res);
             }
         } else if (req.method === 'POST') {
-            isAdmin(userDataFromToken); 
             await classController.create(req, res);
         } else if (req.method === 'PUT') {
-            isAdmin(userDataFromToken);
             await classController.update(req, res);
         } else if (req.method === 'DELETE') {
-            isAdmin(userDataFromToken);
             await classController.delete(req, res);
         } else {
             res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);

@@ -1,6 +1,5 @@
 import { sql } from '../modules/shared/db.js';
 import errorHandler from '../modules/shared/errorHandler.js';
-import { verifyTokenAndExtractUser, isAdmin, authMiddleware } from '../modules/shared/authorization.utils.js'; // Importe as novas funções
 
 import express from 'express';
 
@@ -14,23 +13,19 @@ const userController = new UserController(userService);
 
 const router = express.Router();
 
-router.get('/', authMiddleware, userController.getUserById())
+router.get('/', userController.getUserById())
 
 export default async function handler(req, res) {
     try {
-        const userDataFromToken = verifyTokenAndExtractUser(req);
-        
         if (req.method === 'GET') {
             if (req.query.id) {
                 await userController.getUserById(req, res);
             } else {
                 await userController.getAllUsers(req, res);
             }
-        } else if (req.method = 'POST') {
-            isAdmin(userDataFromToken);
+        } else if (req.method === 'POST') {
             await userController.updateUserRole(req, res);
         } else if (req.method === 'DELETE') {
-            isAdmin(userDataFromToken);
             await userController.deleteUser(req, res);
         }
         else {

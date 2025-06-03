@@ -7,6 +7,7 @@ export default class UserController {
         this.getAllUsers = this.getAllUsers.bind(this);
         this.getUserById = this.getUserById.bind(this);
         this.createUser = this.createUser.bind(this);
+        this.deleteUser = this.deleteUser.bind(this);
     }
 
     async getAllUsers(req, res) {
@@ -34,10 +35,16 @@ export default class UserController {
             return errorHandler(error, res, req);
         }
 
-        responseHandler.success(res, user, 'User successfully updated.');
+        responseHandler.success(res, userToUpdate, 'User successfully updated.');
     }
 
     async deleteUser(req, res) {
-        
+        const { email } = await this.userService.deleteUser(req.body);
+        if (email) {
+            const error = new Error("[UserController] Falha o deletar usuário.")
+            error.statusCode = 500;
+            throw error;
+        }
+        console.log("[UserController] Usuário deletado com sucesso.", res);
     }
 }

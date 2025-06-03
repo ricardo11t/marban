@@ -23,6 +23,11 @@ export default class UserService {
 
     async deleteUser(email) {
         const user = await this.userRepository.findByEmail(email);
-        
+        try {
+            user.userRepository.deleteUser(user.email);
+            return console.log('Usuário deletado com sucesso.');
+        } catch (err) {
+            console.error('Falha o deletar usuário', err);
+        }
     }
 }

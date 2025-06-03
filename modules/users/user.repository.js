@@ -97,15 +97,15 @@ export default class UserRepository {
             if (rows.length === 0) return null;
             return new User(rows[0]).toClientJSON();
         } catch (err) {
-            console.error(`[UserRepository updateLastLogin] Erro ao atualizar o ultimo login para usuário ID ${id}`, err);
+            console.error(`[UserRepository updateLastLogin] Erro ao atualizar o ultimo login para usuário: ${username}`, err);
             throw err;
         }
     }
 
-    async delete(id, username, email) {
+    async delete(email) {
         try {
             const { rowCount } = await this.db`
-                DELETE FROM private.users WHERE id = '${id}', username = '${username}', email = '${email}';
+                DELETE FROM private.users WHERE email = '${email}';
             `
             if (rowCount > 0) {
                 const error = new Error('Falha ao deletar usuário.')
@@ -114,7 +114,7 @@ export default class UserRepository {
             }
             return console.log(`Usuário `)
         } catch (err) {
-
+            console.error('[UserRepository delete] falha ao deletar usuário.', err);
         }
     }
 }
