@@ -28,11 +28,11 @@ export default class ClassRepository {
         return new ClassModel(rows[0]);
     }
 
-    async update(name, { bonus, tipo }) {
+    async update(name, { bonus, tipo }) { 
         const { rows } = await this.db`
             UPDATE public.classes 
             SET bonus = ${bonus}, tipo = ${tipo}
-            WHERE name = ${name}
+            WHERE name = ${name}  // Usa o 'name' parâmetro para o WHERE
             RETURNING name, bonus, tipo`;
         if (rows.length === 0) {
             return null;

@@ -32,12 +32,19 @@ export default class ClassController {
     }
 
     async update(req, res) {
-        const { name } = req.query;
-        if (!name) {
-            return res.status(400).json({message: '"name" param is obrigatory.'})
+        const { name: nameFromQuery } = req.query; // Nome da classe a ser atualizada (identificador)
+        const classDataForUpdate = req.body;   // Novos dados para a classe
+
+        if (!nameFromQuery) {
+            return res.status(400).json({ message: 'Parâmetro "name" na query é obrigatório para identificar a classe a ser atualizada.' });
         }
-        const classData = req.body;
-        const updatedClass = await this.classService.createClass(name, classData);
+        if (Object.keys(classDataForUpdate).length === 0) {
+            return res.status(400).json({ message: 'Corpo da requisição não pode ser vazio para atualização.' });
+        }
+
+        // Chame o método correto do service para ATUALIZAR
+        const updatedClass = await this.classService.updateClass(nameFromQuery, classDataForUpdate);
+
         res.status(200).json(updatedClass);
     }
 
