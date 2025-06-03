@@ -21,7 +21,6 @@ export default async function handler(req, res) {
         const userDataFromToken = verifyTokenAndExtractUser(req);
 
         if (req.method === 'GET') {
-            isAdmin(userDataFromToken);
             if (req.query.id) {
                 await userController.getUserById(req, res);
             } else {
@@ -29,13 +28,13 @@ export default async function handler(req, res) {
             }
         } else if (req.method = 'POST') {
             isAdmin(userDataFromToken);
-            await userController.
+            await userController.updateUserRole(req, res);
         } else if (req.method === 'DELETE') {
             isAdmin(userDataFromToken);
             await userController.deleteUser(req, res);
         }
         else {
-            res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+            res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
             res.status(405).end(`Method ${req.method} Not Allowed`);
         }
     } catch (error) {

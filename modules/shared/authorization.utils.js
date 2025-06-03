@@ -16,7 +16,7 @@ export function verifyTokenAndExtractUser(req) {
         throw error;
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer "
+    const token = authHeader; // Remove "Bearer "
 
     try {
         const decoded = jwt.verify(token, config.jwtSecret);
