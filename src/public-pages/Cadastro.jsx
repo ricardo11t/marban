@@ -1,7 +1,7 @@
 // src/public-pages/Cadastro.jsx (ou o caminho que você preferir)
 import React, { useContext, useState, useEffect } from 'react';
 import Footer from '../components/Footer';
-import HeaderPLC from '../components/HeaderPLC';
+import Header from '../components/Header';
 import { Box, Button, Paper, TextField, CircularProgress, Typography } from '@mui/material';
 import { AuthContext } from '../context/AuthProvider';
 import { useNavigate, Link } from 'react-router-dom'; // Adicionado Link
@@ -78,8 +78,8 @@ const Cadastro = () => {
 
   return (
     <>
-      <HeaderPLC />
-      <main className='min-h-[900px] py-10 bg-gray-100'> {/* Adicionado um fundo e padding */}
+      <Header />
+      <main className='min-h-[900px] py-10 bg-black'> {/* Adicionado um fundo e padding */}
         <div className='flex justify-center'>
           <Box
             component="form"
@@ -98,7 +98,7 @@ const Cadastro = () => {
               boxShadow: 5, // Adiciona uma sombra sutil
             }}
           >
-            <Typography variant="h4" component="h1" sx={{ mb: 4, fontFamily: 'serif', textAlign: 'center' }}>
+            <Typography variant="h4" component="h1" sx={{ mb: 4, textAlign: 'center' }}>
               Crie sua Conta
             </Typography>
 
@@ -173,11 +173,10 @@ const Cadastro = () => {
 
             <Typography sx={{ mt: 3, textAlign: 'center' }}>
               Já tem uma conta?{' '}
-              <Link to="/login" style={{ color: 'lightblue', textDecoration: 'underline' }}>
+              <Link to="/solicitar-email" style={{ color: 'lightblue', textDecoration: 'underline' }}>
                 Faça login aqui!
               </Link>
             </Typography>
-
           </Box>
         </div>
       </main>

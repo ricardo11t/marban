@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import config from '../shared/config.js';
+import { generateToken } from '../shared/authorization.utils.js';
 
 export default class AuthService {
     constructor(userRepository) {
@@ -28,7 +29,6 @@ export default class AuthService {
     }
 
     async login(email, senha) {
-        console.log('[AuthService LOGIN] this.userRepository:', this.userRepository);
         if (this.userRepository) {
             console.log('[AuthService LOGIN] typeof this.userRepository.findByEmail:', typeof this.userRepository.findByEmail);
         }
@@ -41,7 +41,7 @@ export default class AuthService {
             error.statusCode = 401;
             throw error;
         }
-        const user = userInstance.getFullData(); // Pega todos os dados, incluindo role e hash_senha
+        const user = userInstance.getFullData();
 
         if (!user.ativo) {
             const error = new Error('Esta conta está desativada.');
@@ -62,10 +62,8 @@ export default class AuthService {
             username: user.username,
             role: user.role // <<< ADICIONADO A ROLE AO PAYLOAD DO JWT
         };
-        const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' }); // Use config.jwtSecret
-
-        // Atualizar ultimo_login (pode ser um método no userRepository)
-        // await this.userRepository.updateLastLogin(user.id);
+        
+        const token = 
 
         return { token, user: userInstance.toClientJSON() }; // Retorna dados seguros do usuário
     }

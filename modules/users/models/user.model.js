@@ -1,7 +1,7 @@
 export default class User {
     constructor({ id, username, email, hash_senha, role, data_criacao, data_atualizacao, ativo, ultimo_login, email_verificado }) { // Alterado aqui
         this.id = id;
-        this.username = username; // Alterado aqui
+        this.username = username;
         this.email = email;
         this.hash_senha = hash_senha;
         this.role = role;
@@ -15,7 +15,7 @@ export default class User {
     toClientJSON() {
         return {
             id: this.id,
-            username: this.username, // Alterado aqui
+            username: this.username,
             email: this.email,
             role: this.role,
             ativo: this.ativo,
@@ -24,10 +24,10 @@ export default class User {
         };
     }
 
-    getFullData() { // Para uso interno do backend
+    getFullData() {
         return {
             id: this.id,
-            username: this.username, // Alterado aqui
+            username: this.username,
             email: this.email,
             hash_senha: this.hash_senha,
             role: this.role,

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import Footer from '../components/Footer';
-import HeaderPLC from '../components/HeaderPLC';
+import Header from '../components/Header';
 import { Box, Button, Paper, TextField, CircularProgress, Typography } from '@mui/material'; // Adicionado CircularProgress e Typography
 import { AuthContext } from '../context/AuthProvider';
 
@@ -37,8 +37,8 @@ const Login = () => {
 
   return (
     <>
-      <HeaderPLC />
-      <main className='h-[900px]'>
+      <Header />
+      <main className='min-h-screen'>
         <div className='flex justify-center mt-20'>
           {/* Correção 2: Envolver em um <form> e usar onSubmit */}
           <Box
@@ -49,7 +49,7 @@ const Login = () => {
               width: { xs: '90%', sm: 500, md: 700 }, // Largura responsiva
               minHeight: 600, // Altura mínima, pode crescer se necessário
               color: 'white',
-              borderRadius: 6,
+              borderRadius: 2,
               padding: { xs: 2, sm: 3, md: 4 }, // Padding responsivo
               display: 'flex',
               flexDirection: 'column',
@@ -57,7 +57,7 @@ const Login = () => {
               justifyContent: 'center'
             }}
           >
-            <Typography variant="h4" component="h1" sx={{ mb: 4, mt: { xs: 2, md: 0 }, fontFamily: 'serif', textAlign: 'center' }}>
+            <Typography variant="h4" component="h1" sx={{ mb: 4, mt: { xs: 2, md: 0 }, textAlign: 'center' }}>
               Faça seu login
             </Typography>
 

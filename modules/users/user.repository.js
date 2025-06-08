@@ -1,11 +1,8 @@
 import User from "./models/user.model.js";
-import { sql } from '../shared/db.js'; // Certifique-se que o caminho está correto
-import responseHandler from "../shared/responseHandler.js";
-
 export default class UserRepository {
-    constructor() { // Removido dbClient do construtor se sql é importado diretamente
-        this.db = sql;
-        this.tableName = 'private.users'; // Schema 'private', tabela 'users'
+    constructor(dbClient) {
+        this.db = dbClient;
+        this.tableName = 'private.users';
         console.log('[UserRepository CONSTRUCTOR] typeof this.db:', typeof this.db);
     }
 
