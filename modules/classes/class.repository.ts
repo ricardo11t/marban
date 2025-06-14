@@ -41,7 +41,8 @@ export default class ClassRepository {
     }
 
     async delete(name) {
-        const { rowCount } = await this.db`DELETE FROM public.classes WHERE name = ${name};`;
+        console.log(`[ClassRepository delete] Deleting class with name: ${name}`);
+        const { rowCount } = await this.db`DELETE FROM public.classes WHERE name = '${name}';`;
         return rowCount > 0;
     }
 }

@@ -1,5 +1,10 @@
+import { Request, Response } from "express";
+import ClassService from "./class.service";
+
 export default class ClassController {
-    constructor(classService) {
+    private classService: ClassService;
+
+    constructor(classService: ClassService) {
         this.classService = classService;
         this.getAll = this.getAll.bind(this);
         this.getByName = this.getByName.bind(this);
@@ -8,32 +13,35 @@ export default class ClassController {
         this.delete = this.delete.bind(this);
     }
 
-    async getAll(req, res) {
+    async getAll(req: Request, res: Response) {
         const classes = await this.classService.getAllClasses();
         res.status(200).json(classes);
     }
 
-    async getByName(req, res) {
+    async getByName(req: Request, res: Response) {
         const { name } = req.query;
         if (!name) {
             return res.status(400).json({message: '"name" param is obrigatory.'});
+        }
+        if (typeof name !== "string") {
+            return res.status(400).json({ message: '"name" param must be a string.' });
         }
         const classe = await this.classService.getClassByName(name);
         res.status(200).json(classe);
     }
 
-    async create(req, res) {
+    async create(req: Request, res: Response) {
         const classData= req.body;
         if (!classData.name) {
             throw { statusCode: 400, message: 'Name field is obigatory.' };
         }
-        const newClass = await this.classService.createClass(classData);
+        const newClass = await this.classService.createClass(classData.name, classData.classData);
         res.status(200).json(newClass);
     }
 
-    async update(req, res) {
-        const { name: nameFromQuery } = req.query; // Nome da classe a ser atualizada (identificador)
-        const classDataForUpdate = req.body;   // Novos dados para a classe
+    async update(req: Request, res: Response) {
+        const { name: nameFromQuery } = req.query;
+        const classDataForUpdate = req.body;
 
         if (!nameFromQuery) {
             return res.status(400).json({ message: 'Parâmetro "name" na query é obrigatório para identificar a classe a ser atualizada.' });
@@ -43,17 +51,24 @@ export default class ClassController {
         }
 
         // Chame o método correto do service para ATUALIZAR
+        if (typeof nameFromQuery !== "string") {
+            return res.status(400).json({ message: 'Parâmetro "name" deve ser uma string.' });
+        }
         const updatedClass = await this.classService.updateClass(nameFromQuery, classDataForUpdate);
 
         res.status(200).json(updatedClass);
     }
 
-    async delete(req, res) {
+    async delete(req: Request, res: Response) {
+        console.log('[ClassController delete] Deleting class...', req.query);
         const { name } = req.query;
         if (!name) {
             return res.status(400).json({message: '"name" param is obrigatory.'})
         }
-        const result = this.classService.deleteClass(name);
+        if (typeof name !== "string") {
+            return res.status(400).json({ message: '"name" param must be a string.' });
+        }
+        const result = await this.classService.deleteClass(name);
         res.status(200).json(result);
     }
 }

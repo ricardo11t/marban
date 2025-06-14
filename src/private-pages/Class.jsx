@@ -1,7 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react'; // Adicionado useEffect
+import React, { useContext, useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { ClassesContext } from '../context/ClassesProvider';
+import { AuthContext } from '../context/AuthProvider';
 import {
     Card, CardContent, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress,
@@ -10,105 +11,65 @@ import {
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 
-// ... (bonusFieldsForAttributeOptions, attributeKeys, attributeOptions, tiposDeClasseOptions, initialFormState, filledTextFieldStyles, attributeLabels - permanecem os mesmos) ...
+// --- Constantes de Configuração (Mantidas como no seu código) ---
+
 const bonusFieldsForAttributeOptions = {
-
     forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
-
     agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
-
-    };
+};
 const attributeKeys = Object.keys(bonusFieldsForAttributeOptions);
 
 const attributeOptions = attributeKeys.map(key => ({
-
     value: key,
-
     label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
+}));
 
-    }));
 const tiposDeClasseOptions = [
-
     { value: 'fisico', label: 'Físico' },
-
     { value: 'magico', label: 'Mágico' },
-
     { value: 'neutro', label: 'Neutro' },
+];
 
-        ];
 const initialFormState = {
-
     nome: '',
+    bonus: { ...bonusFieldsForAttributeOptions },
+    tipo: { tipoClasse: null }
+};
 
-    bonus: {
-
-        forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
-
-        agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
-
-    },
-
-    tipo: { tipoClasse: null } // ESTRUTURA SIMPLIFICADA AQUI
-
-            };
 const filledTextFieldStyles = {
-
     '& .MuiFilledInput-root': {
-
         backgroundColor: '#601b1c', color: 'white', borderTopLeftRadius: 4, borderTopRightRadius: 4,
-
         '&:hover': { backgroundColor: '#752d2e' },
-
         '&.Mui-focused': { backgroundColor: '#601b1c' },
-
         '&:before': { borderBottom: '1px solid rgba(255, 255, 255, 0.2)' },
-
         '&:after': { borderBottom: '2px solid white' },
-
         '&.Mui-disabled': { backgroundColor: 'rgba(96, 27, 28, 0.5)', color: 'rgba(255, 255, 255, 0.5)' }
-
     },
-
     '& .MuiFilledInput-input': {
-
         color: 'white',
-
         '&:-webkit-autofill': { WebkitBoxShadow: '0 0 0 1000px #601b1c inset !important', WebkitTextFillColor: 'white !important', caretColor: 'white !important' },
-
     },
-
     '& label.MuiInputLabel-filled': { color: 'rgba(255, 255, 255, 0.7)' },
-
     '& label.MuiInputLabel-filled.Mui-focused': { color: 'white' },
-
     '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)' }
+};
 
-                };
 const attributeLabels = {
-
     forca: "Força", resFisica: "Res. Física", resMental: "Res. Mental",
-
     manipulacao: "Manipulação", resMagica: "Res. Mágica", sobrevivencia: "Sobrevivência",
-
     agilidade: "Agilidade", destreza: "Destreza", competencia: "Competência",
-
     criatividade: "Criatividade", sorte: "Sorte"
+};
 
-                    };
-
-const API_BASE_URL = '/api'; // Ou sua URL completa da Vercel
+const API_BASE_URL = '/api';
 
 const Classes = () => {
-    // Assume-se que 'classes' do context é um ARRAY de objetos classe
-    // e que cada objeto classe tem uma propriedade 'name' que é uma STRING (ex: { name: "guerreiro", bonus: {...}, tipo: {...} })
-    // Se a API de classes também retorna { name: { name: "guerreiro" } } como a de raças, o acesso ao nome precisará ser classeItem.name.name
-    // Vou assumir por enquanto que a API de classes retorna um nome simples: { name: "guerreiro", ... }
-    // Se não for, precisaremos ajustar classeItem.name para classeItem.name.name
     const { classes, isLoading: isLoadingClasses, error: classesError, refetchClasses } = useContext(ClassesContext);
+    const { isAdmin } = useContext(AuthContext); // Usando a função do contexto
 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
-    const [editingClassName, setEditingClassName] = useState(null); // O nome da classe (string) sendo editada
+    const [editingClassName, setEditingClassName] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -124,14 +85,11 @@ const Classes = () => {
         setOpen(true);
     };
 
-    const handleOpenEdit = (classeObject) => { // classeObject é o item do array
+    const handleOpenEdit = (classeObject) => {
         if (!classeObject || typeof classeObject.name === 'undefined') {
             Swal.fire('Erro', 'Dados da classe inválidos para edição.', 'error');
             return;
         }
-        // Se o nome da classe também for aninhado como { name: { name: "..." } }
-        // const currentClassName = classeObject.name.name;
-        // Senão, se for direto { name: "..." }
         const currentClassName = classeObject.name;
 
         setEditingClassName(currentClassName);
@@ -146,8 +104,7 @@ const Classes = () => {
     const handleClose = () => setOpen(false);
 
     const handleFormChange = (event, value, fieldName) => {
-        // ... (seu código handleFormChange existente) ...
-        if (fieldName === 'tipoClasseSelection') { 
+        if (fieldName === 'tipoClasseSelection') {
             setFormData(prev => ({ ...prev, tipo: { ...prev.tipo, tipoClasse: value ? value.value : null } }));
         } else {
             const { name, value: inputValue } = event.target;
@@ -159,12 +116,18 @@ const Classes = () => {
             }
         }
     };
-    
+
     const handleSaveClasse = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            Swal.fire('Erro de Autenticação', 'Você não está logado ou sua sessão expirou.', 'error');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const classPayload = {
-                name: formData.nome.trim(), // Nome que vai para a API
+                name: formData.nome.trim(),
                 bonus: formData.bonus,
                 tipo: formData.tipo
             };
@@ -174,33 +137,22 @@ const Classes = () => {
                 setIsSubmitting(false);
                 return;
             }
-            if (!classPayload.tipo?.tipoClasse && editingClassName === null) { // Validação apenas para criação
-                 const result = await Swal.fire({ 
-                    icon: 'warning', 
-                    title: 'Atenção!', 
-                    text: 'O tipo da classe não foi selecionado. Deseja continuar?', 
-                    showCancelButton: true, 
-                    confirmButtonText: 'Sim', 
-                    cancelButtonText: 'Não'
-                });
-                if (!result.isConfirmed) {
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-            
-            let response;
+
             let url = `${API_BASE_URL}/classes`;
             let method = 'POST';
 
-            if (editingClassName) { // Modo de Edição
+            if (editingClassName) {
                 url = `${API_BASE_URL}/classes?name=${encodeURIComponent(editingClassName)}`;
                 method = 'PUT';
             }
 
-            response = await fetch(url, {
+            const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json', /* Adicionar Auth Header */ },
+                headers: {
+                    'Content-Type': 'application/json',
+                    // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(classPayload)
             });
 
@@ -225,10 +177,13 @@ const Classes = () => {
         }
     };
 
-    // A função proceedWithSave foi incorporada em handleSaveClasse para simplificar
-
     const handleDelete = (classNameString) => {
-        // ... (seu código handleDelete, ele já espera uma string com o nome)
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            Swal.fire('Erro de Autenticação', 'Você não está logado ou sua sessão expirou.', 'error');
+            return;
+        }
+
         Swal.fire({
             title: `Deletar ${classNameString}?`,
             text: `Você não poderá reverter a exclusão da classe "${classNameString}"!`,
@@ -238,9 +193,12 @@ const Classes = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/classes?name=${encodeURIComponent(classNameString)}`, { 
+                    const response = await fetch(`${API_BASE_URL}/classes?name=${encodeURIComponent(classNameString)}`, {
                         method: 'DELETE',
-                        // Adicionar Auth Header
+                        headers: {
+                            // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
@@ -258,32 +216,33 @@ const Classes = () => {
         });
     };
 
+    // --- Renderização do Componente ---
     return (
         <>
             <Header />
             <div className="min-h-screen bg-gray-900 text-white">
                 <div className="container mx-auto px-4 py-8">
                     <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Classes</Typography>
+
                     <div className='flex justify-start mb-6'>
-                        <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
-                            Adicionar nova Classe
-                        </Button>
+                        {isAdmin() && (
+                            <Button variant="contained" onClick={handleOpenAdd} sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#501b1c' } }}>
+                                Adicionar Classe
+                            </Button>
+                        )}
                     </div>
+
                     <div className='flex flex-wrap justify-center gap-6 mb-10'>
-                        {isLoadingClasses && <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', py: 5 }}><CircularProgress sx={{ color: '#601b1c' }} size={60}/></Box>}
+                        {isLoadingClasses && <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', py: 5 }}><CircularProgress sx={{ color: '#601b1c' }} size={60} /></Box>}
                         {classesError && <Typography color="error" className="w-full text-center">Erro ao carregar classes: {classesError}</Typography>}
-                        
-                        {/* Iterar sobre o array 'classes' */}
+
                         {!isLoadingClasses && !classesError && classes && classes.length > 0 ? (
                             classes.map((classeItem) => {
-                                // ASSUMINDO que a API de classes retorna { name: "string", bonus: {}, tipo: {} }
-                                // Se 'name' também for um objeto aninhado { name: { name: "..." } }, ajuste abaixo:
-                                // const classNameKey = classeItem.name?.name;
-                                const classNameKey = classeItem.name; 
+                                const classNameKey = classeItem.name;
 
                                 if (!classNameKey) {
                                     console.warn("Item de classe inválido no array:", classeItem);
-                                    return null; 
+                                    return null;
                                 }
 
                                 const tipoClasseLabel = classeItem.tipo?.tipoClasse
@@ -295,7 +254,7 @@ const Classes = () => {
                                         <CardContent className='text-center flex-grow'>
                                             <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{classNameKey}</Typography>
 
-                                            {/* Exibição de Bônus (classeItem.bonus) */}
+                                            {/* Exibição de Bônus */}
                                             {classeItem.bonus && Object.values(classeItem.bonus).some(v => v !== 0) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ mt: 2, mb: 1, fontWeight: 'bold', color: 'rgba(255,255,255,0.9)' }}>
@@ -315,7 +274,7 @@ const Classes = () => {
                                                     </Box>
                                                 </>
                                             )}
-                                            {/* Exibição do Tipo de Classe */}
+                                            {/* Exibição do Tipo */}
                                             {classeItem.tipo?.tipoClasse && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Tipo da Classe:</Typography>
@@ -324,10 +283,16 @@ const Classes = () => {
                                             )}
                                         </CardContent>
                                         <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
-                                            {/* Passa o objeto 'classeItem' inteiro para handleOpenEdit */}
-                                            <Button size="small" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': {backgroundColor: 'rgba(255,255,255,0.1)'} }}><Edit fontSize="small"/></Button>
-                                            {/* Passa 'classNameKey' (string) para handleDelete */}
-                                            <Button size="small" onClick={() => handleDelete(classNameKey)} sx={{ color: 'lightcoral', '&:hover': {backgroundColor: 'rgba(255,100,100,0.1)'} }}><Delete fontSize="small"/></Button>
+                                            {isAdmin() && (
+                                                <>
+                                                    <Button variant="outlined" color="secondary" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' } }}>
+                                                        <Edit />
+                                                    </Button>
+                                                    <Button variant="outlined" color="error" onClick={() => handleDelete(classNameKey)} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' } }}>
+                                                        <Delete />
+                                                    </Button>
+                                                </>
+                                            )}
                                         </Box>
                                     </Card>
                                 );
@@ -338,25 +303,21 @@ const Classes = () => {
                     </div>
                 </div>
 
-                {/* Dialog para Adicionar/Editar Classes */}
-                <Dialog
-                    open={open}
-                    onClose={handleClose}
-                    PaperProps={{
-                        component: 'form',
-                        onSubmit: (e) => { e.preventDefault(); handleSaveClasse(); },
-                        sx: { backgroundColor: 'black', color: 'white', minWidth: {xs: '90%', sm: '400px', md: '500px'}, borderRadius: 2 }
-                    }}
-                >
+                {/* --- Formulário de Diálogo --- */}
+                <Dialog open={open} onClose={handleClose} PaperProps={{
+                    component: 'form',
+                    onSubmit: (e) => { e.preventDefault(); handleSaveClasse(); },
+                    sx: { backgroundColor: 'black', color: 'white', minWidth: { xs: '90%', sm: '400px', md: '500px' }, borderRadius: 2 }
+                }}>
                     <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         {editingClassName ? `Editar Classe: ${editingClassName}` : 'Adicionar Nova Classe'}
                     </DialogTitle>
-                    <DialogContent sx={{pt: '20px !important'}}>
+                    <DialogContent sx={{ pt: '20px !important' }}>
                         <TextField
                             autoFocus={!editingClassName}
                             required margin="dense" id="classname" name="nome" label="Nome da Classe" type="text"
                             fullWidth variant="filled" value={formData.nome} onChange={handleFormChange}
-                            disabled={!!editingClassName} 
+                            disabled={!!editingClassName}
                             sx={filledTextFieldStyles}
                         />
                         <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>
@@ -383,7 +344,7 @@ const Classes = () => {
                             onChange={(event, newValue) => handleFormChange(event, newValue, 'tipoClasseSelection')}
                             isOptionEqualToValue={(option, value) => option.value === value?.value}
                             renderInput={(params) => (
-                                <TextField {...params} label="Selecione o Tipo" variant="filled" margin="dense" sx={filledTextFieldStyles}/>
+                                <TextField {...params} label="Selecione o Tipo" variant="filled" margin="dense" sx={filledTextFieldStyles} />
                             )}
                             PaperComponentProps={{ sx: { backgroundColor: 'black', color: 'white', border: '1px solid rgba(255,255,255,0.2)' } }}
                             sx={{
@@ -405,7 +366,7 @@ const Classes = () => {
                             '&:hover': { backgroundColor: '#0056b3' },
                             '&.Mui-disabled': { backgroundColor: 'rgba(0, 123, 255, 0.3)', color: 'rgba(255,255,255,0.5)' }
                         }}>
-                            {isSubmitting ? <CircularProgress size={24} sx={{color: 'white'}}/> : (editingClassName ? 'Salvar Alterações' : 'Criar Classe')}
+                            {isSubmitting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : (editingClassName ? 'Salvar Alterações' : 'Criar Classe')}
                         </Button>
                     </DialogActions>
                 </Dialog>

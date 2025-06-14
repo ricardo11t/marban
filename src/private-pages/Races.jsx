@@ -45,14 +45,13 @@ const filledTextFieldStyles = {
     '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)' }
 };
 
-const API_BASE_URL = '/api'; // Ou sua URL completa da Vercel
+const API_BASE_URL = '/api';
 
 const Races = () => {
     const { races, isLoading: isLoadingRaces, error: racesError, refetchRaces } = useContext(RacesContext);
-
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
-    const [editingRaceName, setEditingRaceName] = useState(null); // Armazena o NOME da raça original ao editar
+    const [editingRaceName, setEditingRaceName] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -74,9 +73,9 @@ const Races = () => {
             return;
         }
         const currentRaceName = raceObject.name.name;
-        setEditingRaceName(currentRaceName); // Guarda o nome original para identificar na API de PUT
+        setEditingRaceName(currentRaceName);
         setFormData({
-            nome: currentRaceName, // O campo 'nome' do formulário recebe o nome atual
+            nome: currentRaceName,
             bonus: { ...(raceObject.bonus || initialFormState.bonus) },
             pdd: { ...(raceObject.pdd || initialFormState.pdd) }
         });
@@ -112,10 +111,8 @@ const Races = () => {
     const handleSaveRace = async () => {
         setIsSubmitting(true);
         try {
-            // A API espera um objeto com name (string), bonus (objeto), pdd (objeto)
-            // O campo 'name' no JSON enviado para a API deve ser a string do nome da raça.
             const racePayload = {
-                name: formData.nome.trim(), // O nome que vai para a API
+                name: formData.nome.trim(),
                 bonus: formData.bonus,
                 pdd: formData.pdd
             };
@@ -132,17 +129,16 @@ const Races = () => {
             }
 
             let response;
-            if (editingRaceName) { // Modo de Edição
-                // A API de PUT usa o nome antigo na query para identificar e os novos dados no corpo
+            if (editingRaceName) { 
                 response = await fetch(`${API_BASE_URL}/races?name=${encodeURIComponent(editingRaceName)}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', /* Adicionar header de Auth se necessário */ },
-                    body: JSON.stringify(racePayload) // Envia o payload com o nome (potencialmente novo)
+                    headers: { 'Content-Type': 'application/json',},
+                    body: JSON.stringify(racePayload)
                 });
-            } else { // Modo de Criação
+            } else {
                 response = await fetch(`${API_BASE_URL}/races`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', /* Adicionar header de Auth se necessário */ },
+                    headers: { 'Content-Type': 'application/json',},
                     body: JSON.stringify(racePayload)
                 });
             }
@@ -152,8 +148,8 @@ const Races = () => {
                 throw new Error(errorData.message || `Erro ao salvar raça: ${response.statusText}`);
             }
 
-            await refetchRaces(); // Atualiza a lista de raças
-            handleClose(); // Fecha o dialog
+            await refetchRaces();
+            handleClose();
 
             Swal.fire({
                 icon: 'success',
@@ -187,7 +183,6 @@ const Races = () => {
                 try {
                     const response = await fetch(`${API_BASE_URL}/races?name=${encodeURIComponent(raceNameString)}`, {
                         method: 'DELETE',
-                        // Adicionar header de Auth se necessário
                     });
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
@@ -208,7 +203,7 @@ const Races = () => {
     return (
         <>
             <Header />
-            <div className="min-h-screen bg-gray-900 text-white"> {/* Ajuste do fundo para melhor contraste */}
+            <div className="min-h-screen bg-gray-900 text-white">
                 <div className="container mx-auto px-4 py-8">
                     <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Raças</Typography>
                     <div className='flex justify-start mb-6'>

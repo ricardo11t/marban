@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 export const AuthContext = createContext(null); // Inicializa com null ou um objeto com valores padrão
 
 // URL base da sua API (pode vir de uma variável de ambiente)
-const API_URL = 'https://marban-git-feat-ricardo-ricardo11ts-projects.vercel.app/api/auth';
+const API_URL = 'http://localhost:3000/api/auth';
 
 const AuthProvider = ({ children }) => { // Corrigido: children é recebido como prop
   const [user, setUser] = useState(null);
@@ -57,15 +57,11 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
     setLoading(true);
     setAuthError(null);
     try {
-      // Certifique-se de que 'email' e 'password' aqui têm os valores dos campos
-      console.log("Enviando para login:", { email, password }); // Adicione este log
-
-      const response = await axios.post(`${API_URL}/login`, { // Ou o endpoint correto
-        email: email, // O nome da propriedade deve ser 'email'
-        password: password // O nome da propriedade deve ser 'password' (ou 'senha' se sua API espera 'senha')
+      const response = await axios.post(`${API_URL}/login`, {
+        email: email,
+        password: password
       });
 
-      // Axios coloca a resposta no campo 'data'
       const { token: receivedToken, user: userData, message } = response.data;
 
       if (receivedToken && userData) {
@@ -73,8 +69,8 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
         localStorage.setItem('userData', JSON.stringify(userData));
         setToken(receivedToken);
         setUser(userData);
-        setAuthHeader(receivedToken); // Configura o header do Axios
-        navigate('/criacao'); // Ou para o dashboard/página principal após login
+        setAuthHeader(receivedToken);
+        navigate('/criacao');
         return { success: true, message: message || "Login bem-sucedido!" };
       } else {
         throw new Error(message || "Token ou dados do usuário não recebidos.");
@@ -95,27 +91,23 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
     }
   };
 
-  // Função de REGISTER
   const register = async (username, email, password) => {
     setLoading(true);
     setAuthError(null);
     try {
-      // A API espera 'username', 'email', 'senha' (e não 'nome_completo' como no seu backend)
-      // Ajuste os nomes dos campos conforme o que sua API de registro realmente espera.
-      // Se sua API espera 'nome_completo', use isso em vez de 'username'.
-      const response = await axios.post(`${API_URL}/register`, { // Ou /api/auth?action=register
-        username, // Ou nome_completo, dependendo da sua API
+      const response = await axios.post(`${API_URL}/register`, {
+        username,
         email,
-        senha: password, // API espera 'senha'
+        senha: password
       });
 
-      const { message, user: registeredUser } = response.data; // A API de registro pode ou não retornar o usuário/token
+      const { message, user: registeredUser } = response.data;
 
-      // Opcional: Fazer login automaticamente após o registro bem-sucedido
-      if (registeredUser && response.data.token) { //Se a API de registro retornar token
+
+      if (registeredUser && response.data.token) {
           await login(email, password);
       } else {
-          navigate('/login'); // Ou para uma página de "verifique seu email"
+          navigate('/login');
       }
       setLoading(false);
       return { success: true, message: message || "Usuário registrado com sucesso!" };
@@ -129,32 +121,53 @@ const AuthProvider = ({ children }) => { // Corrigido: children é recebido como
     }
   };
 
-  // Função de LOGOUT
-  const logout = useCallback(() => { // useCallback para estabilizar a referência da função
+  const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     setToken(null);
     setUser(null);
-    setAuthHeader(null); // Remove o header do Axios
+    setAuthHeader(null);
     setAuthError(null);
-    navigate('/'); // Ou para a página inicial
+    navigate('/');
   }, [navigate, setAuthHeader]);
 
-  // Valor a ser fornecido pelo Contexto
+  const isAdmin = () => {
+    const userDataString = localStorage.getItem('userData');
+
+    if (!userDataString) {
+      return false;
+    }
+
+    try {
+      const userDataObject = JSON.parse(userDataString);
+
+      if (userDataObject && userDataObject.role === 'admin') {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      console.error("Erro ao parsear dados do usuário ou verificar a role:", e);
+      return false;
+    }
+  }
+
+
   const contextValue = {
     user,
     token,
-    isAuthenticated: !!token, // Um getter simples para verificar se está autenticado
+    isAuthenticated: !!token,
     loading,
     authError,
     login,
     register,
     logout,
-    setAuthError // Para permitir limpar o erro de fora, se necessário
+    setAuthError,
+    isAdmin
   };
 
   return (
-    <AuthContext.Provider value={contextValue}> {/* Corrigido: AuthContext.Provider */}
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

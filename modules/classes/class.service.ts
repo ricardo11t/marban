@@ -34,6 +34,7 @@ export default class ClassService {
     }
 
     async deleteClass(name) {
+        console.log(`[ClassService deleteClass] Deleting class with name: ${name}`);
         const wasDeleted = await this.classRepository.delete(name);
         if (!wasDeleted) {
             const error = new Error('Classe não encontrada para exclusão.');
