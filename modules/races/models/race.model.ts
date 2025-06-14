@@ -1,27 +1,25 @@
 // 1. Defina uma interface para as propriedades da raça
 export interface IRace {
     name: string;
-    bonus: string; // Ou mais específico, ex: { attribute: string; value: number }[]
-    pdd: string;   // Se 'pdd' for um campo de texto, string. Se for um número, number.
-    // Pelo nome, pode ser "Poder de Destruição Divino" ou similar.
-    // Ajuste o tipo conforme o uso real.
+    bonus: object;
+    pdd: object;
 }
 
 export default class Race implements IRace {
     public name: string;
-    public bonus: string;
-    public pdd: string;
+    public bonus: object;
+    public pdd: object;
 
-    constructor(name: string, bonus: string, pdd: string) { // Tipado os parâmetros do construtor
+    constructor(name: string, bonus: object, pdd: object) { // Tipado os parâmetros do construtor
         // Opcional: Adicionar validações básicas
         if (typeof name !== 'string' || name.trim() === '') {
             throw new Error('Race name is required and must be a non-empty string.');
         }
-        if (typeof bonus !== 'string' || bonus.trim() === '') {
-            throw new Error('Race bonus is required and must be a non-empty string.');
+        if (typeof bonus !== 'object' || bonus === null) {
+            throw new Error('Race bonus is required and must be a non-null object.');
         }
-        if (typeof pdd !== 'string' || pdd.trim() === '') {
-            throw new Error('Race PDD is required and must be a non-empty string.');
+        if (typeof pdd !== 'object' || pdd === null) {
+            throw new Error('Race PDD is required and must be a non-null object.');
         }
 
         this.name = name;

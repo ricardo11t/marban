@@ -1,77 +1,61 @@
-// api/index.ts
-
+import 'dotenv/config'; // Mantenha isso no topo para carregar .env
 import express, { Request, Response, NextFunction } from 'express';
+import { QdrantClient } from '@qdrant/qdrant-js';
 
-// --- Importações de seus módulos (corrigido com base na sua estrutura) ---
-// Note que as importações para arquivos .ts não incluem a extensão no TypeScript.
-// O compilador TS cuidará disso.
+// --- Módulos Compartilhados ---
+// Caminho CORRETO: api/api.ts -> ../modules/shared/db (APENAS UM NÍVEL ACIMA E DEPOIS PARA 'modules')
+import { sql as dbSqlFunction, qdrantClient as initialQdrantClient, DbClient } from '../modules/shared/db.js';
+import errorHandler from '../modules/shared/errorHandler.js';
+import { authMiddleware, roleMiddleware, runMiddleware } from '../modules/shared/authMiddleware.js';
 
-// Módulos Compartilhados
-import { sql, qdrantClient as initialQdrantClient } from '../modules/shared/db'; // 'as' para evitar conflito de nome
-import errorHandler from '../modules/shared/errorHandler';
-import { authMiddleware, roleMiddleware, runMiddleware } from '../modules/shared/authMiddleware';
+// --- Módulos de Autenticação/Usuários ---
+import UserRepository from '../modules/users/user.repository.js';
+import UserService from '../modules/users/user.service.js';
+import UserController from '../modules/users/user.controller.js';
+import AuthService from '../modules/auth/auth.service.js';
+import AuthController from '../modules/auth/auth.controller.js';
 
-// Módulos de Autenticação/Usuários
-import UserRepository from '../modules/users/user.repository';
-import AuthService from '../modules/auth/auth.service';
-import AuthController from '../modules/auth/auth.controller';
+// --- Módulos de Raças ---
+import RaceRepository from '../modules/races/race.repository.js';
+import RaceService from '../modules/races/race.service.js';
+import RaceController from '../modules/races/race.controller.js';
 
-// Módulos de Raças
-import RaceRepository from '../modules/races/race.repository';
-import RaceService from '../modules/races/race.service';
-import RaceController from '../modules/races/race.controller';
+// --- Módulos de Classes ---
+import ClassRepository from '../modules/classes/class.repository.js';
+import ClassService from '../modules/classes/class.service.js';
+import ClassController from '../modules/classes/class.controller.js';
 
-// Módulos de Classes
-import ClassRepository from '../modules/classes/class.repository';
-import ClassService from '../modules/classes/class.service';
-import ClassController from '../modules/classes/class.controller';
-
-// Módulos do Qdrant (Embeddings)
-import QdrantRepository from '../modules/qdrant/qdrant.repository';
-import QdrantService from '../modules/qdrant/qdrant.service';
-import { ILoreDocument } from '../modules/qdrant/models/qdrant.models'; // Importar o tipo para uso
-import UserController from '../modules/users/user.controller';
-import UserService from '../modules/users/user.service';
+// --- Módulos do Qdrant (Embeddings) ---
+import QdrantRepository from '../modules/qdrant/qdrant.repository.js';
+import QdrantService from '../modules/qdrant/qdrant.service.js';
+// Caminho para o modelo qdrant.models
+import { ILoreDocument } from '../modules/qdrant/models/qdrant.models.js';
 
 
-// --- CONFIGURAÇÃO QDRANT (Pode vir de variáveis de ambiente Vercel) ---
+// --- CONFIGURAÇÃO QDRANT ---
 const QDRANT_HOST = process.env.QDRANT_HOST || 'localhost';
 const QDRANT_PORT = parseInt(process.env.QDRANT_PORT || '6333', 10);
 const QDRANT_COLLECTION_NAME = process.env.QDRANT_COLLECTION_NAME || 'rpg_lore';
 const QDRANT_VECTOR_SIZE = parseInt(process.env.QDRANT_VECTOR_SIZE || '768', 10);
 
 // --- Inicialização de Repositórios ---
-// Helper to normalize rowCount to number (never null)
-function normalizeQueryResult<T extends { rows: any[]; rowCount: number | null }>(result: T): { rows: any[]; rowCount: number } {
-    return {
-        ...result,
-        rowCount: result.rowCount ?? 0
-    };
-}
-
-// Wrapper to ensure rowCount is always a number
-const sqlNormalized = async (...args: Parameters<typeof sql>) => {
-    const result = await (sql as any)(...args);
-    return normalizeQueryResult(result);
-};
-
-const userRepository = new UserRepository(sqlNormalized);
-const raceRepository = new RaceRepository(sqlNormalized);
-const classRepository = new ClassRepository(sqlNormalized);
+const userRepository = new UserRepository(dbSqlFunction);
+const raceRepository = new RaceRepository(dbSqlFunction);
+const classRepository = new ClassRepository(dbSqlFunction);
 const qdrantRepository = new QdrantRepository(initialQdrantClient, QDRANT_COLLECTION_NAME, QDRANT_VECTOR_SIZE);
 
 // --- Inicialização de Serviços ---
 const authService = new AuthService(userRepository);
+const userService = new UserService(userRepository); // <-- Descomente esta
 const raceService = new RaceService(raceRepository);
 const classService = new ClassService(classRepository);
 const qdrantService = new QdrantService(qdrantRepository);
-const userService = new UserService(userRepository);
 
 // --- Inicialização de Controladores ---
 const authController = new AuthController(authService);
+const userController = new UserController(userService); // <-- Descomente esta
 const raceController = new RaceController(raceService);
 const classController = new ClassController(classService);
-const userController = new UserController(userService);
 
 
 // --- Inicialização do Express App ---
@@ -79,13 +63,11 @@ const app = express();
 
 app.use(express.json()); // Middleware para parsear JSON no corpo da requisição
 
-// Variável para controlar a inicialização da coleção Qdrant em "cold starts"
 let collectionInitialized = false;
 
 // --- HANDLER PRINCIPAL DA SERVERLESS FUNCTION ---
 export default async function handler(req: Request, res: Response) {
     try {
-        // Garante que a coleção Qdrant seja criada uma vez por cold start
         if (!collectionInitialized) {
             console.log("Qdrant: Initializing collection for cold start...");
             await qdrantRepository.createCollectionIfNotExists();
@@ -93,13 +75,9 @@ export default async function handler(req: Request, res: Response) {
             console.log("Qdrant: Collection initialized.");
         }
 
-        // O Express `app` é uma função que pode ser usada como handler.
-        // Ele vai despachar a requisição para a rota correta.
-        // É importante que todas as suas rotas estejam definidas ANTES desta chamada.
-        (app as any)(req, res);
+        app(req, res); // Esta linha passa a requisição para o Express
 
     } catch (err: any) {
-        // Se algo der errado antes mesmo do Express processar, como na inicialização
         errorHandler(err, res);
     }
 }
@@ -287,9 +265,8 @@ app.post('/embeddings', async (req: Request, res: Response) => {
         await runMiddleware(req, res, authMiddleware());
         await runMiddleware(req, res, roleMiddleware('admin'));
         const newPoint = await qdrantService.addLoreDocument(req.body);
-        // Não retorne res.status().json(), apenas chame-o e retorne (void)
         res.status(201).json({ message: "Embedding adicionado/atualizado com sucesso.", data: newPoint });
-        return; // Garante que a função termina aqui
+        return; 
     } catch (err: any) {
         errorHandler(err, res);
     }
@@ -302,24 +279,23 @@ app.get('/embeddings/search', async (req: Request, res: Response) => {
         const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
         if (!queryText) {
             res.status(400).json({ message: 'O parâmetro "query" é obrigatório para a busca de embeddings.' });
-            return; // Garante que a função termina aqui
+            return;
         }
         const searchResults = await qdrantService.searchLore(queryText, limit);
         res.status(200).json({ message: "Busca de embeddings realizada com sucesso.", data: searchResults });
-        return; // Garante que a função termina aqui
+        return;
     } catch (err: any) {
         errorHandler(err, res);
     }
 });
 
-// A rota PUT que estava com o erro
 app.put('/embeddings/:id', async (req: Request, res: Response) => {
     try {
         await runMiddleware(req, res, authMiddleware());
         await runMiddleware(req, res, roleMiddleware('admin'));
 
-        const id = req.params.id; // Correção: ID vem de req.params.id para PUT /embeddings/:id
-        const payload = req.body.payload; // Payload vem de req.body
+        const id = req.params.id;
+        const payload = req.body.payload;
 
         if (!id || !payload) {
             res.status(400).json({ message: 'ID do documento e um "payload" válido são obrigatórios.' });
@@ -360,9 +336,22 @@ app.use((req: Request, res: Response) => {
     res.status(404).json({ error: `Rota '${req.path}' não encontrada.`, method: req.method });
 });
 
+process.on('uncaughtException', (err: any) => {
+    console.error('Unhandled Exception Caught!');
+    console.error('Error Name:', err.name || 'N/A');
+    console.error('Error Message:', err.message || 'N/A');
+    console.error('Error Stack:', err.stack || 'N/A');
+    console.error('Full Error Object:', err);
+    // IMPORTANTE: Em produção, você pode querer encerrar o processo com um código de erro
+    // process.exit(1);
+});
 
-
-// --- Handle para rotas não encontradas ---
-app.use((req: Request, res: Response) => {
-    res.status(404).json({ error: `Rota '${req.path}' não encontrada.`, method: req.method });
+// Adicionar um handler para pegar Promises rejeitadas não tratadas
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+    console.error('Unhandled Promise Rejection Caught!');
+    console.error('Reason:', reason instanceof Error ? reason.message : reason);
+    console.error('Stack:', reason instanceof Error ? reason.stack : 'N/A');
+    console.error('Promise:', promise);
+    // IMPORTANTE: Em produção, você pode querer encerrar o processo com um código de erro
+    // process.exit(1);
 });

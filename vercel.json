@@ -1,0 +1,29 @@
+{
+    "builds": [
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "installCommand": "npm install",
+                "buildCommand": "npm run build:frontend"
+            }
+        },
+        {
+            "src": "api/api.ts",
+            "use": "@vercel/node@3",
+            "config": {
+                "runtime": "nodejs20.x"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
+        }
+    ]
+}

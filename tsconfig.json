@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "ESNext", // <-- Essencial para usar ES Modules com 'ts-node'
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node", // <-- Adicione/Verifique esta linha
+    "allowSyntheticDefaultImports": true, // <-- Pode ser útil com esModuleInterop
+    // Opções específicas para 'ts-node':
+    // ts-node irá respeitar as configurações de module e target para determinar o modo.
   },
   "include": [
     "**/*.ts"

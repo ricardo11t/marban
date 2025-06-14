@@ -1,70 +1,81 @@
 import { NextFunction, Request, Response } from 'express';
-// Ajuste o caminho para 'authorization.utils' se ele não estiver no mesmo diretório
-import { verifyToken } from './authorization.utils'; // Importa a função verifyToken
+// Caminho para authorization.utils (no mesmo diretório shared)
+import { verifyToken, DecodedUserPayload } from './authorization.utils';
+// CORREÇÃO FINAL AQUI: Caminho para CustomError
+import { CustomError } from '../types/custom-errors'; // <--- AQUI ESTÁ O CAMINHO CORRETO
 
-// --- Funções de Middleware ---
+// Estende o objeto Request do Express (certifique-se de que src/types/express.d.ts existe e é similar a isto)
+declare namespace Express {
+    export interface Request {
+        usuario?: DecodedUserPayload; // Use o tipo correto aqui!
+    }
+}
 
 export function authMiddleware() {
-    // Retorna uma função assíncrona para ser usada como middleware do Express
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const authHeader = req.headers.authorization;
 
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                // Mensagem de erro mais descritiva
-                return res.status(401).json({ message: 'Token de autenticação (Bearer) não fornecido ou mal formatado. Formato esperado: "Bearer <token>"' });
+                const error = new Error('Token de autenticação (Bearer) não fornecido ou mal formatado. Formato esperado: "Bearer <token>"') as CustomError;
+                error.statusCode = 401; // Unauthorized
+                throw error;
             }
 
             const token = authHeader.split(' ')[1];
 
             if (!token) {
-                return res.status(401).json({ message: 'Token JWT ausente após "Bearer ".' });
+                const error = new Error('Token JWT ausente após "Bearer "') as CustomError;
+                error.statusCode = 401; // Unauthorized
+                throw error;
             }
 
-            // A função verifyToken deve retornar a interface DecodedUser
-            const decoded = verifyToken(token) as DecodedUser; // Garante que 'decoded' tenha o tipo DecodedUser
+            const decoded = verifyToken(token);
 
-            // Adiciona a informação do usuário decodificado ao objeto Request
-            // Agora 'req.usuario' será tipado corretamente devido ao 'express.d.ts'
             req.usuario = decoded;
 
-            next(); // Continua para o próximo middleware ou rota
-        } catch (err: any) { // Captura o erro para enviar uma resposta de erro
-            console.error('Erro de autenticação:', err.message); // Log do erro para depuração
-            // Retorna um erro 401 para token inválido, expirado, etc.
-            return res.status(401).json({ message: `Autenticação falhou: ${err.message}` });
+            next();
+        } catch (err: any) {
+            console.error('Erro de autenticação no authMiddleware:', err.message);
+
+            const customErr = err instanceof Error ? (err as CustomError) : new Error('Unknown authentication error.') as CustomError;
+            customErr.statusCode = customErr.statusCode || 401;
+            throw customErr;
         }
     };
 }
 
-export function roleMiddleware(requiredRole: string) { // Renomeado 'role' para 'requiredRole' para clareza
-    // Retorna uma função de middleware do Express
-    return (req: Request, res: Response, next: NextFunction) => {
-        // Verifica se req.usuario existe e se tem uma role
-        // A propriedade 'usuario' é opcional ('?'), então checamos sua existência
+export function roleMiddleware(requiredRole: string) {
+    return (req: Request, res: Response, next: NextFunction): void => {
         if (!req.usuario || !req.usuario.role) {
-            return res.status(403).json({ message: 'Acesso negado. Informações de usuário ou permissão não encontradas.' });
+            const error = new Error('Acesso negado. Informações de usuário ou permissão não encontradas.') as CustomError;
+            error.statusCode = 403; // Forbidden
+            throw error;
         }
 
-        // Compara a role do usuário com a role requerida
         if (req.usuario.role !== requiredRole) {
-            return res.status(403).json({ message: `Acesso negado. Requer permissão de '${requiredRole}', mas o usuário tem permissão de '${req.usuario.role}'.` });
+            const error = new Error(`Acesso negado. Requer permissão de '${requiredRole}', mas o usuário tem permissão de '${req.usuario.role}'.`) as CustomError;
+            error.statusCode = 403; // Forbidden
+            throw error;
         }
 
-        next(); // Continua para o próximo middleware ou rota
+        next();
     };
 }
 
-// --- Função runMiddleware ---
-// Esta função é um wrapper para middlewares assíncronos em um contexto como Vercel/Next.js API Routes.
-// Ela permite que middlewares assíncronos (que chamam next()) se comportem de forma síncrona para o switch case.
 export function runMiddleware(req: Request, res: Response, fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void): Promise<any> {
     return new Promise((resolve, reject) => {
-        fn(req, res, (result: any) => { // 'result' aqui pode ser um erro ou null/undefined
-            if (result instanceof Error) {
-                return reject(result);
+        const customNext: NextFunction = (err?: any) => {
+            if (err) {
+                return reject(err);
             }
-            return resolve(result); // Ou resolve com o resultado do next(), se houver.
-        });
+            return resolve(undefined);
+        };
+
+        const result = fn(req, res, customNext);
+
+        if (result instanceof Promise) {
+            result.then(() => { }).catch(reject);
+        }
     });
 }

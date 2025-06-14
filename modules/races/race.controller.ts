@@ -2,7 +2,6 @@ import { Request, Response } from 'express'; // Importa os tipos do Express
 import responseHandler from '../shared/responseHandler'; // Importa o responseHandler tipado
 import RaceService from './race.service'; // Importa o RaceService tipado
 import { IRace } from './models/race.model'; // Importa a interface IRace
-import { CustomError } from '../../types/custom-errors'; // Importa a interface CustomError
 
 export default class RaceController {
     private raceService: RaceService; // Tipagem para o RaceService
@@ -41,17 +40,15 @@ export default class RaceController {
 
         // Validação de entrada
         if (typeof name !== 'string' || name.trim() === '') {
-            // Lança um CustomError para ser pego pelo errorHandler global
-            const error = new Error('"Name" parameter in query is obligatory and must be a non-empty string.') as CustomError;
-            error.statusCode = 400;
+            // Lança para ser pego pelo errorHandler global
+            const error = new Error('"Name" parameter in query is obligatory and must be a non-empty string.');
             throw error; // O erro será capturado pelo errorHandler no handler principal
         }
 
         const race: IRace | null = await this.raceService.getRaceByName(name);
         if (!race) {
-            // Lança um CustomError se a raça não for encontrada
-            const error = new Error(`Race with name '${name}' not found.`) as CustomError;
-            error.statusCode = 404;
+            // Lança se a raça não for encontrada
+            const error = new Error(`Race with name '${name}' not found.`);
             throw error;
         }
         responseHandler.success(res, race); // Status 200 por padrão
@@ -66,9 +63,8 @@ export default class RaceController {
 
         // Validação de entrada
         if (!raceData || typeof raceData.name !== 'string' || raceData.name.trim() === '') {
-            // Lança um CustomError para ser pego pelo errorHandler global
-            const error = new Error('Race "name" is obligatory in request body.') as CustomError;
-            error.statusCode = 400;
+            // Lança para ser pego pelo errorHandler global
+            const error = new Error('Race "name" is obligatory in request body.');
             throw error;
         }
         // Aqui você pode adicionar mais validações para raceData.bonus e raceData.pdd
@@ -89,27 +85,23 @@ export default class RaceController {
 
         // Validação de entrada
         if (typeof nameParam !== 'string' || nameParam.trim() === '') {
-            const error = new Error('"Name" parameter (from URL or query) is obligatory to identify the race to update.') as CustomError;
-            error.statusCode = 400;
+            const error = new Error('"Name" parameter (from URL or query) is obligatory to identify the race to update.');
             throw error;
         }
         if (Object.keys(raceData).length === 0) {
-            const error = new Error('Request body cannot be empty for update operation.') as CustomError;
-            error.statusCode = 400;
+            const error = new Error('Request body cannot be empty for update operation.');
             throw error;
         }
 
         // Assegure que o 'name' no raceData, se presente, corresponda ao nameParam
         if (raceData.name && raceData.name !== nameParam) {
-            const error = new Error('Race name in body must match name in URL/query parameter if provided.') as CustomError;
-            error.statusCode = 400;
+            const error = new Error('Race name in body must match name in URL/query parameter if provided.');
             throw error;
         }
 
         const updatedRace: IRace | null = await this.raceService.updateRace(nameParam, raceData);
         if (!updatedRace) {
-            const error = new Error(`Race with name '${nameParam}' not found for update.`) as CustomError;
-            error.statusCode = 404;
+            const error = new Error(`Race with name '${nameParam}' not found for update.`);
             throw error;
         }
         responseHandler.success(res, updatedRace); // Status 200 por padrão
@@ -124,16 +116,14 @@ export default class RaceController {
 
         // Validação de entrada
         if (typeof nameParam !== 'string' || nameParam.trim() === '') {
-            const error = new Error('"Name" parameter (from URL or query) is obligatory to exclude the race.') as CustomError;
-            error.statusCode = 400;
+            const error = new Error('"Name" parameter (from URL or query) is obligatory to exclude the race.');
             throw error;
         }
 
         const isDeleted: boolean = await this.raceService.deleteRace(nameParam);
         if (!isDeleted) {
             // Se o serviço retorna false, significa que a raça não foi encontrada ou não foi deletada
-            const error = new Error(`Race with name '${nameParam}' not found or could not be deleted.`) as CustomError;
-            error.statusCode = 404;
+            const error = new Error(`Race with name '${nameParam}' not found or could not be deleted.`);
             throw error;
         }
         responseHandler.noContent(res); // Usa responseHandler.noContent para status 204
