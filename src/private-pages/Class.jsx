@@ -285,18 +285,15 @@ const Classes = () => {
                                                 </>
                                             )}
                                         </CardContent>
-                                        <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
                                             {isAdmin() && (
                                                 <>
-                                                    <Button variant="outlined" color="secondary" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' } }}>
-                                                        <Edit />
-                                                    </Button>
-                                                    <Button variant="outlined" color="error" onClick={() => handleDelete(classNameKey)} sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', '&:hover': { borderColor: 'white' } }}>
-                                                        <Delete />
-                                                    </Button>
+                                                    <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
+                                                        {/* CORREÇÃO: Passando o objeto 'raceItem' completo para a edição */}
+                                                        <Button size="small" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}><Edit fontSize="small" /></Button>
+                                                        <Button size="small" onClick={() => handleDelete(classNameKey)} sx={{ color: 'lightcoral', '&:hover': { backgroundColor: 'rgba(255,100,100,0.1)' } }}><Delete fontSize="small" /></Button>
+                                                    </Box>
                                                 </>
                                             )}
-                                        </Box>
                                     </Card>
                                 );
                             })

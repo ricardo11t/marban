@@ -38,8 +38,8 @@ const Login = () => {
   return (
     <>
       <Header />
-      <main className='min-h-screen'>
-        <div className='flex justify-center mt-20'>
+      <main className='min-h-screen bg-black'>
+        <div className='flex justify-center pt-20'>
           {/* Correção 2: Envolver em um <form> e usar onSubmit */}
           <Box
             component="form" // Transforma o Box em um elemento form

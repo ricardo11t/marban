@@ -1,32 +1,30 @@
 import React, { useContext, useState, useEffect } from 'react';
-import Header from '../components/Header'; // Ajuste o caminho
-import Footer from '../components/Footer'; // Ajuste o caminho
-import { RacesContext } from '../context/RacesProvider'; // Ajuste o caminho
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { RacesContext } from '../context/RacesProvider';
 import {
     Card, CardContent, Typography, Box, Button,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, CircularProgress,
-    Autocomplete,
-    // InputLabel // InputLabel não é mais necessário separadamente se usar variant="filled" nos TextFields
+    Dialog, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress,
+    Autocomplete
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
+import { AuthContext } from '../context/AuthProvider';
 
-// Este estado inicial é para o formulário no Dialog
+// --- Constantes (sem alterações) ---
 const initialFormState = {
-    nome: '', // Este será o nome da raça (string)
+    nome: '',
     bonus: {
         forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
         agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
     },
     pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null }
 };
-
 const attributeKeys = Object.keys(initialFormState.bonus);
 const attributeOptions = attributeKeys.map(key => ({
     value: key,
     label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
 }));
-
 const filledTextFieldStyles = {
     '& .MuiFilledInput-root': {
         backgroundColor: '#601b1c', color: 'white', borderTopLeftRadius: 4, borderTopRightRadius: 4,
@@ -44,11 +42,13 @@ const filledTextFieldStyles = {
     '& label.MuiInputLabel-filled.Mui-focused': { color: 'white' },
     '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)' }
 };
-
 const API_BASE_URL = '/api';
+
 
 const Races = () => {
     const { races, isLoading: isLoadingRaces, error: racesError, refetchRaces } = useContext(RacesContext);
+    const { isAdmin } = useContext(AuthContext);
+
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
     const [editingRaceName, setEditingRaceName] = useState(null);
@@ -68,16 +68,21 @@ const Races = () => {
     };
 
     const handleOpenEdit = (raceObject) => {
-        if (!raceObject || !raceObject.name || typeof raceObject.name.name === 'undefined') {
+        // CORREÇÃO: Simplificado para a estrutura plana
+        if (!raceObject || typeof raceObject.name === 'undefined') {
             Swal.fire('Erro', 'Dados da raça inválidos para edição.', 'error');
             return;
         }
-        const currentRaceName = raceObject.name.name;
+
+        // CORREÇÃO: Acessando diretamente a propriedade 'name'
+        const currentRaceName = raceObject.name;
         setEditingRaceName(currentRaceName);
+
+        // CORREÇÃO: Populando o formulário a partir da estrutura plana correta
         setFormData({
             nome: currentRaceName,
-            bonus: { ...(raceObject.bonus || initialFormState.bonus) },
-            pdd: { ...(raceObject.pdd || initialFormState.pdd) }
+            bonus: { ...initialFormState.bonus, ...(raceObject.bonus || {}) },
+            pdd: { ...initialFormState.pdd, ...(raceObject.pdd || {}) }
         });
         setOpen(true);
     };
@@ -85,11 +90,10 @@ const Races = () => {
     const handleClose = () => setOpen(false);
 
     const handleFormChange = (event, value, fieldName) => {
-        const target = event.target;
         if (fieldName === 'AtributoUtilizado') {
             setFormData(prev => ({ ...prev, pdd: { ...prev.pdd, AtributoUtilizado: value ? value.value : null } }));
         } else {
-            const { name, value: inputValue } = target;
+            const { name, value: inputValue } = event.target;
             const isBonusField = Object.keys(initialFormState.bonus).includes(name);
             const isPdDField = Object.keys(initialFormState.pdd).includes(name) && name !== 'AtributoUtilizado';
 
@@ -108,6 +112,7 @@ const Races = () => {
         return attributeOptions.find(option => option.value === attributeValue) || null;
     };
 
+    // --- Funções handleSaveRace e handleDelete (sem alterações necessárias, já estavam corretas) ---
     const handleSaveRace = async () => {
         setIsSubmitting(true);
         try {
@@ -129,16 +134,16 @@ const Races = () => {
             }
 
             let response;
-            if (editingRaceName) { 
+            if (editingRaceName) {
                 response = await fetch(`${API_BASE_URL}/races?name=${encodeURIComponent(editingRaceName)}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json',},
+                    headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify(racePayload)
                 });
             } else {
                 response = await fetch(`${API_BASE_URL}/races`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json',},
+                    headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify(racePayload)
                 });
             }
@@ -170,7 +175,6 @@ const Races = () => {
             setIsSubmitting(false);
         }
     };
-
     const handleDelete = (raceNameString) => {
         Swal.fire({
             title: `Deletar ${raceNameString}?`,
@@ -200,6 +204,7 @@ const Races = () => {
         });
     };
 
+
     return (
         <>
             <Header />
@@ -217,12 +222,18 @@ const Races = () => {
 
                         {!isLoadingRaces && !racesError && races && races.length > 0 ? (
                             races.map((raceItem) => {
-                                if (!raceItem || !raceItem.name || typeof raceItem.name.name === 'undefined') {
+                                // CORREÇÃO: Condição de guarda simplificada para a estrutura plana.
+                                if (!raceItem || typeof raceItem.name === 'undefined') {
+                                    console.warn("Item de raça inválido ou sem nome:", raceItem);
                                     return null;
                                 }
-                                const raceNameKey = raceItem.name.name;
-                                const atributoUtilizadoLabel = raceItem.name.pdd?.AtributoUtilizado
-                                    ? (attributeOptions.find(opt => opt.value === raceItem.name.pdd.AtributoUtilizado)?.label || raceItem.name.pdd.AtributoUtilizado)
+
+                                // CORREÇÃO: Acessando a propriedade 'name' diretamente.
+                                const raceNameKey = raceItem.name;
+
+                                // CORREÇÃO: Acessando 'pdd' diretamente do raceItem.
+                                const atributoUtilizadoLabel = raceItem.pdd?.AtributoUtilizado
+                                    ? (attributeOptions.find(opt => opt.value === raceItem.pdd.AtributoUtilizado)?.label || raceItem.pdd.AtributoUtilizado)
                                     : 'N/A';
 
                                 return (
@@ -230,11 +241,12 @@ const Races = () => {
                                         <CardContent className='text-center flex-grow'>
                                             <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{raceNameKey}</Typography>
 
-                                            {raceItem.name.bonus && Object.values(raceItem.name.bonus).some(v => v !== 0) && (
+                                            {/* CORREÇÃO: Acessando 'bonus' diretamente */}
+                                            {raceItem.bonus && Object.values(raceItem.bonus).some(v => v !== 0) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                                                     <Box className='grid grid-cols-2 gap-x-4 gap-y-1 px-2'>
-                                                        {Object.entries(raceItem.name.bonus)
+                                                        {Object.entries(raceItem.bonus)
                                                             .filter(([_, valor]) => valor !== 0)
                                                             .map(([atributo, valor]) => (
                                                                 <Typography key={atributo} variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', textAlign: 'left' }}>
@@ -248,21 +260,25 @@ const Races = () => {
                                                 </>
                                             )}
 
-                                            {raceItem.name.pdd && (raceItem.name.pdd.PdDFixo !== 0 || raceItem.name.pdd.PdDFração !== 0 || raceItem.name.pdd.AtributoUtilizado) && (
+                                            {/* CORREÇÃO: Acessando 'pdd' diretamente */}
+                                            {raceItem.pdd && (raceItem.pdd.PdDFixo !== 0 || raceItem.pdd.PdDFração !== 0 || raceItem.pdd.AtributoUtilizado) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
                                                     <Box sx={{ textAlign: 'left', pl: 3, pr: 2 }}>
-                                                        {raceItem.name.pdd.PdDFixo !== undefined && raceItem.name.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fixo: {raceItem.name.pdd.PdDFixo}</Typography>}
-                                                        {raceItem.name.pdd.PdDFração !== undefined && raceItem.name.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fração: {raceItem.name.pdd.PdDFração}</Typography>}
-                                                        {raceItem.name.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
+                                                        {raceItem.pdd.PdDFixo !== undefined && raceItem.pdd.PdDFixo !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fixo: {raceItem.pdd.PdDFixo}</Typography>}
+                                                        {raceItem.pdd.PdDFração !== undefined && raceItem.pdd.PdDFração !== 0 && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Fração: {raceItem.pdd.PdDFração}</Typography>}
+                                                        {raceItem.pdd.AtributoUtilizado && <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Atributo: {atributoUtilizadoLabel}</Typography>}
                                                     </Box>
                                                 </>
                                             )}
                                         </CardContent>
+                                        {isAdmin() && 
                                         <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
+                                            {/* CORREÇÃO: Passando o objeto 'raceItem' completo para a edição */}
                                             <Button size="small" onClick={() => handleOpenEdit(raceItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}><Edit fontSize="small" /></Button>
                                             <Button size="small" onClick={() => handleDelete(raceNameKey)} sx={{ color: 'lightcoral', '&:hover': { backgroundColor: 'rgba(255,100,100,0.1)' } }}><Delete fontSize="small" /></Button>
-                                        </Box>
+                                        </Box>}
+
                                     </Card>
                                 );
                             })
@@ -272,6 +288,7 @@ const Races = () => {
                     </div>
                 </div>
 
+                {/* --- DIALOG (sem alterações necessárias no Dialog em si) --- */}
                 <Dialog
                     open={open}
                     onClose={handleClose}
@@ -284,14 +301,13 @@ const Races = () => {
                     <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         {editingRaceName ? `Editar Raça: ${editingRaceName}` : 'Adicionar Nova Raça'}
                     </DialogTitle>
-                    <DialogContent sx={{ pt: '20px !important' }}> {/* Adiciona padding top ao DialogContent */}
-                        {/* Removido DialogContentText, pois não era usado e o título já informa */}
+                    <DialogContent sx={{ pt: '20px !important' }}>
                         <TextField
-                            autoFocus={!editingRaceName} // Autofocus apenas ao adicionar nova
+                            autoFocus={!editingRaceName}
                             required
                             margin="dense"
-                            id="racename" // mudado de 'name' para 'racename' para evitar conflito com 'name' do evento.
-                            name="nome" // 'nome' é a chave no formData
+                            id="racename"
+                            name="nome"
                             label="Nome da Raça"
                             type="text"
                             fullWidth
