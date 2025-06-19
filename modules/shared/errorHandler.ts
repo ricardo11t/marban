@@ -1,4 +1,4 @@
-import logger from './logger'; // Importa o logger.
+import logger from './logger.js'; // Importa o logger.
 import { Request, Response } from 'express'; // Importa os tipos do Express
 
 // CORREÇÃO DA IMPORTAÇÃO: Caminho correto para custom-errors

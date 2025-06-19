@@ -90,9 +90,12 @@ const Classes = () => {
             Swal.fire('Erro', 'Dados da classe inválidos para edição.', 'error');
             return;
         }
+        console.log('Objeto da classe selecionada: ', classeObject);
         const currentClassName = classeObject.name;
 
-        setEditingClassName(currentClassName);
+        console.log(encodeURIComponent(currentClassName))
+
+        setEditingClassName(encodeURIComponent(currentClassName));
         setFormData({
             nome: currentClassName,
             bonus: { ...initialFormState.bonus, ...(classeObject.bonus || {}) },
@@ -127,7 +130,7 @@ const Classes = () => {
         setIsSubmitting(true);
         try {
             const classPayload = {
-                name: formData.nome.trim(),
+                name: formData.nome.trim().toLowerCase(),
                 bonus: formData.bonus,
                 tipo: formData.tipo
             };
@@ -140,9 +143,9 @@ const Classes = () => {
 
             let url = `${API_BASE_URL}/classes`;
             let method = 'POST';
-
+            
             if (editingClassName) {
-                url = `${API_BASE_URL}/classes?name=${encodeURIComponent(editingClassName)}`;
+                url = `${API_BASE_URL}/classes?name=${editingClassName}`;
                 method = 'PUT';
             }
 

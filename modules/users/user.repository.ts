@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres'; // Importe o tipo SQL do Vercel Postgres
-import User, { IUser } from "./models/user.model"; // Importa a classe User e a interface IUser
+import User, { IUser } from "./models/user.model.js"; // Importa a classe User e a interface IUser
 
 // Defina uma interface para o cliente de banco de dados, se ele não for diretamente tipado (ex: Pool)
 // Ou use 'any' como fallback se a tipagem exata for difícil de obter
@@ -30,11 +30,13 @@ export default class UserRepository {
      */
     async findAll(): Promise<Omit<IUser, 'hash_senha' | 'data_atualizacao' | 'email_verificado'>[]> {
         try {
-            // As propriedades selecionadas devem corresponder ao que toClientJSON retorna.
-            // Omit exclui as propriedades que não são retornadas pelo toClientJSON para o tipo de retorno.
-            const { rows } = await this.db`SELECT id, username, email, role, ativo, data_criacao, ultimo_login FROM ${this.tableName};`;
-            // Mapeia cada linha para uma instância de User e depois para o formato de cliente
-            return rows.map(row => new User(row as IUser).toClientJSON()); // Casting para IUser pode ser necessário aqui
+            // CORREÇÃO: Remova a variável ${this.tableName} e coloque o nome da tabela diretamente.
+            // O `sql` tag não suporta variáveis para nomes de tabelas ou colunas.
+            const { rows } = await this.db`
+                SELECT id, username, email, role, ativo, data_criacao, ultimo_login 
+                FROM private.users;
+            `;
+            return rows.map(row => new User(row as IUser).toClientJSON());
         } catch (error) {
             console.error('[UserRepository findAll] Erro ao buscar todos os usuários:', error);
             throw error;
@@ -51,7 +53,7 @@ export default class UserRepository {
             if (typeof email !== 'string' || email.trim() === '') {
                 throw new Error('Email must be a non-empty string.');
             }
-            const { rows } = await this.db`SELECT * FROM ${this.tableName} WHERE email = ${email.toLowerCase()};`;
+            const { rows } = await this.db`SELECT * FROM private.users WHERE email = ${email.toLowerCase()};`;
 
             if (rows.length === 0) {
                 return null;
@@ -96,7 +98,7 @@ export default class UserRepository {
             if (typeof hash_senha !== 'string' || !hash_senha.trim()) throw new Error('Hash da senha é obrigatório.');
 
             const { rows } = await this.db`
-                INSERT INTO ${this.tableName} (username, email, hash_senha, role)
+                INSERT INTO private.users (username, email, hash_senha, role)
                 VALUES (${username}, ${email.toLowerCase()}, ${hash_senha}, ${role})
                 RETURNING id, username, email, role, ativo, data_criacao, data_atualizacao, ultimo_login, email_verificado;`; // Retorne todas as colunas para o modelo
 
@@ -124,7 +126,7 @@ export default class UserRepository {
             if (typeof newRole !== 'string' || !['admin', 'user', 'guest'].includes(newRole)) throw new Error('Invalid role provided.'); // Validação da role
 
             const { rows } = await this.db`
-                UPDATE ${this.tableName}
+                UPDATE private.users
                 SET role = ${newRole}, data_atualizacao = CURRENT_TIMESTAMP
                 WHERE id = ${userId}
                 RETURNING id, username, email, role, ativo, data_criacao, ultimo_login, email_verificado;`; // Retorne colunas para toClientJSON
@@ -147,7 +149,7 @@ export default class UserRepository {
             if (typeof username !== 'string' || username.trim() === '') throw new Error('Username is required.');
 
             const { rows } = await this.db`
-                UPDATE ${this.tableName}
+                UPDATE private.users
                 SET ultimo_login = ${now.toISOString()} // Enviar como ISO string para o banco de dados
                 WHERE username = ${username.toLowerCase()}
                 RETURNING username, ultimo_login;`;
@@ -172,7 +174,7 @@ export default class UserRepository {
         try {
             if (typeof email !== 'string' || email.trim() === '') throw new Error('Email is required.');
 
-            const { rowCount } = await this.db`DELETE FROM ${this.tableName} WHERE email = ${email.toLowerCase()};`;
+            const { rowCount } = await this.db`DELETE FROM private.users WHERE email = ${email.toLowerCase()};`;
 
             if (rowCount === 0) {
                 console.warn(`[UserRepository delete] Usuário com email ${email} não encontrado para exclusão.`);

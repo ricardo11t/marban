@@ -1,8 +1,8 @@
 // src/modules/classes/class.service.ts
 
-import ClassRepository from "./class.repository";
-import ClassModel, { IClass } from './models/class.model'; // Importe o modelo e a interface da classe
-import { CustomError } from '../types/custom-errors'; // Importa a interface CustomError
+import ClassRepository from "./class.repository.js";
+import ClassModel, { IClass } from './models/class.model.js'; // Importe o modelo e a interface da classe
+import { CustomError } from '../types/custom-errors.js'; // Importa a interface CustomError
 
 export default class ClassService {
     public classRepository: ClassRepository;

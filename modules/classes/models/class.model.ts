@@ -12,10 +12,6 @@ export default class ClassModel implements IClass {
     public tipo: object;
 
     constructor(name: string, bonus: object, tipo: object) {
-        if (typeof name !== 'string' || name.trim() === '') throw new Error('Class name is required.');
-        if (typeof bonus !== 'object' || bonus === null) throw new Error('Class bonus is required.');
-        if (typeof tipo !== 'object' || tipo === null) throw new Error('Class tipo is required.');
-
         this.name = name;
         this.bonus = bonus;
         this.tipo = tipo;

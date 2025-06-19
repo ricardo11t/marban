@@ -12,15 +12,6 @@ export default class Race implements IRace {
 
     constructor(name: string, bonus: object, pdd: object) { // Tipado os parâmetros do construtor
         // Opcional: Adicionar validações básicas
-        if (typeof name !== 'string' || name.trim() === '') {
-            throw new Error('Race name is required and must be a non-empty string.');
-        }
-        if (typeof bonus !== 'object' || bonus === null) {
-            throw new Error('Race bonus is required and must be a non-null object.');
-        }
-        if (typeof pdd !== 'object' || pdd === null) {
-            throw new Error('Race PDD is required and must be a non-null object.');
-        }
 
         this.name = name;
         this.bonus = bonus;

@@ -54,7 +54,6 @@ export default class User implements IUser {
         if (typeof id === 'undefined' || id === null) throw new Error('User ID is required.');
         if (typeof username !== 'string' || username.trim() === '') throw new Error('Username is required and must be a string.');
         if (typeof email !== 'string' || !email.includes('@')) throw new Error('Valid email is required.');
-        if (typeof hash_senha !== 'string' || hash_senha.length < 8) throw new Error('Password hash is required and must be at least 8 characters.');
 
         this.id = id;
         this.username = username;

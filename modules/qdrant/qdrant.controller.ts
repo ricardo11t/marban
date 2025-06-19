@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'; // Supondo Express para req/res
-import QdrantService from "../qdrant/qdrant.service";
-import { ILoreDocument } from '../qdrant/models/qdrant.models';
+import QdrantService from "../qdrant/qdrant.service.js";
+import { ILoreDocument } from '../qdrant/models/qdrant.models.js';
 
 /**
  * O QdrantController lida com as requisições HTTP,

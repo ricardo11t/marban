@@ -8,7 +8,7 @@ interface AppConfig {
     // Adicione outras propriedades de configuração se existirem
 }
 // 2. Importe a configuração. Se config.ts for um arquivo TS, não use .js
-import { config } from './config'; // Assumindo que config.ts exporta a constante 'config'
+import { config } from './config.js'; // Assumindo que config.ts exporta a constante 'config'
 
 // Defina a interface para o payload do JWT que você está gerando
 export interface JwtUserPayload {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'; // Importa os tipos do Express
-import responseHandler from '../shared/responseHandler'; // Importa o responseHandler tipado
-import RaceService from './race.service'; // Importa o RaceService tipado
-import { IRace } from './models/race.model'; // Importa a interface IRace
+import responseHandler from '../shared/responseHandler.js'; // Importa o responseHandler tipado
+import RaceService from './race.service.js'; // Importa o RaceService tipado
+import { IRace } from './models/race.model.js'; // Importa a interface IRace
 
 export default class RaceController {
     private raceService: RaceService; // Tipagem para o RaceService

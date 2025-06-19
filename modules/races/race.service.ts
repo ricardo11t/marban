@@ -1,8 +1,8 @@
 // src/modules/races/race.service.ts
 
-import RaceRepository from './race.repository'; // Importa o RaceRepository tipado
-import { IRace } from './models/race.model'; // Importa a interface IRace
-import { CustomError } from '../types/custom-errors'; // Importa a interface CustomError
+import RaceRepository from './race.repository.js'; // Importa o RaceRepository tipado
+import { IRace } from './models/race.model.js'; // Importa a interface IRace
+import { CustomError } from '../types/custom-errors.js'; // Importa a interface CustomError
 
 export default class RaceService {
     private raceRepository: RaceRepository; // Tipagem para o repositório

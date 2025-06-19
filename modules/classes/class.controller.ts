@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ClassService from "./class.service";
+import ClassService from "./class.service.js";
 
 export default class ClassController {
     private classService: ClassService;

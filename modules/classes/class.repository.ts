@@ -1,8 +1,8 @@
 // src/modules/classes/class.repository.ts
 
-import ClassModel, { IClass } from './models/class.model'; // Importa o modelo e a interface da classe
-import { DbClient } from '../shared/db'; // Importa a interface DbClient
-import { CustomError } from '../types/custom-errors'; // Importa CustomError
+import ClassModel, { IClass } from './models/class.model.js'; // Importa o modelo e a interface da classe
+import { DbClient } from '../shared/db.js'; // Importa a interface DbClient
+import { CustomError } from '../types/custom-errors.js'; // Importa CustomError
 
 export default class ClassRepository {
     public db: DbClient; // Tipagem para o cliente de banco de dados
@@ -22,7 +22,7 @@ export default class ClassRepository {
      */
     async findAll(): Promise<ClassModel[] | null> {
         try {
-            const { rows } = await this.db`SELECT name, bonus, tipo FROM ${this.tableName};`;
+            const { rows } = await this.db`SELECT name, bonus, tipo FROM public.classes;`;
             if (rows.length === 0) {
                 return null;
             }
@@ -44,7 +44,7 @@ export default class ClassRepository {
             if (typeof name !== 'string' || name.trim() === '') {
                 throw new Error('Class name must be a non-empty string.');
             }
-            const { rows } = await this.db`SELECT name, bonus, tipo FROM ${this.tableName} WHERE name = ${name.toLowerCase()};`;
+            const { rows } = await this.db`SELECT name, bonus, tipo FROM public.classes WHERE name = ${name.toLowerCase()};`;
             if (rows.length === 0) {
                 return null;
             }
@@ -69,7 +69,7 @@ export default class ClassRepository {
             if (typeof classData.tipo !== 'object' || classData.tipo === null) throw new Error('Class tipo is required.');
 
             const { rows } = await this.db`
-                INSERT INTO ${this.tableName} (name, bonus, tipo)
+                INSERT INTO public.classes (name, bonus, tipo)
                 VALUES (${name.toLowerCase()}, ${JSON.stringify(classData.bonus)}, ${JSON.stringify(classData.tipo)})
                 RETURNING name, bonus, tipo;`;
 
@@ -124,7 +124,7 @@ export default class ClassRepository {
 
             const setClause = updateParts.join(', ');
             const { rows } = await this.db`
-                            UPDATE ${this.tableName}
+                            UPDATE public.classes
                             SET ${setClause}
                             WHERE name = ${name.toLowerCase()}
                             RETURNING name, bonus, tipo;
@@ -154,7 +154,7 @@ export default class ClassRepository {
                 throw new Error('Class name is required for deletion.');
             }
             console.log(`[ClassRepository delete] Deleting class with name: ${name}`);
-            const { rowCount } = await this.db`DELETE FROM ${this.tableName} WHERE name = ${name.toLowerCase()};`;
+            const { rowCount } = await this.db`DELETE FROM public.classes WHERE name = ${name.toLowerCase()};`;
             return rowCount > 0;
         } catch (error) {
             console.error(`[ClassRepository delete] Erro ao deletar classe ${name}:`, error);

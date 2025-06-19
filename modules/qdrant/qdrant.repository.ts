@@ -1,13 +1,7 @@
-// qdrant.repository.ts
+// qdrant.repository.ts (VERSÃO FINAL CORRIGIDA)
 
 import { QdrantClient } from '@qdrant/qdrant-js';
-// REMOVA ESTAS LINHAS. NÃO VAMOS MAIS TENTAR IMPORTAR POINTSTRUCT.
-// import { PointStruct, CollectionInfo } from '@qdrant/qdrant-js';
-// import { PointStruct, CollectionInfo } from '@qdrant/qdrant-js/dist/types/src/proto/qdrant/qdrant_service_pb';
-// import { PointStruct, CollectionInfo } from '@qdrant/qdrant-js/dist/types/grpc-web';
-
-
-import { IQdrantPoint, ILoreDocument } from '../qdrant/models/qdrant.models';
+import { IQdrantPoint, ILoreDocument } from '../qdrant/models/qdrant.models.js';
 
 export default class QdrantRepository {
     public db: QdrantClient;
@@ -30,24 +24,28 @@ export default class QdrantRepository {
 
     async createCollectionIfNotExists(): Promise<void> {
         try {
-            const { collections } = await this.db.getCollections();
-            const collectionExists = collections.some(col => col.name === this.collectionName);
-
-            if (!collectionExists) {
-                console.log(`Collection '${this.collectionName}' does not exist. Creating...`);
-                await this.db.createCollection(this.collectionName, {
-                    vectors: {
-                        size: this.VECTOR_SIZE,
-                        distance: this.DISTANCE_METRIC,
-                    },
-                });
-                console.log(`Collection '${this.collectionName}' created successfully.`);
+            // CORREÇÃO 1: Passando o nome da coleção como uma string direta.
+            await this.db.getCollection(this.collectionName);
+            console.log(`Qdrant: Collection '${this.collectionName}' already exists.`);
+        } catch (error: any) {
+            if (error && error.status === 404) {
+                try {
+                    console.log(`Qdrant: Collection '${this.collectionName}' does not exist. Creating...`);
+                    await this.db.createCollection(this.collectionName, {
+                        vectors: {
+                            size: this.VECTOR_SIZE,
+                            distance: this.DISTANCE_METRIC,
+                        },
+                    });
+                    console.log(`Qdrant: Collection '${this.collectionName}' created successfully.`);
+                } catch (createError: any) {
+                    console.error(`Qdrant: CRITICAL - Failed to create collection '${this.collectionName}'.`, createError);
+                    throw new Error(`Failed to create Qdrant collection: ${createError.message}`);
+                }
             } else {
-                console.log(`Collection '${this.collectionName}' already exists.`);
+                console.error("Qdrant: CRITICAL - An unexpected error occurred while checking collection.", error);
+                throw new Error(`An unexpected error occurred with Qdrant: ${error.message}`);
             }
-        } catch (error) {
-            console.error(`Error checking or creating collection '${this.collectionName}':`, error);
-            throw new Error('Failed to ensure collection existence.');
         }
     }
 
@@ -60,22 +58,11 @@ export default class QdrantRepository {
         const vector = this.generatedMockEmbedding(document.text);
         const payload = { ...document.metadata, original_text: document.text };
 
-        // **Ajuste AQUI:** Remova a tipagem explícita ': PointStruct'.
-        // Deixe o TypeScript inferir o tipo do objeto 'point'.
-        // O compilador sabe que 'points' no upsert espera uma certa estrutura.
-        const point = { // Não precisa mais de ': PointStruct'
-            id: id,
-            vector: vector,
-            payload: payload,
-        };
+        const point = { id, vector, payload };
 
         try {
-            await this.db.upsert(this.collectionName, {
-                wait: true,
-                points: [point], // 'point' aqui já está no formato correto.
-            });
+            await this.db.upsert(this.collectionName, { wait: true, points: [point] });
             console.log(`Point '${id}' upserted successfully.`);
-            // Certifique-se de que o retorno corresponde à sua interface IQdrantPoint
             return point as IQdrantPoint;
         } catch (error) {
             console.error(`Error adding/updating embedding for ID '${id}':`, error);
@@ -92,25 +79,39 @@ export default class QdrantRepository {
 
         try {
             const searchResults = await this.db.query(this.collectionName, {
-                query: queryVector,
-                limit: limit,
-                with_payload: true,
-                with_vector: false,
-                filter: filter,
+                query: queryVector, limit, with_payload: true, with_vector: true, filter,
             });
 
             console.log(`Search completed for query: "${queryText}"`);
-            // Mapeia os resultados para o formato do seu modelo ou interface
-            return searchResults.points.map(point => ({
-                id: point.id as string | number,
-                vector: point.vector as number[], // Isso será um vetor vazio se with_vectors for false
-                payload: point.payload || null,
-            }));
+
+            return searchResults.points.map(point => {
+                let finalVector: number[] = [];
+
+                // Lógica CORRIGIDA para tratar o tipo 'number[] | number[][]'
+                if (Array.isArray(point.vector)) {
+                    if (point.vector.length > 0 && Array.isArray(point.vector[0])) {
+                        // É um number[][], então pegamos o primeiro vetor
+                        finalVector = point.vector[0] as number[];
+                    } else {
+                        // É um number[], então usamos ele diretamente
+                        finalVector = point.vector as number[];
+                    }
+                }
+
+                return {
+                    id: point.id,
+                    vector: finalVector, // Agora sempre será do tipo number[]
+                    payload: point.payload || null,
+                };
+            });
         } catch (error) {
             console.error(`Error searching embeddings for query "${queryText}":`, error);
             throw new Error('Failed to perform search.');
         }
     }
+
+    // As outras funções (updatePointPayload, deletePoints) permanecem as mesmas
+    // que a versão anterior que te enviei, pois estavam corretas.
 
     async updatePointPayload(id: number | string, newPayload: Record<string, any>): Promise<any> {
         if (!id || typeof newPayload !== 'object' || newPayload === null) {
@@ -131,7 +132,7 @@ export default class QdrantRepository {
             const originalPoint = existingPoints[0];
             const originalVector = originalPoint.vector;
 
-            if (!originalVector || !(Array.isArray(originalVector) && originalVector.every((v: any) => typeof v === "number" || Array.isArray(v)))) {
+            if (!originalVector || !(Array.isArray(originalVector) && (originalVector as any[]).every((v: any) => typeof v === "number" || Array.isArray(v)))) {
                 throw new Error(`Original vector invalid or not found for point with ID '${id}'.`);
             }
 
@@ -140,7 +141,7 @@ export default class QdrantRepository {
                 points: [
                     {
                         id: id,
-                        vector: originalVector as number[] | number[][], // Casting necessário aqui
+                        vector: originalVector as number[] | number[][],
                         payload: newPayload,
                     }
                 ]

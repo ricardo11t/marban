@@ -3,9 +3,9 @@
 // A importação de 'sql' do @vercel/postgres já está correta no seu db.ts e DbClient.
 // Não precisa importar diretamente aqui se você já a passa pelo construtor.
 // Se a interface DbClient estiver em 'db.ts', você pode importá-la de lá.
-import Race, { IRace } from './models/race.model';
-import { CustomError } from '../types/custom-errors';
-import { DbClient } from '../shared/db'; // Importa a interface DbClient do seu shared/db
+import Race, { IRace } from './models/race.model.js';
+import { CustomError } from '../types/custom-errors.js';
+import { DbClient } from '../shared/db.js'; // Importa a interface DbClient do seu shared/db
 
 export default class RaceRepository {
     public db: DbClient;
@@ -25,8 +25,8 @@ export default class RaceRepository {
      */
     async findAll(): Promise<Race[] | null> {
         try {
-            // Note: ${this.tableName} não precisa de sql() se DbClient já é o template literal
-            const { rows } = await this.db`SELECT * FROM ${this.tableName};`;
+            // Note: public.races não precisa de sql() se DbClient já é o template literal
+            const { rows } = await this.db`SELECT * FROM public.races;`;
             if (rows.length === 0) {
                 return null;
             }
@@ -49,7 +49,7 @@ export default class RaceRepository {
                 error.statusCode = 400; // Bad Request
                 throw error;
             }
-            const { rows } = await this.db`SELECT * FROM ${this.tableName} WHERE name = ${name.toLowerCase()};`;
+            const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
             if (rows.length === 0) {
                 return null;
             }
@@ -84,7 +84,7 @@ export default class RaceRepository {
             }
 
             const { rows } = await this.db`
-                INSERT INTO ${this.tableName} (name, bonus, pdd)
+                INSERT INTO public.races (name, bonus, pdd)
                 VALUES (${raceData.name.toLowerCase()}, ${raceData.bonus}, ${raceData.pdd})
                 RETURNING name, bonus, pdd;`;
 
@@ -145,7 +145,7 @@ export default class RaceRepository {
             const setClause = updateParts.join(', ');
             // Monta a query dinamicamente usando template string do dbClient
             const { rows } = await this.db`
-                UPDATE ${this.tableName}
+                UPDATE public.races
                 SET ${setClause}
                 WHERE name = ${name.toLowerCase()}
                 RETURNING name, bonus, pdd;
@@ -176,7 +176,7 @@ export default class RaceRepository {
                 error.statusCode = 400;
                 throw error;
             }
-            const { rowCount } = await this.db`DELETE FROM ${this.tableName} WHERE name = ${name.toLowerCase()};`;
+            const { rowCount } = await this.db`DELETE FROM public.races WHERE name = ${name.toLowerCase()};`;
             return rowCount > 0;
         } catch (error) {
             console.error(`[RaceRepository delete] Erro ao deletar raça ${name}:`, error);

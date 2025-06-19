@@ -1,15 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
 // Caminho para authorization.utils (no mesmo diretório shared)
-import { verifyToken, DecodedUserPayload } from './authorization.utils';
+import { verifyToken, DecodedUserPayload } from './authorization.utils.js';
 // CORREÇÃO FINAL AQUI: Caminho para CustomError
 import { CustomError } from '../types/custom-errors'; // <--- AQUI ESTÁ O CAMINHO CORRETO
 
 // Estende o objeto Request do Express (certifique-se de que src/types/express.d.ts existe e é similar a isto)
-declare namespace Express {
-    export interface Request {
-        usuario?: DecodedUserPayload; // Use o tipo correto aqui!
+interface IUsuarioToken {
+    id: number | string; // Aceita número OU string
+    email: string;
+    role: 'admin' | 'user';
+  }
+
+declare global {
+    namespace Express {
+        export interface Request {
+            usuario?: IUsuarioToken;
+        }
     }
-}
+  }
 
 export function authMiddleware() {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -32,7 +40,7 @@ export function authMiddleware() {
 
             const decoded = verifyToken(token);
 
-            req.usuario = decoded;
+            req.usuario = decoded as IUsuarioToken;
 
             next();
         } catch (err: any) {

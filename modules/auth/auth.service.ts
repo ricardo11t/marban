@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 // Corrigido o caminho para corresponder à nossa estrutura de arquivos anterior.
 // Supondo que 'authService.js' está agora no mesmo nível que este arquivo.
-import { generateToken, JwtUserPayload } from '../shared/authorization.utils';
-import  UserRepository from '../users/user.repository';
+import { generateToken, JwtUserPayload } from '../shared/authorization.utils.js';
+import  UserRepository from '../users/user.repository.js';
 
 export default class AuthService {
     public userRepository: UserRepository;

@@ -1,6 +1,6 @@
-import UserRepository from './user.repository'; // Importa o UserRepository tipado
-import User, { IUser } from './models/user.model'; // Importa a classe User e a interface IUser
-import { CustomError } from '../types/custom-errors'; // Importa a interface CustomError
+import UserRepository from './user.repository.js'; // Importa o UserRepository tipado
+import User, { IUser } from './models/user.model.js'; // Importa a classe User e a interface IUser
+import { CustomError } from '../types/custom-errors.js'; // Importa a interface CustomError
 
 export default class UserService {
     private userRepository: UserRepository; // Tipagem para o repositório

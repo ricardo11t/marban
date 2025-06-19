@@ -1,5 +1,5 @@
-import QdrantRepository from "../qdrant/qdrant.repository";
-import { ILoreDocument, IQdrantPoint } from "../qdrant/models/qdrant.models";
+import QdrantRepository from "../qdrant/qdrant.repository.js";
+import { ILoreDocument, IQdrantPoint } from "../qdrant/models/qdrant.models.js";
 
 /**
  * O QdrantService orquestra as operações de repositório
