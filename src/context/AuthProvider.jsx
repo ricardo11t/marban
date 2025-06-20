@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 export const AuthContext = createContext(null); // Inicializa com null ou um objeto com valores padrão
 
 // URL base da sua API (pode vir de uma variável de ambiente)
-const API_URL = 'https://marban-bg7s6dc5d-ricardo11ts-projects.vercel.app/api/auth';
+const API_URL = '/api/auth';
 
 const AuthProvider = ({ children }) => { // Corrigido: children é recebido como prop
   const [user, setUser] = useState(null);
