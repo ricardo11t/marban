@@ -15,11 +15,7 @@ export const sql: DbClient = async (strings, ...values) => {
     };
 };
 
-// --- CLIENTE QDRANT (Singleton) ---
 export const qdrantClient = new QdrantClient({
-    url: process.env.QDRANT_URL, // Agora contém a URL completa com a porta
+    url: process.env.QDRANT_URL,
     apiKey: process.env.QDRANT_API_KEY,
-    // A linha 'port: 6334' foi removida.
-    // A flag 'checkCompatibility: false' pode ser mantida se os erros de versão voltarem,
-    // mas tente primeiro sem ela. Se o erro voltar, adicione-a novamente.
 });

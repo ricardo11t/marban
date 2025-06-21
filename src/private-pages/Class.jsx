@@ -153,7 +153,7 @@ const Classes = () => {
                 // --- CORREÇÃO NA URL ---
                 // A URL para PUT deve usar o nome diretamente no caminho, sem ":name" ou query string.
                 // O `editingClassName` já está codificado com encodeURIComponent.
-                url = `${API_BASE_URL}/classes/${editingClassName}`;
+                url = `${API_BASE_URL}/classes/:name?name${editingClassName}`;
                 method = 'PUT';
             }
 
