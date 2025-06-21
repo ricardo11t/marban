@@ -95,54 +95,67 @@ export default class ClassRepository {
      */
     async update(name: string, classData: Partial<Pick<IClass, 'bonus' | 'tipo'>>): Promise<ClassModel | null> {
         try {
-            if (typeof name !== 'string' || name.trim() === '') {
-                throw new Error('Class name is required for update.');
-            }
-            if (Object.keys(classData).length === 0) {
+            const hasBonus = classData.bonus !== undefined;
+            const hasTipo = classData.tipo !== undefined;
+            const lowerCaseName = name.toLowerCase();
+
+            // Se nenhum campo foi fornecido, não faz nada.
+            if (!hasBonus && !hasTipo) {
                 throw new Error('No fields provided for update.');
             }
 
-            const updateParts: string[] = [];
-            const updateValues: any[] = [];
-            let i = 1;
+            let queryResult;
 
-            // Se bonus ou tipo forem objetos, serializá-los para JSON para o DB
-            if (classData.bonus !== undefined) {
-                updateParts.push(`bonus = $${i++}`);
-                updateValues.push(JSON.stringify(classData.bonus));
+            // Caso 1: Atualizar APENAS o bônus
+            if (hasBonus && !hasTipo) {
+                queryResult = await this.db`
+                    UPDATE public.classes
+                    SET bonus = ${JSON.stringify(classData.bonus)}
+                    WHERE name = ${lowerCaseName}
+                    RETURNING name, bonus, tipo;
+                `;
             }
-            if (classData.tipo !== undefined) {
-                updateParts.push(`tipo = $${i++}`);
-                updateValues.push(JSON.stringify(classData.tipo));
+            // Caso 2: Atualizar APENAS o tipo
+            else if (!hasBonus && hasTipo) {
+                queryResult = await this.db`
+                    UPDATE public.classes
+                    SET tipo = ${JSON.stringify(classData.tipo)}
+                    WHERE name = ${lowerCaseName}
+                    RETURNING name, bonus, tipo;
+                `;
+            }
+            // Caso 3: Atualizar AMBOS, bônus e tipo
+            else if (hasBonus && hasTipo) {
+                queryResult = await this.db`
+                    UPDATE public.classes
+                    SET 
+                        bonus = ${JSON.stringify(classData.bonus)},
+                        tipo = ${JSON.stringify(classData.tipo)}
+                    WHERE name = ${lowerCaseName}
+                    RETURNING name, bonus, tipo;
+                `;
+            } else {
+                // Esta condição nunca deve ser atingida devido à verificação inicial,
+                // mas está aqui por segurança.
+                throw new Error("Invalid update combination.");
             }
 
-            if (updateParts.length === 0) {
-                throw new Error('No valid fields to update (only bonus or tipo expected).');
-            }
-
-            updateValues.push(name.toLowerCase()); // Último valor é o nome para a cláusula WHERE
-
-            const setClause = updateParts.join(', ');
-            const { rows } = await this.db`
-                            UPDATE public.classes
-                            SET ${setClause}
-                            WHERE name = ${name.toLowerCase()}
-                            RETURNING name, bonus, tipo;
-                        `;
+            const { rows } = queryResult;
 
             if (rows.length === 0) {
-                const error = new Error(`Class with name '${name}' not found for update.`) as CustomError;
-                error.statusCode = 404; // Not Found
+                const error = new Error(`Class with name '${name}' not found for update.`) as any;
+                error.statusCode = 404;
                 throw error;
             }
+
             const { name: className, bonus: classBonus, tipo: classTipo } = rows[0];
             return new ClassModel(className, classBonus, classTipo);
+
         } catch (error) {
             console.error(`[ClassRepository update] Erro ao atualizar classe ${name}:`, error);
             throw error;
         }
     }
-
     /**
      * Deleta uma classe pelo nome.
      * @param name O nome da classe a ser deletada.

@@ -1,11 +1,7 @@
 // src/modules/races/race.repository.ts
-
-// A importação de 'sql' do @vercel/postgres já está correta no seu db.ts e DbClient.
-// Não precisa importar diretamente aqui se você já a passa pelo construtor.
-// Se a interface DbClient estiver em 'db.ts', você pode importá-la de lá.
 import Race, { IRace } from './models/race.model.js';
 import { CustomError } from '../types/custom-errors.js';
-import { DbClient } from '../shared/db.js'; // Importa a interface DbClient do seu shared/db
+import { DbClient } from '../shared/db.js';
 
 export default class RaceRepository {
     public db: DbClient;
@@ -19,168 +15,102 @@ export default class RaceRepository {
         this.tableName = 'public.races';
     }
 
-    /**
-     * Busca todas as raças no banco de dados.
-     * @returns Um array de instâncias de Race, ou null se nenhuma for encontrada.
-     */
     async findAll(): Promise<Race[] | null> {
-        try {
-            // Note: public.races não precisa de sql() se DbClient já é o template literal
-            const { rows } = await this.db`SELECT * FROM public.races;`;
-            if (rows.length === 0) {
-                return null;
-            }
-            return rows.map((row: {name: string, bonus: object, pdd: object}) => new Race(row.name, row.bonus, row.pdd) as Race);
-        } catch (error) {
-            console.error('[RaceRepository findAll] Erro ao buscar todas as raças:', error);
-            throw error;
+        const { rows } = await this.db`SELECT * FROM public.races;`;
+        if (rows.length === 0) {
+            return null;
         }
+        // O banco retorna 'bonus' e 'pdd' achatados, o construtor da classe Race os aninha corretamente.
+        return rows.map((row: any) => new Race(row.name, row.bonus, row.pdd));
     }
 
-    /**
-     * Busca uma raça pelo nome.
-     * @param name O nome da raça a ser buscada.
-     * @returns Uma instância de Race ou null se não encontrada.
-     */
     async findByName(name: string): Promise<Race | null> {
-        try {
-            if (typeof name !== 'string' || name.trim() === '') {
-                const error = new Error('Race name must be a non-empty string.') as CustomError;
-                error.statusCode = 400; // Bad Request
-                throw error;
-            }
-            const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
-            if (rows.length === 0) {
-                return null;
-            }
-            return new Race(rows[0].name, rows[0].bonus, rows[0].pdd) as Race;
-        } catch (error) {
-            console.error('[RaceRepository findByName] Erro na query =', error);
-            throw error;
+        const { rows } = await this.db`SELECT * FROM public.races WHERE name = ${name.toLowerCase()};`;
+        if (rows.length === 0) {
+            return null;
         }
+        return new Race(rows[0].name, rows[0].bonus, rows[0].pdd);
     }
 
     /**
-     * Cria uma nova raça no banco de dados.
-     * @param raceData Dados da raça a ser criada (name, bonus, pdd).
-     * @returns A instância de Race criada.
+     * Cria uma nova raça, "achatando" a estrutura para o banco.
      */
-    async create(raceData: Pick<IRace, 'name' | 'bonus' | 'pdd'>): Promise<Race> {
-        try {
-            if (typeof raceData.name !== 'string' || !raceData.name.trim()) {
-                const error = new Error('Race name is required.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
-            if (typeof raceData.bonus !== 'string') {
-                const error = new Error('Race bonus is required.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
-            if (typeof raceData.pdd !== 'string') {
-                const error = new Error('Race PDD is required.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
+    async create(name: string, raceData: IRace['raceData']): Promise<Race> {
+        const { bonus, pdd } = raceData;
 
-            const { rows } = await this.db`
-                INSERT INTO public.races (name, bonus, pdd)
-                VALUES (${raceData.name.toLowerCase()}, ${raceData.bonus}, ${raceData.pdd})
-                RETURNING name, bonus, pdd;`;
-
-            if (rows.length === 0) {
-                const error = new Error('Failed to create race: No row returned.') as CustomError;
-                error.statusCode = 500;
-                throw error;
-            }
-            return new Race(rows[0].name, rows[0].bonus, rows[0].pdd) as Race;
-        } catch (error) {
-            console.error('[RaceRepository create] Erro ao criar raça:', error);
+        // Validação básica para garantir que os objetos não são nulos/undefined.
+        if (!bonus || !pdd) {
+            const error = new Error('Bonus and PDD data are required.') as CustomError;
+            error.statusCode = 400;
             throw error;
         }
+
+        const { rows } = await this.db`
+            INSERT INTO public.races (name, bonus, pdd)
+            VALUES (${name.toLowerCase()}, ${JSON.stringify(bonus)}, ${JSON.stringify(pdd)})
+            RETURNING name, bonus, pdd;`;
+
+        if (rows.length === 0) {
+            const error = new Error('Failed to create race: No row returned.') as CustomError;
+            error.statusCode = 500;
+            throw error;
+        }
+        return new Race(rows[0].name, rows[0].bonus, rows[0].pdd);
     }
 
     /**
-     * Atualiza uma raça existente pelo nome.
-     * @param name O nome da raça a ser atualizada.
-     * @param updatedFields Os campos a serem atualizados (bonus, pdd).
-     * @returns A instância de Race atualizada ou null se não encontrada.
-     * @throws CustomError se a raça não for encontrada ou dados inválidos.
+     * Atualiza uma raça existente.
+     * Este método agora lida com a limitação da biblioteca Vercel/Postgres.
      */
-    async update(name: string, updatedFields: Partial<Omit<IRace, 'name'>>): Promise<Race | null> {
-        try {
-            if (typeof name !== 'string' || name.trim() === '') {
-                const error = new Error('Race name is required for update.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
-            if (Object.keys(updatedFields).length === 0) {
-                const error = new Error('No fields provided for update.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
+    async update(name: string, updatedFields: Partial<IRace['raceData']>): Promise<Race | null> {
+        const lowerCaseName = name.toLowerCase();
+        const { bonus, pdd } = updatedFields;
+        const hasBonus = bonus !== undefined;
+        const hasPdd = pdd !== undefined;
 
-            // Construir a query de UPDATE dinamicamente com base nos campos fornecidos
-            const updateParts: string[] = [];
-            const updateValues: any[] = [];
-            let i = 1;
+        if (!hasBonus && !hasPdd) {
+            const error = new Error('No valid fields to update (only bonus or pdd expected).') as CustomError;
+            error.statusCode = 400;
+            throw error;
+        }
 
-            if (typeof updatedFields.bonus === 'string') {
-                updateParts.push(`bonus = $${i++}`);
-                updateValues.push(updatedFields.bonus);
-            }
-            if (typeof updatedFields.pdd === 'string') {
-                updateParts.push(`pdd = $${i++}`);
-                updateValues.push(updatedFields.pdd);
-            }
+        let queryResult;
 
-            if (updateParts.length === 0) {
-                const error = new Error('No valid fields to update (only bonus or pdd expected).') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
-
-            updateValues.push(name.toLowerCase()); // Último valor é o nome para a cláusula WHERE
-
-            const setClause = updateParts.join(', ');
-            // Monta a query dinamicamente usando template string do dbClient
-            const { rows } = await this.db`
+        if (hasBonus && !hasPdd) {
+            queryResult = await this.db`
                 UPDATE public.races
-                SET ${setClause}
-                WHERE name = ${name.toLowerCase()}
+                SET bonus = ${JSON.stringify(bonus)}
+                WHERE name = ${lowerCaseName}
                 RETURNING name, bonus, pdd;
             `;
-
-            if (rows.length === 0) {
-                const error = new Error(`Race with name '${name}' not found for update.`) as CustomError;
-                error.statusCode = 404; // Not Found
-                throw error;
-            }
-            return new Race(rows[0].name, rows[0].bonus, rows[0].pdd) as Race;
-        } catch (error) {
-            console.error(`[RaceRepository update] Erro ao atualizar raça ${name}:`, error);
-            throw error;
+        } else if (!hasBonus && hasPdd) {
+            queryResult = await this.db`
+                UPDATE public.races
+                SET pdd = ${JSON.stringify(pdd)}
+                WHERE name = ${lowerCaseName}
+                RETURNING name, bonus, pdd;
+            `;
+        } else { // hasBonus && hasPdd
+            queryResult = await this.db`
+                UPDATE public.races
+                SET bonus = ${JSON.stringify(bonus)}, pdd = ${JSON.stringify(pdd)}
+                WHERE name = ${lowerCaseName}
+                RETURNING name, bonus, pdd;
+            `;
         }
+
+        const { rows } = queryResult;
+
+        if (rows.length === 0) {
+            // Isso pode acontecer se a raça for deletada entre a verificação no serviço e o update.
+            return null;
+        }
+
+        return new Race(rows[0].name, rows[0].bonus, rows[0].pdd);
     }
 
-    /**
-     * Deleta uma raça pelo nome.
-     * @param name O nome da raça a ser deletada.
-     * @returns True se a raça foi deletada, false caso contrário.
-     * @throws CustomError se o nome for inválido.
-     */
     async delete(name: string): Promise<boolean> {
-        try {
-            if (typeof name !== 'string' || name.trim() === '') {
-                const error = new Error('Race name is required for deletion.') as CustomError;
-                error.statusCode = 400;
-                throw error;
-            }
-            const { rowCount } = await this.db`DELETE FROM public.races WHERE name = ${name.toLowerCase()};`;
-            return rowCount > 0;
-        } catch (error) {
-            console.error(`[RaceRepository delete] Erro ao deletar raça ${name}:`, error);
-            throw error;
-        }
+        const { rowCount } = await this.db`DELETE FROM public.races WHERE name = ${name.toLowerCase()};`;
+        return rowCount > 0;
     }
 }

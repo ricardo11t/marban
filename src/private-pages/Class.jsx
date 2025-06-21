@@ -129,12 +129,17 @@ const Classes = () => {
 
         setIsSubmitting(true);
         try {
+            // --- ALTERAÇÃO PRINCIPAL AQUI ---
+            // Montamos o payload no novo formato, com 'classData' aninhado.
             const classPayload = {
-                name: formData.nome.trim().toLowerCase(),
-                bonus: formData.bonus,
-                tipo: formData.tipo
+                name: formData.nome.trim(), // O nome da classe vai no campo 'nome'
+                classData: {               // 'bonus' e 'tipo' vão dentro de 'classData'
+                    bonus: formData.bonus,
+                    tipo: formData.tipo
+                }
             };
 
+            // Verificação usa o novo campo 'nome'
             if (!classPayload.name) {
                 Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da classe não pode ser vazio.' });
                 setIsSubmitting(false);
@@ -143,9 +148,12 @@ const Classes = () => {
 
             let url = `${API_BASE_URL}/classes`;
             let method = 'POST';
-            
+
             if (editingClassName) {
-                url = `${API_BASE_URL}/classes?name=${editingClassName}`;
+                // --- CORREÇÃO NA URL ---
+                // A URL para PUT deve usar o nome diretamente no caminho, sem ":name" ou query string.
+                // O `editingClassName` já está codificado com encodeURIComponent.
+                url = `${API_BASE_URL}/classes/${editingClassName}`;
                 method = 'PUT';
             }
 
@@ -153,10 +161,9 @@ const Classes = () => {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(classPayload)
+                body: JSON.stringify(classPayload) // O objeto já está no formato correto para envio
             });
 
             if (!response.ok) {
@@ -168,7 +175,8 @@ const Classes = () => {
             handleClose();
             Swal.fire({
                 icon: 'success', title: editingClassName ? 'Atualizado!' : 'Criado!',
-                text: `A classe "${classPayload.name}" foi salva com sucesso.`,
+                // Mensagem de sucesso usa o novo campo 'nome'
+                text: `A classe "${classPayload.nome}" foi salva com sucesso.`,
                 showConfirmButton: false, timer: 1500
             });
 
@@ -196,7 +204,7 @@ const Classes = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/classes?name=${encodeURIComponent(classNameString)}`, {
+                    const response = await fetch(`${API_BASE_URL}/classes/:name?name=${encodeURIComponent(classNameString)}`, {
                         method: 'DELETE',
                         headers: {
                             // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
