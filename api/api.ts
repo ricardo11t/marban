@@ -45,7 +45,7 @@ const QDRANT_VECTOR_SIZE = parseInt(process.env.QDRANT_VECTOR_SIZE || '768', 10)
 const userRepository = new UserRepository(dbSqlFunction);
 const raceRepository = new RaceRepository(dbSqlFunction);
 const classRepository = new ClassRepository(dbSqlFunction);
-const qdrantRepository = new QdrantRepository(initialQdrantClient, QDRANT_COLLECTION_NAME, QDRANT_VECTOR_SIZE);
+const qdrantRepository = new QdrantRepository('rpg_lore');
 
 const authService = new AuthService(userRepository);
 const userService = new UserService(userRepository);
@@ -185,7 +185,7 @@ apiRouter.post('/classes', authMiddleware(), roleMiddleware('admin'), async (req
     }
 });
 
-apiRouter.put('/classes/:id', authMiddleware(), roleMiddleware('admin'), async (req, res) => {
+apiRouter.put('/classes/:name', authMiddleware(), roleMiddleware('admin'), async (req, res) => {
     try {
         await classController.update(req, res);
     } catch (err: any) { // CORREÇÃO AQUI

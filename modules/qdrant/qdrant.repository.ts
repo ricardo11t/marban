@@ -1,22 +1,27 @@
-// qdrant.repository.ts (VERSÃO FINAL CORRIGIDA)
+import { qdrantClient } from '../shared/db.js';
+import { QdrantClient } from '@qdrant/js-client-rest';
+import { IQdrantPoint, ILoreDocument } from './models/qdrant.models.js';
+import { CustomError } from '../types/custom-errors.js';
 
-import { QdrantClient } from '@qdrant/qdrant-js';
-import { IQdrantPoint, ILoreDocument } from '../qdrant/models/qdrant.models.js';
 
 export default class QdrantRepository {
+    // CORREÇÃO: Tipagem correta da propriedade 'db'
     public db: QdrantClient;
     public collectionName: string;
-    public VECTOR_SIZE: number = 768;
-    public DISTANCE_METRIC: 'Cosine' | 'Euclid' | 'Dot' = 'Cosine';
+    public readonly VECTOR_SIZE: number = 768;
+    public readonly DISTANCE_METRIC: 'Cosine' | 'Euclid' | 'Dot' = 'Cosine';
 
-    constructor(dbClient: QdrantClient, collectionName: string = "rpg_lore", vectorSize: number = 768) {
-        if (!dbClient || typeof dbClient !== 'object') {
-            throw new Error('Invalid database client provided');
-        }
-        this.db = dbClient;
+    constructor(collectionName: string = "rpg_lore") {
+        // CORREÇÃO: O construtor não recebe mais um cliente.
+        // Ele usa diretamente a instância importada (singleton).
+        this.db = qdrantClient;
         this.collectionName = collectionName;
-        this.VECTOR_SIZE = vectorSize;
+        // A validação do cliente não é mais necessária aqui.
     }
+
+    // O restante dos seus métodos (findAll, findByName, create, etc.) permanecem
+    // exatamente como estavam, pois a lógica interna deles já estava correta.
+    // Eles apenas operarão sobre a instância `this.db` corretamente inicializada.
 
     generatedMockEmbedding(text: string): number[] {
         return Array.from({ length: this.VECTOR_SIZE }, () => Math.random());
@@ -24,13 +29,15 @@ export default class QdrantRepository {
 
     async createCollectionIfNotExists(): Promise<void> {
         try {
-            // CORREÇÃO 1: Passando o nome da coleção como uma string direta.
+            // CORREÇÃO 1: Passando o nome da coleção como uma string simples.
             await this.db.getCollection(this.collectionName);
             console.log(`Qdrant: Collection '${this.collectionName}' already exists.`);
         } catch (error: any) {
+            // A lógica para tratar o erro 404 está correta.
             if (error && error.status === 404) {
                 try {
                     console.log(`Qdrant: Collection '${this.collectionName}' does not exist. Creating...`);
+                    // CORREÇÃO 2: Passando o nome e as configurações como dois argumentos separados.
                     await this.db.createCollection(this.collectionName, {
                         vectors: {
                             size: this.VECTOR_SIZE,
@@ -47,7 +54,7 @@ export default class QdrantRepository {
                 throw new Error(`An unexpected error occurred with Qdrant: ${error.message}`);
             }
         }
-    }
+            }
 
     async addEmbedding(document: ILoreDocument): Promise<IQdrantPoint> {
         if (!document || typeof document.text !== 'string' || document.text.trim() === '') {
