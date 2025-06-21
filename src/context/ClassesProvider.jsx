@@ -1,35 +1,62 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from './AuthProvider'; // Verifique o caminho
 
-export const ClassesContext = createContext();
+export const ClassesContext = createContext({
+  classes: [],
+  isLoading: true,
+  error: null,
+  refetchClasses: () => Promise.resolve(),
+});
 
 export const ClassesProvider = ({ children }) => {
-  const [classes, setClasses] = useState({});
+  const [classes, setClasses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+ 
+  const API_BASE_URL = '/api';
 
-  const fetchClasses = async () => {
-    try {
-      // ANTES: const response = await fetch('http://localhost:3000/classes');
-      // DEPOIS:
-      const response = await fetch('/api/classes'); // <<< CORREÇÃO APLICADA AQUI
+  const { token, loading: authLoading, isAuthenticated } = useContext(AuthContext);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setClasses(data);
-    } catch (error) {
-      console.error("Falha ao buscar as classes no provider:", error);
-      setClasses({});
+  const fetchClasses = useCallback(async () => {
+    if (authLoading) {
+      console.log('[ClassesProvider] AuthProvider ainda carregando. Aguardando...');
+      setIsLoading(true);
+      return;
     }
-  };
+
+    if (!isAuthenticated) {
+      setError('Autenticação necessária para buscar classes.');
+      setClasses([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/classes`);
+      let classesArray = response.data?.data || response.data || [];
+      if (!Array.isArray(classesArray)) classesArray = [];
+      setClasses(classesArray);
+
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "Erro desconhecido ao buscar classes.";
+      setError(errorMessage);
+      setClasses([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [authLoading, isAuthenticated, token]);
 
   useEffect(() => {
-    fetchClasses();
-  }, []);
+    if (!authLoading) {
+      fetchClasses();
+    }
+  }, [authLoading, fetchClasses]);
 
-  // Renomeei para refetchClasses para consistência.
-  // Lembre-se de usar { classes, refetchClasses } no seu componente Classes.js
   return (
-    <ClassesContext.Provider value={{ classes, refetchClasses: fetchClasses }}>
+    <ClassesContext.Provider value={{ classes, isLoading, error, refetchClasses: fetchClasses }}>
       {children}
     </ClassesContext.Provider>
   );

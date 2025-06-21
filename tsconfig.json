@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true, // Importante para Vite, que faz o transpile
+    "jsx": "react-jsx",
+  },
+  // GARANTA QUE ESTA SEÇÃO 'include' ESTEJA ASSIM:
+  "include": [
+    "src", // Para o seu código React/Vite
+    "api/**/*.ts",
+    "modules/**/*.ts",
+    "modules/**/*.d.ts" // Esta linha é ESSENCIAL para carregar o express.d.ts
+  ]
+}

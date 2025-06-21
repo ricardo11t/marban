@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, Select, MenuItem, InputLabel } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, Select, MenuItem, InputLabel, Typography, CircularProgress } from '@mui/material';
 import React, { useContext, useState, useEffect } from 'react';
 import { RacesContext } from '../context/RacesProvider';
 import { ClassesContext } from '../context/ClassesProvider';
@@ -139,16 +139,18 @@ const CriacaoPage = () => {
   const { classes } = useContext(ClassesContext);
 
   useEffect(() => {
+    // CORREÇÃO: Trata 'races' e 'classes' como arrays para buscar os objetos corretos usando .find()
+    const racaPrimariaObj = racaPrimaria && Array.isArray(races) ? races.find(r => r.name === racaPrimaria) : null;
+    const racaSecundariaObj = racaSecundaria && Array.isArray(races) ? races.find(r => r.name === racaSecundaria) : null;
+    const classePrimariaObj = classePrimaria && Array.isArray(classes) ? classes.find(c => c.name === classePrimaria) : null;
+    const classeSecundariaObj = classeSecundaria && Array.isArray(classes) ? classes.find(c => c.name === classeSecundaria) : null;
+
     const calcularPdDParaUmaRaca = (dadosPddRaca, atributosAtuaisPersonagem) => {
-      if (!dadosPddRaca) {
-        return 0;
-      }
+      if (!dadosPddRaca) return 0;
       const pdDFixoDaRaca = dadosPddRaca.PdDFixo || 0;
       const pdDFracaoDaRaca = dadosPddRaca.PdDFração || 0;
       const atributoUtilizadoPelaRaca = dadosPddRaca.AtributoUtilizado;
-
       let pddCalculadoParaEstaRaca = pdDFixoDaRaca;
-
       if (atributoUtilizadoPelaRaca && pdDFracaoDaRaca !== 0) {
         const valorDoAtributoNoPersonagem = atributosAtuaisPersonagem[atributoUtilizadoPelaRaca] || 0;
         pddCalculadoParaEstaRaca += Math.floor(pdDFracaoDaRaca * valorDoAtributoNoPersonagem);
@@ -156,12 +158,11 @@ const CriacaoPage = () => {
       return pddCalculadoParaEstaRaca;
     };
 
-    const bonusRacaPrimaria = racaPrimaria && races && races[racaPrimaria] ? races[racaPrimaria].bonus : {};
-    const bonusRacaSecundaria = racaSecundaria && races && races[racaSecundaria] ? races[racaSecundaria].bonus : {};
+    // CORREÇÃO: Acessa os dados aninhados 'raceData.bonus' dos objetos encontrados
+    const bonusRacaPrimaria = racaPrimariaObj?.raceData?.bonus || {};
+    const bonusRacaSecundaria = racaSecundariaObj?.raceData?.bonus || {};
     const totalBonusRaca = {};
-    const racaPrimariaKeys = Object.keys(bonusRacaPrimaria);
-    const racaSecundariaKeys = Object.keys(bonusRacaSecundaria);
-    const allRacaKeys = new Set([...racaPrimariaKeys, ...racaSecundariaKeys]);
+    const allRacaKeys = new Set([...Object.keys(bonusRacaPrimaria), ...Object.keys(bonusRacaSecundaria)]);
 
     allRacaKeys.forEach(key => {
       const b1 = bonusRacaPrimaria[key] || 0;
@@ -174,51 +175,43 @@ const CriacaoPage = () => {
     });
     setBonusRaca(totalBonusRaca);
 
-    const bonusClassePrimaria = classePrimaria && classes && classes[classePrimaria] ? classes[classePrimaria].bonus : {};
-    const bonusClasseSecundaria = classeSecundaria && classes && classes[classeSecundaria] ? classes[classeSecundaria].bonus : {};
+    // CORREÇÃO: Classes não têm 'raceData', acessa 'bonus' diretamente
+    const bonusClassePrimaria = classePrimariaObj?.bonus || {};
+    const bonusClasseSecundaria = classeSecundariaObj?.bonus || {};
     const totalBonusClasse = {};
-    const classePrimariaKeys = Object.keys(bonusClassePrimaria);
-    const classeSecundariaKeys = Object.keys(bonusClasseSecundaria);
-    const allClasseKeys = new Set([...classePrimariaKeys, ...classeSecundariaKeys]);
+    const allClasseKeys = new Set([...Object.keys(bonusClassePrimaria), ...Object.keys(bonusClasseSecundaria)]);
 
     allClasseKeys.forEach(key => {
       totalBonusClasse[key] = (bonusClassePrimaria[key] || 0) + (isSClasse && classeSecundaria ? (bonusClasseSecundaria[key] || 0) : 0);
     });
     setBonusClasse(totalBonusClasse);
 
-    const Vigor = Number(stats.Vigor) || 0;
-    const Habilidade = Number(stats.Habilidade) || 0;
-    const Percepcao = Number(stats.Percepção) || 0;
-    const Inteligencia = Number(stats.Inteligência) || 0;
-    const Dominio = Number(stats.Domínio) || 0;
-
+    const { Vigor, Habilidade, Percepção, Inteligência, Domínio } = stats;
     setPdV((2 * Vigor) + Habilidade);
-    setPdE(Percepcao + Inteligencia + Dominio);
+    setPdE(Percepção + Inteligência + Domínio);
 
     const atributosCalculados = {
       forca: Vigor + Habilidade + (totalBonusRaca.forca || 0) + (totalBonusClasse.forca || 0),
-      resFisica: Vigor + Percepcao + (totalBonusRaca.resFisica || 0) + (totalBonusClasse.resFisica || 0),
-      resMental: Inteligencia + Dominio + (totalBonusRaca.resMental || 0) + (totalBonusClasse.resMental || 0),
-      manipulacao: Inteligencia + Dominio + (totalBonusRaca.manipulacao || 0) + (totalBonusClasse.manipulacao || 0),
-      resMagica: Vigor + Inteligencia + (totalBonusRaca.resMagica || 0) + (totalBonusClasse.resMagica || 0),
-      sobrevivencia: Vigor + Dominio + (totalBonusRaca.sobrevivencia || 0) + (totalBonusClasse.sobrevivencia || 0),
-      agilidade: Habilidade + Percepcao + (totalBonusRaca.agilidade || 0) + (totalBonusClasse.agilidade || 0),
-      destreza: Habilidade + Dominio + (totalBonusRaca.destreza || 0) + (totalBonusClasse.destreza || 0),
-      competencia: Habilidade + Inteligencia + (totalBonusRaca.competencia || 0) + (totalBonusClasse.competencia || 0),
-      criatividade: Inteligencia + Percepcao + (totalBonusRaca.criatividade || 0) + (totalBonusClasse.criatividade || 0),
-      sorte: Percepcao + Dominio + (totalBonusRaca.sorte || 0) + (totalBonusClasse.sorte || 0),
+      resFisica: Vigor + Percepção + (totalBonusRaca.resFisica || 0) + (totalBonusClasse.resFisica || 0),
+      resMental: Inteligência + Domínio + (totalBonusRaca.resMental || 0) + (totalBonusClasse.resMental || 0),
+      manipulacao: Inteligência + Domínio + (totalBonusRaca.manipulacao || 0) + (totalBonusClasse.manipulacao || 0),
+      resMagica: Vigor + Inteligência + (totalBonusRaca.resMagica || 0) + (totalBonusClasse.resMagica || 0),
+      sobrevivencia: Vigor + Domínio + (totalBonusRaca.sobrevivencia || 0) + (totalBonusClasse.sobrevivencia || 0),
+      agilidade: Habilidade + Percepção + (totalBonusRaca.agilidade || 0) + (totalBonusClasse.agilidade || 0),
+      destreza: Habilidade + Domínio + (totalBonusRaca.destreza || 0) + (totalBonusClasse.destreza || 0),
+      competencia: Habilidade + Inteligência + (totalBonusRaca.competencia || 0) + (totalBonusClasse.competencia || 0),
+      criatividade: Inteligência + Percepção + (totalBonusRaca.criatividade || 0) + (totalBonusClasse.criatividade || 0),
+      sorte: Percepção + Domínio + (totalBonusRaca.sorte || 0) + (totalBonusClasse.sorte || 0),
     };
     setAtributos(atributosCalculados);
 
-    const defaultPddDataRaca = { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null };
-    let pddFinalPersonagem = 0;
-    const dadosPddRacaPrimaria = (racaPrimaria && races && races[racaPrimaria]?.pdd)
-      ? races[racaPrimaria].pdd
-      : defaultPddDataRaca;
+    // CORREÇÃO: Acessa os dados aninhados 'raceData.pdd' dos objetos encontrados
+    const dadosPddRacaPrimaria = racaPrimariaObj?.raceData?.pdd;
     const pddCalculadoRacaPrimaria = calcularPdDParaUmaRaca(dadosPddRacaPrimaria, atributosCalculados);
+    let pddFinalPersonagem = 0;
 
-    if (isHibrido && racaSecundaria && races && races[racaSecundaria]?.pdd) {
-      const dadosPddRacaSecundaria = races[racaSecundaria].pdd;
+    if (isHibrido && racaSecundariaObj) {
+      const dadosPddRacaSecundaria = racaSecundariaObj?.raceData?.pdd;
       const pddCalculadoRacaSecundaria = calcularPdDParaUmaRaca(dadosPddRacaSecundaria, atributosCalculados);
       pddFinalPersonagem = Math.floor((pddCalculadoRacaPrimaria + pddCalculadoRacaSecundaria) / 2);
     } else {
@@ -342,8 +335,8 @@ const CriacaoPage = () => {
     setPdAMagico(isNaN(value) ? 0 : Math.max(0, value));
   }
 
-  const nomesRacas = races ? Object.keys(races) : [];
-  const nomesClasses = classes ? Object.keys(classes) : [];
+  const nomesRacas = Array.isArray(races) ? races.map(r => r.name) : [];
+  const nomesClasses = Array.isArray(classes) ? classes.map(c => c.name) : [];
   const statusList = ['Vigor', 'Habilidade', 'Percepção', 'Inteligência', 'Domínio', 'CAB'];
 
   const tableRows = Object.keys(atributos).map((key) => {
@@ -360,9 +353,9 @@ const CriacaoPage = () => {
   return (
     <>
       <Header />
-      <main className='bg-black'>
-        <div className='justify-center text-center text-4xl text-white font-bold mt-5 mb-5'> {/* Texto do H1 branco */}
-          <h1>Criação de Personagens</h1>
+      <main className='bg-gray-900'>
+        <div className='justify-center text-center text-4xl text-white font-bold pt-5 mb-5'> {/* Texto do H1 branco */}
+          <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Criação de Personagens</Typography>
         </div>
         <div className='flex flex-col items-center min-h-screen'>
           <Box
@@ -484,14 +477,6 @@ const CriacaoPage = () => {
               </div>
               <div className='flex justify-center items-center gap-5 mb-5'>
                 <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
-                <Button
-                  onClick={refreshPontosRestantes}
-                  variant="contained"
-                  size="small"
-                  sx={{ backgroundColor: '#0069c0', '&:hover': { backgroundColor: '#005cb2' } }}
-                >
-                  Atualizar Pontos
-                </Button>
               </div>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
                 {statusList.map((stat) => (
