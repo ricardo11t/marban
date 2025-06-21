@@ -16,9 +16,10 @@ export const sql: DbClient = async (strings, ...values) => {
 };
 
 // --- CLIENTE QDRANT (Singleton) ---
-// CORREÇÃO: Adicionamos a porta 6334 para conexões seguras (HTTPS) com o Qdrant Cloud.
 export const qdrantClient = new QdrantClient({
-    url: process.env.QDRANT_URL,
+    url: process.env.QDRANT_URL, // Agora contém a URL completa com a porta
     apiKey: process.env.QDRANT_API_KEY,
-    port: 6334 // Essencial para evitar o erro ERR_SSL_WRONG_VERSION_NUMBER
+    // A linha 'port: 6334' foi removida.
+    // A flag 'checkCompatibility: false' pode ser mantida se os erros de versão voltarem,
+    // mas tente primeiro sem ela. Se o erro voltar, adicione-a novamente.
 });

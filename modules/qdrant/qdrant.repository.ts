@@ -29,32 +29,34 @@ export default class QdrantRepository {
 
     async createCollectionIfNotExists(): Promise<void> {
         try {
-            // CORREÇÃO 1: Passando o nome da coleção como uma string simples.
-            await this.db.getCollection(this.collectionName);
-            console.log(`Qdrant: Collection '${this.collectionName}' already exists.`);
-        } catch (error: any) {
-            // A lógica para tratar o erro 404 está correta.
-            if (error && error.status === 404) {
-                try {
-                    console.log(`Qdrant: Collection '${this.collectionName}' does not exist. Creating...`);
-                    // CORREÇÃO 2: Passando o nome e as configurações como dois argumentos separados.
-                    await this.db.createCollection(this.collectionName, {
-                        vectors: {
-                            size: this.VECTOR_SIZE,
-                            distance: this.DISTANCE_METRIC,
-                        },
-                    });
-                    console.log(`Qdrant: Collection '${this.collectionName}' created successfully.`);
-                } catch (createError: any) {
-                    console.error(`Qdrant: CRITICAL - Failed to create collection '${this.collectionName}'.`, createError);
-                    throw new Error(`Failed to create Qdrant collection: ${createError.message}`);
-                }
-            } else {
-                console.error("Qdrant: CRITICAL - An unexpected error occurred while checking collection.", error);
-                throw new Error(`An unexpected error occurred with Qdrant: ${error.message}`);
+            // NOVA LÓGICA: Pega a lista de todas as coleções existentes.
+            const response = await this.db.getCollections();
+            const collectionExists = response.collections.some(
+                (collection) => collection.name === this.collectionName
+            );
+
+            // Se a coleção já existe, apenas informe e termine a função.
+            if (collectionExists) {
+                console.log(`Qdrant: Collection '${this.collectionName}' already exists.`);
+                return;
             }
+
+            // Se chegou até aqui, a coleção não existe. Vamos criá-la.
+            console.log(`Qdrant: Collection '${this.collectionName}' does not exist. Creating...`);
+            await this.db.createCollection(this.collectionName, {
+                vectors: {
+                    size: this.VECTOR_SIZE,
+                    distance: this.DISTANCE_METRIC,
+                },
+            });
+            console.log(`Qdrant: Collection '${this.collectionName}' created successfully.`);
+
+        } catch (error: any) {
+            // Este catch agora lidará com erros de conexão genuínos ou outras falhas inesperadas.
+            console.error("Qdrant: CRITICAL - An unexpected error occurred during collection setup.", error);
+            throw new Error(`An unexpected error occurred with Qdrant: ${error.message}`);
         }
-            }
+    }
 
     async addEmbedding(document: ILoreDocument): Promise<IQdrantPoint> {
         if (!document || typeof document.text !== 'string' || document.text.trim() === '') {
