@@ -153,7 +153,7 @@ const Classes = () => {
                 // --- CORREÇÃO NA URL ---
                 // A URL para PUT deve usar o nome diretamente no caminho, sem ":name" ou query string.
                 // O `editingClassName` já está codificado com encodeURIComponent.
-                url = `${API_BASE_URL}/classes/:name?name${editingClassName}`;
+                url = `${API_BASE_URL}/classes/${editingClassName}?name=${editingClassName}`;
                 method = 'PUT';
             }
 
@@ -163,7 +163,7 @@ const Classes = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(classPayload) // O objeto já está no formato correto para envio
+                body: JSON.stringify(classPayload)
             });
 
             if (!response.ok) {
@@ -204,7 +204,7 @@ const Classes = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/classes/:name?name=${encodeURIComponent(classNameString)}`, {
+                    const response = await fetch(`${API_BASE_URL}/classes/${encodeURIComponent(classNameString)}`, {
                         method: 'DELETE',
                         headers: {
                             // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
