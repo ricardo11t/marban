@@ -7,96 +7,14 @@ import Footer from '../components/Footer';
 
 // Estilos para TextFields e Selects com fundo preto e texto branco (variant="filled")
 const blackFilledFieldStyles = {
-  variant: "filled", // Aplicar diretamente ou no componente
-  sx: {
-    '& .MuiFilledInput-root': {
-      backgroundColor: 'black',
-      color: 'white',
-      border: '1px solid rgba(255, 255, 255, 0.23)',
-      borderRadius: '4px',
-      '&:hover': {
-        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-        borderColor: 'rgba(255, 255, 255, 0.5)',
-      },
-      '&.Mui-focused': {
-        backgroundColor: 'black',
-        borderColor: 'white',
-      },
-      '&.Mui-disabled': {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        color: 'rgba(255, 255, 255, 0.5)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-      },
-      '&:before, &:after': { // Remover sublinhado padrão do filled
-        borderBottom: 'none !important',
-      },
-    },
-    '& .MuiFilledInput-input': {
-      color: 'white',
-      padding: '12px 12px 10px',
-      '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active': {
-        WebkitBoxShadow: '0 0 0 1000px black inset !important',
-        WebkitTextFillColor: 'white !important',
-        caretColor: 'white !important',
-        borderRadius: 'inherit',
-      },
-    },
-    '& label.MuiInputLabel-filled': {
-      color: 'rgba(255, 255, 255, 0.7)',
-    },
-    '& label.MuiInputLabel-filled.Mui-focused': {
-      color: 'white',
-    },
-    '& label.MuiInputLabel-filled.Mui-disabled': {
-      color: 'rgba(255, 255, 255, 0.4)',
-    },
-    // Para Selects, o ícone
-    '& .MuiSelect-icon': {
-      color: 'rgba(255, 255, 255, 0.7)',
-    },
-  }
+  variant: "filled", sx: { '& .MuiFilledInput-root': { backgroundColor: 'black', color: 'white', border: '1px solid rgba(255, 255, 255, 0.23)', borderRadius: '4px', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(255, 255, 255, 0.5)', }, '&.Mui-focused': { backgroundColor: 'black', borderColor: 'white', }, '&.Mui-disabled': { backgroundColor: 'rgba(0, 0, 0, 0.5)', color: 'rgba(255, 255, 255, 0.5)', borderColor: 'rgba(255, 255, 255, 0.1)', }, '&:before, &:after': { borderBottom: 'none !important', }, }, '& .MuiFilledInput-input': { color: 'white', padding: '12px 12px 10px', '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active': { WebkitBoxShadow: '0 0 0 1000px black inset !important', WebkitTextFillColor: 'white !important', caretColor: 'white !important', borderRadius: 'inherit', }, }, '& label.MuiInputLabel-filled': { color: 'rgba(255, 255, 255, 0.7)', }, '& label.MuiInputLabel-filled.Mui-focused': { color: 'white', }, '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)', }, '& .MuiSelect-icon': { color: 'rgba(255, 255, 255, 0.7)', }, }
 };
-
-// Estilos para o Paper/Menu do Autocomplete e Select
 const blackPaperMenuStyles = {
-  PaperProps: {
-    sx: {
-      backgroundColor: 'black',
-      color: 'white',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
-      '& .MuiMenuItem-root, & .MuiAutocomplete-option': { // Aplicar a ambos os tipos de item
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-        },
-        '&.Mui-selected': { // Para Select
-          backgroundColor: 'rgba(255, 255, 255, 0.16) !important', // !important para Mui-selected
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.24) !important',
-          },
-        },
-        '&[aria-selected="true"]': { // Para Autocomplete
-          backgroundColor: 'rgba(255, 255, 255, 0.16) !important',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.24) !important',
-          },
-        }
-      },
-    },
-  },
+  PaperProps: { sx: { backgroundColor: 'black', color: 'white', border: '1px solid rgba(255, 255, 255, 0.3)', '& .MuiMenuItem-root, & .MuiAutocomplete-option': { '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)', }, '&.Mui-selected': { backgroundColor: 'rgba(255, 255, 255, 0.16) !important', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.24) !important', }, }, '&[aria-selected="true"]': { backgroundColor: 'rgba(255, 255, 255, 0.16) !important', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.24) !important', }, } }, }, },
 };
-
-// Estilos para o root do Autocomplete (ícones)
 const autocompleteRootStyles = {
-  '& .MuiOutlinedInput-root .MuiSvgIcon-root, & .MuiFilledInput-root .MuiSvgIcon-root, & .MuiInput-root .MuiSvgIcon-root': {
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  '& .MuiAutocomplete-clearIndicator:hover, & .MuiAutocomplete-popupIndicator:hover': {
-    '.MuiSvgIcon-root': { // Alvo mais específico para o ícone no hover do botão
-      color: 'white',
-    }
-  },
+  '& .MuiOutlinedInput-root .MuiSvgIcon-root, & .MuiFilledInput-root .MuiSvgIcon-root, & .MuiInput-root .MuiSvgIcon-root': { color: 'rgba(255, 255, 255, 0.7)', }, '& .MuiAutocomplete-clearIndicator:hover, & .MuiAutocomplete-popupIndicator:hover': { '.MuiSvgIcon-root': { color: 'white', } },
 };
-
 
 const CriacaoPage = () => {
   const [isHibrido, setIsHibrido] = useState(false);
@@ -353,7 +271,7 @@ const CriacaoPage = () => {
   return (
     <>
       <Header />
-      <main className='bg-gray-900'>
+      <main className='bg-gray-900 px-2 sm:px-4'>
         <div className='justify-center text-center text-4xl text-white font-bold pt-5 mb-5'> {/* Texto do H1 branco */}
           <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Criação de Personagens</Typography>
         </div>
@@ -361,8 +279,13 @@ const CriacaoPage = () => {
           <Box
             component="form"
             onSubmit={handleFormSubmit}
-            className='bg-[#601b1c] text-white mb-6'
-            sx={{ height: 'fit-content', width: '1200px', borderRadius: '10px', padding: '20px' }}
+            className='bg-[#601b1c] text-white mb-6 w-full'
+            sx={{
+              height: 'fit-content',
+              maxWidth: '900px', // Limita a largura em telas grandes
+              borderRadius: '10px',
+              padding: { xs: '16px', sm: '20px', md: '24px' } // Padding responsivo
+            }}
           >
             <div className='flex justify-center items-center mb-6'>
               <div className='text-center'>
@@ -401,14 +324,14 @@ const CriacaoPage = () => {
               />
             </div>
             <div>
-              <div className='flex justify-evenly gap-4'>
+              <div className='flex flex-col md:flex-row justify-evenly gap-4'>
                 <Autocomplete
                   value={racaPrimaria}
                   onChange={(event, newValue) => setRacaPrimaria(newValue)}
                   options={nomesRacas}
                   getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
                   PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
-                  sx={{ ...autocompleteRootStyles, width: isHibrido ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1 }}
+                  sx={{ ...autocompleteRootStyles, width: '100%' }}
                   renderInput={(params) =>
                     <TextField
                       {...params}
@@ -424,7 +347,7 @@ const CriacaoPage = () => {
                     options={nomesRacas.filter(r => r !== racaPrimaria)}
                     getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
                     PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
-                    sx={{ ...autocompleteRootStyles, width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1 }}
+                    sx={{ ...autocompleteRootStyles, width: '100%' }}
                     renderInput={(params) =>
                       <TextField
                         {...params}
@@ -435,14 +358,14 @@ const CriacaoPage = () => {
                   />
                 )}
               </div>
-              <div className='flex justify-evenly gap-4 mt-5 mb-5'>
+              <div className='flex flex-col md:flex-row justify-evenly gap-4 mt-5 mb-5'>
                 <Autocomplete
                   value={classePrimaria}
                   onChange={(event, newValue) => setClassePrimaria(newValue)}
                   options={nomesClasses}
                   getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
                   PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
-                  sx={{ ...autocompleteRootStyles, width: isSClasse ? 'calc(50% - 8px)' : 'auto', minWidth: 300, flexGrow: 1 }}
+                  sx={{ ...autocompleteRootStyles, width: '100%', flexGrow: 1 }}
                   renderInput={(params) =>
                     <TextField
                       {...params}
@@ -458,7 +381,7 @@ const CriacaoPage = () => {
                     options={nomesClasses.filter(c => c !== classePrimaria)}
                     getOptionLabel={(option) => option.charAt(0).toUpperCase() + option.slice(1)}
                     PaperComponent={(props) => <Paper {...props} {...blackPaperMenuStyles.PaperProps} />}
-                    sx={{ ...autocompleteRootStyles, width: 'calc(50% - 8px)', minWidth: 300, flexGrow: 1 }}
+                    sx={{ ...autocompleteRootStyles, width: '100%', flexGrow: 1 }}
                     renderInput={(params) =>
                       <TextField
                         {...params}
@@ -478,7 +401,7 @@ const CriacaoPage = () => {
               <div className='flex justify-center items-center gap-5 mb-5'>
                 <h2 className='text-3xl'>Pontos Restantes: <span style={{ color: pontosDiff < 0 ? 'yellow' : 'white', fontWeight: 'bold' }}>{pontosDiff}</span></h2>
               </div>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px' }}>
                 {statusList.map((stat) => (
                   <div key={stat} className='flex-wrap'> {/* Adicionada key aqui */}
                     <InputLabel sx={{ color: 'white', mb: 0.5 }}>{stat}</InputLabel> {/* Label dos status branco */}
@@ -490,14 +413,14 @@ const CriacaoPage = () => {
                       onChange={handleStatChange}
                       onFocus={(e) => e.target.select()}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '150px' }}
+                      sx={{ ...blackFilledFieldStyles.sx, maxWidth: '150px', width: '100%' }}
                       inputProps={{ min: "0" }}
                     />
                   </div>
                 ))}
               </Box>
               <Box>
-                <div className='flex justify-center gap-5 mt-4'>
+                <div className='flex flex-col md:flex-row justify-center gap-5 mt-4'>
                   <div>
                     <InputLabel id="classe-armadura-fisica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Física</InputLabel>
                     <Select
@@ -505,7 +428,7 @@ const CriacaoPage = () => {
                       value={classeDeArmaduraF}
                       variant={blackFilledFieldStyles.variant} // Aplicando variant
                       onChange={handleChangeF}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }} // Aplicando estilos
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100%', md: { minWidth: '300px' } }}
                       MenuProps={blackPaperMenuStyles} // Estilos para o menu dropdown
                     >
                       <MenuItem value={1}>Sem Armaduras</MenuItem>
@@ -515,14 +438,14 @@ const CriacaoPage = () => {
                       <MenuItem value={0}>Armaduras Extra-Pesadas</MenuItem>
                     </Select>
                   </div>
-                  <div>
+                  <div className='w-full md:w-auto'>
                     <InputLabel id="classe-armadura-magica-label" sx={{ color: 'white', mb: 0.5 }}>Classe de Armadura Mágica</InputLabel>
                     <Select
                       labelId="classe-armadura-magica-label"
                       value={classeDeArmaduraM}
                       variant={blackFilledFieldStyles.variant}
                       onChange={handleChangeM}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100%', md: { minWidth: '300px' } }}
                       MenuProps={blackPaperMenuStyles}
                     >
                       <MenuItem value={1}>Sem Armaduras</MenuItem>
@@ -533,25 +456,25 @@ const CriacaoPage = () => {
                     </Select>
                   </div>
                 </div>
-                <div className='flex justify-center mt-5 gap-5'>
-                  <div>
+                <div className='flex flex-col md:flex-row justify-center mt-5 gap-5'>
+                  <div className='w-full md:w-auto'>
                     <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Físico (Base)</InputLabel>
                     <TextField
                       value={PdAFisico === 0 ? '' : PdAFisico}
                       variant={blackFilledFieldStyles.variant}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100%', md: { minWidth: '300px' } }}
                       type="number"
                       onChange={handlePdAFisicoChange}
                       onFocus={(e) => e.target.select()}
                       inputProps={{ min: "0" }}
                     />
                   </div>
-                  <div>
+                  <div className='w-full md:w-auto'>
                     <InputLabel sx={{ color: 'white', mb: 0.5 }}>PdA Mágico (Base)</InputLabel>
                     <TextField
                       value={PdAMagico === 0 ? '' : PdAMagico}
                       variant={blackFilledFieldStyles.variant}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '300px' }}
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100%', md: { minWidth: '300px' } }}
                       type="number"
                       onChange={handlePdAMagicoChange}
                       onFocus={(e) => e.target.select()}
@@ -575,7 +498,15 @@ const CriacaoPage = () => {
 
           {statsShown && (
             <Box
-              sx={{ width: '1200px', borderRadius: '10px', padding: '20px', marginTop: '20px', backgroundColor: '#601b1c', marginBottom: 5 }}
+              sx={{
+                width: '100%',
+                maxWidth: '1200px', // Limita em telas grandes
+                borderRadius: '10px',
+                padding: { xs: '10px', sm: '20px' }, // Padding responsivo
+                marginTop: '20px',
+                backgroundColor: '#601b1c',
+                marginBottom: 5
+              }}
             >
               <Box className={"mb-5"}>
                 <TableContainer sx={{ backgroundColor: 'black' }} component={Paper}>

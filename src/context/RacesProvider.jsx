@@ -1,6 +1,6 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react'; // Adicionado useContext
-import axios from 'axios';
-import { AuthContext } from './AuthProvider'; // Importe o AuthContext
+import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+// import axios from 'axios'; // REMOVE this direct import of global axios
+import { AuthContext } from './AuthProvider'; // Correct path assumed
 
 export const RacesContext = createContext({
   races: [],
@@ -14,10 +14,10 @@ export const RacesProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true); // Loading específico deste provider
   const [error, setError] = useState(null);
 
-  // Consome o AuthContext para saber sobre o estado de autenticação
-  const { token, loading: authLoading, isAuthenticated } = useContext(AuthContext);
+  // Consome o AuthContext para saber sobre o estado de autenticação e obter axiosInstance
+  const { token, loading: authLoading, isAuthenticated, axiosInstance } = useContext(AuthContext);
 
-  const API_BASE_URL = '/api';
+  // const API_BASE_URL = '/api'; // This variable is now redundant if axiosInstance.baseURL is '/api'
 
   const fetchRaces = useCallback(async () => {
     if (authLoading) {
@@ -26,10 +26,26 @@ export const RacesProvider = ({ children }) => {
       return;
     }
 
+    if (!isAuthenticated) {
+      setError('Autenticação necessária para buscar raças.');
+      setRaces([]);
+      setIsLoading(false);
+      return;
+    }
+
+    // IMPORTANT: Ensure axiosInstance is available before using it
+    if (!axiosInstance) {
+      console.warn('[RacesProvider] axiosInstance não disponível no AuthContext.');
+      setError('Serviço de autenticação não inicializado corretamente.');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/races`);
+      // Use axiosInstance instead of global axios
+      const response = await axiosInstance.get('/races'); // Use relative path if axiosInstance has baseURL '/api'
 
       let racesArray = [];
       if (response.data && Array.isArray(response.data.data)) {
@@ -49,13 +65,14 @@ export const RacesProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [authLoading, isAuthenticated, token]);
+  }, [authLoading, isAuthenticated, axiosInstance]); // Add axiosInstance to dependencies
 
   useEffect(() => {
-    if (!authLoading) {
+    // Only fetch if auth is not loading AND axiosInstance is ready
+    if (!authLoading && axiosInstance) { // Check for axiosInstance here too
       fetchRaces();
     }
-  }, [authLoading, fetchRaces]);
+  }, [authLoading, fetchRaces, axiosInstance]); // Include axiosInstance as a dependency
 
   return (
     <RacesContext.Provider value={{ races, isLoading, error, refetchRaces: fetchRaces }}>
@@ -63,3 +80,5 @@ export const RacesProvider = ({ children }) => {
     </RacesContext.Provider>
   );
 };
+
+export default RacesProvider;

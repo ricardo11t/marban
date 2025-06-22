@@ -1,15 +1,15 @@
+// src/modules/shared/authMiddleware.ts
 import { NextFunction, Request, Response } from 'express';
-// Caminho para authorization.utils (no mesmo diretório shared)
 import { verifyToken, DecodedUserPayload } from './authorization.utils.js';
-// CORREÇÃO FINAL AQUI: Caminho para CustomError
-import { CustomError } from '../types/custom-errors'; // <--- AQUI ESTÁ O CAMINHO CORRETO
+import { CustomError } from '../types/custom-errors';
 
-// Estende o objeto Request do Express (certifique-se de que src/types/express.d.ts existe e é similar a isto)
+// Extende o objeto Request do Express
 interface IUsuarioToken {
-    id: number | string; // Aceita número OU string
+    id: number | string;
     email: string;
+    username: string;
     role: 'admin' | 'user';
-  }
+}
 
 declare global {
     namespace Express {
@@ -17,73 +17,73 @@ declare global {
             usuario?: IUsuarioToken;
         }
     }
-  }
+}
 
+// **KEEP THIS FACTORY FUNCTION PATTERN**
 export function authMiddleware() {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            const error = new Error('Token de autenticação (Bearer) não fornecido ou mal formatado. Formato esperado: "Bearer <token>"') as CustomError;
+            error.statusCode = 401;
+            console.error('[AuthMiddleware] ERROR: No Auth header or invalid format.');
+            return next(error);
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        if (!token) {
+            const error = new Error('Token JWT ausente após "Bearer "') as CustomError;
+            error.statusCode = 401;
+            console.error('[AuthMiddleware] ERROR: Token is empty after split.');
+            return next(error);
+        }
+
         try {
-            const authHeader = req.headers.authorization;
-
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                const error = new Error('Token de autenticação (Bearer) não fornecido ou mal formatado. Formato esperado: "Bearer <token>"') as CustomError;
-                error.statusCode = 401; // Unauthorized
-                throw error;
-            }
-
-            const token = authHeader.split(' ')[1];
-
-            if (!token) {
-                const error = new Error('Token JWT ausente após "Bearer "') as CustomError;
-                error.statusCode = 401; // Unauthorized
-                throw error;
-            }
-
             const decoded = verifyToken(token);
 
-            req.usuario = decoded as IUsuarioToken;
+            req.usuario = {
+                id: decoded.id,
+                email: decoded.email,
+                username: decoded.username,
+                role: decoded.role as 'admin' | 'user'
+            };
 
             next();
         } catch (err: any) {
-            console.error('Erro de autenticação no authMiddleware:', err.message);
-
             const customErr = err instanceof Error ? (err as CustomError) : new Error('Unknown authentication error.') as CustomError;
-            customErr.statusCode = customErr.statusCode || 401;
-            throw customErr;
+
+            if (err.name === 'TokenExpiredError') {
+                customErr.message = 'Token de autenticação expirado. Por favor, faça login novamente.';
+                customErr.statusCode = 401;
+            } else if (err.name === 'JsonWebTokenError') {
+                customErr.message = 'Token de autenticação inválido ou corrompido.';
+                customErr.statusCode = 401;
+            } else {
+                customErr.statusCode = customErr.statusCode || 401;
+                customErr.message = `Falha na autenticação: ${customErr.message || 'Erro desconhecido.'}`;
+            }
+            return next(customErr);
         }
     };
 }
 
-export function roleMiddleware(requiredRole: string) {
+// roleMiddleware should also be a factory for consistency, as per previous corrections
+export function roleMiddleware(requiredRole: 'admin' | 'user') {
     return (req: Request, res: Response, next: NextFunction): void => {
         if (!req.usuario || !req.usuario.role) {
             const error = new Error('Acesso negado. Informações de usuário ou permissão não encontradas.') as CustomError;
-            error.statusCode = 403; // Forbidden
-            throw error;
+            error.statusCode = 403;
+            console.error('[RoleMiddleware] ERROR: User info or role missing on request.');
+            return next(error);
         }
 
         if (req.usuario.role !== requiredRole) {
             const error = new Error(`Acesso negado. Requer permissão de '${requiredRole}', mas o usuário tem permissão de '${req.usuario.role}'.`) as CustomError;
-            error.statusCode = 403; // Forbidden
-            throw error;
+            error.statusCode = 403;
+            console.error(`[RoleMiddleware] ERROR: Insufficient role. Required: ${requiredRole}, Actual: ${req.usuario.role}`);
+            return next(error);
         }
-
         next();
     };
-}
-
-export function runMiddleware(req: Request, res: Response, fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void): Promise<any> {
-    return new Promise((resolve, reject) => {
-        const customNext: NextFunction = (err?: any) => {
-            if (err) {
-                return reject(err);
-            }
-            return resolve(undefined);
-        };
-
-        const result = fn(req, res, customNext);
-
-        if (result instanceof Promise) {
-            result.then(() => { }).catch(reject);
-        }
-    });
 }

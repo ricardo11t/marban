@@ -98,7 +98,10 @@ export default class ClassRepository {
             const hasBonus = classData.bonus !== undefined;
             const hasTipo = classData.tipo !== undefined;
             const lowerCaseName = name.toLowerCase();
-
+            console.log(classData.bonus);
+            console.log(classData.tipo);
+            console.log(hasBonus);
+            console.log(hasTipo);
             // Se nenhum campo foi fornecido, não faz nada.
             if (!hasBonus && !hasTipo) {
                 throw new Error('No fields provided for update.');

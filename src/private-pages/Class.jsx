@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { ClassesContext } from '../context/ClassesProvider';
-import { AuthContext } from '../context/AuthProvider';
+import { AuthContext } from '../context/AuthProvider'; // Import AuthContext
 import {
     Card, CardContent, Typography, Box, Button,
     Dialog, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress,
@@ -61,11 +61,10 @@ const attributeLabels = {
     criatividade: "Criatividade", sorte: "Sorte"
 };
 
-const API_BASE_URL = '/api';
-
 const Classes = () => {
     const { classes, isLoading: isLoadingClasses, error: classesError, refetchClasses } = useContext(ClassesContext);
-    const { isAdmin } = useContext(AuthContext); // Usando a função do contexto
+    // Destructure axiosInstance from AuthContext
+    const { isAdmin, axiosInstance } = useContext(AuthContext);
 
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
@@ -93,9 +92,7 @@ const Classes = () => {
         console.log('Objeto da classe selecionada: ', classeObject);
         const currentClassName = classeObject.name;
 
-        console.log(encodeURIComponent(currentClassName))
-
-        setEditingClassName(encodeURIComponent(currentClassName));
+        setEditingClassName(currentClassName);
         setFormData({
             nome: currentClassName,
             bonus: { ...initialFormState.bonus, ...(classeObject.bonus || {}) },
@@ -112,24 +109,28 @@ const Classes = () => {
         } else {
             const { name, value: inputValue } = event.target;
             const isBonusField = Object.keys(initialFormState.bonus).includes(name);
+            const isTipoField = Object.keys(initialFormState.tipo).includes(name);
+            console.log(isBonusField);
+            console.log(isTipoField);
             if (name === 'nome') {
                 setFormData(prev => ({ ...prev, nome: inputValue }));
             } else if (isBonusField) {
                 setFormData(prev => ({ ...prev, bonus: { ...prev.bonus, [name]: Number(inputValue) || 0 } }));
+            } else if (isTipoField) {
+                setFormData(prev => ({...prev, tipo: {tipoClasse: inputValue}}));
             }
         }
     };
 
     const handleSaveClasse = async () => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            Swal.fire('Erro de Autenticação', 'Você não está logado ou sua sessão expirou.', 'error');
+        // No need for manual token check here, axios interceptor handles it
+        if (!isAdmin()) { // Still check if user has permission to perform the action
+            Swal.fire('Erro de Permissão', 'Você não tem permissão para realizar esta ação.', 'error');
             return;
         }
 
         setIsSubmitting(true);
         try {
-            // --- ALTERAÇÃO PRINCIPAL AQUI ---
             // Montamos o payload no novo formato, com 'classData' aninhado.
             const classPayload = {
                 name: formData.nome.trim(), // O nome da classe vai no campo 'nome'
@@ -139,59 +140,47 @@ const Classes = () => {
                 }
             };
 
-            // Verificação usa o novo campo 'nome'
             if (!classPayload.name) {
                 Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da classe não pode ser vazio.' });
                 setIsSubmitting(false);
                 return;
             }
 
-            let url = `${API_BASE_URL}/classes`;
-            let method = 'POST';
+            let url = `/classes`; // Use relative path for axios instance
+            let method = 'post'; // axios method name is lowercase
+            let requestBody = classPayload; // Default body for POST
 
             if (editingClassName) {
-                // --- CORREÇÃO NA URL ---
-                // A URL para PUT deve usar o nome diretamente no caminho, sem ":name" ou query string.
-                // O `editingClassName` já está codificado com encodeURIComponent.
-                url = `${API_BASE_URL}/classes/:name?name${editingClassName}`;
-                method = 'PUT';
+                url = `/classes/${encodeURIComponent(editingClassName)}?name=${encodeURIComponent(editingClassName)}`;
+                method = 'put';
+                requestBody = classPayload.classData;
             }
 
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(classPayload) // O objeto já está no formato correto para envio
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
-                throw new Error(errorData.message || `Erro ao salvar classe: ${response.statusText}`);
-            }
+            // Use axiosInstance for the request
+            const response = await axiosInstance[method](url, requestBody);
 
             await refetchClasses();
             handleClose();
             Swal.fire({
                 icon: 'success', title: editingClassName ? 'Atualizado!' : 'Criado!',
-                // Mensagem de sucesso usa o novo campo 'nome'
-                text: `A classe "${classPayload.nome}" foi salva com sucesso.`,
+                text: `A classe "${classPayload.name}" foi salva com sucesso.`, // Use classPayload.name
                 showConfirmButton: false, timer: 1500
             });
 
         } catch (error) {
+            // The 401/403 errors are handled by the interceptor and will lead to a redirect.
+            // Other errors (e.g., 400 Bad Request, 500 Internal Server Error) will reach here.
             console.error("Erro ao salvar classe:", error);
-            Swal.fire({ icon: 'error', title: 'Oops...', text: 'Algo deu errado ao salvar a classe!', footer: `Erro: ${error.message}` });
+            const errorMessage = error.response?.data?.message || error.message || 'Algo deu errado ao salvar a classe!';
+            Swal.fire({ icon: 'error', title: 'Oops...', text: errorMessage, footer: `Erro: ${error.message}` });
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleDelete = (classNameString) => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            Swal.fire('Erro de Autenticação', 'Você não está logado ou sua sessão expirou.', 'error');
+        if (!isAdmin()) {
+            Swal.fire('Erro de Permissão', 'Você não tem permissão para realizar esta ação.', 'error');
             return;
         }
 
@@ -204,22 +193,15 @@ const Classes = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/classes/:name?name=${encodeURIComponent(classNameString)}`, {
-                        method: 'DELETE',
-                        headers: {
-                            // ✅ CORREÇÃO: Enviando o token no cabeçalho Authorization
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
-                        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-                    }
+                    // Use axiosInstance for the DELETE request
+                    await axiosInstance.delete(`/classes/${encodeURIComponent(classNameString)}`);
+
                     await refetchClasses();
                     Swal.fire('Deletado!', `A classe "${classNameString}" foi deletada.`, 'success');
                 } catch (error) {
                     console.error("Erro ao deletar classe:", error);
-                    Swal.fire({ icon: 'error', title: 'Oops...', text: 'Algo deu errado ao deletar a classe!', footer: `Erro: ${error.message}` });
+                    const errorMessage = error.response?.data?.message || error.message || 'Algo deu errado ao deletar a classe!';
+                    Swal.fire({ icon: 'error', title: 'Oops...', text: errorMessage, footer: `Erro: ${error.message}` });
                 } finally {
                     setIsSubmitting(false);
                 }
@@ -235,7 +217,7 @@ const Classes = () => {
                 <div className="container mx-auto px-4 py-8">
                     <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Classes</Typography>
 
-                    <div className='flex justify-start mb-6'>
+                    <div className='flex justify-start mb-6 max-[450px]:justify-center'>
                         {isAdmin() && (
                             <Button variant="contained" onClick={handleOpenAdd} sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#501b1c' } }}>
                                 Adicionar Classe
@@ -293,15 +275,14 @@ const Classes = () => {
                                                 </>
                                             )}
                                         </CardContent>
-                                            {isAdmin() && (
-                                                <>
-                                                    <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
-                                                        {/* CORREÇÃO: Passando o objeto 'raceItem' completo para a edição */}
-                                                        <Button size="small" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}><Edit fontSize="small" /></Button>
-                                                        <Button size="small" onClick={() => handleDelete(classNameKey)} sx={{ color: 'lightcoral', '&:hover': { backgroundColor: 'rgba(255,100,100,0.1)' } }}><Delete fontSize="small" /></Button>
-                                                    </Box>
-                                                </>
-                                            )}
+                                        {isAdmin() && (
+                                            <>
+                                                <Box className='flex justify-end gap-1 p-2 mt-auto border-t border-gray-700'>
+                                                    <Button size="small" onClick={() => handleOpenEdit(classeItem)} sx={{ color: 'rgba(255,255,255,0.8)', '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' } }}><Edit fontSize="small" /></Button>
+                                                    <Button size="small" onClick={() => handleDelete(classNameKey)} sx={{ color: 'lightcoral', '&:hover': { backgroundColor: 'rgba(255,100,100,0.1)' } }}><Delete fontSize="small" /></Button>
+                                                </Box>
+                                            </>
+                                        )}
                                     </Card>
                                 );
                             })
