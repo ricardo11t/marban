@@ -3,7 +3,7 @@ dotenv.config();
 
 export const config = {
     jwtSecret: process.env.JWT_SECRET || 'DEV_SECRET_KEY_ONLY_FOR_DEVELOPMENT',
-    EXPIRATION: process.env.EXPIRATION || '1h'
+    EXPIRATION: process.env.EXPIRATION || '10s'
 };
 
 if (config.jwtSecret === 'DEV_SECRET_KEY_ONLY_FOR_DEVELOPMENT' && process.env.NODE_ENV === 'production') {

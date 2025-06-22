@@ -70,7 +70,7 @@ export default class RaceController {
         // Pega o nome da query string
         const nameParam = req.query.name;
         // Desestrutura o objeto 'raceData' do corpo da requisição.
-        const { raceData } = req.body;
+        const raceData = req.body;
 
         if (typeof nameParam !== 'string' || nameParam.trim() === '') {
             const error = new Error('"name" query parameter is required to identify the race to update.');

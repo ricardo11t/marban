@@ -11,25 +11,24 @@ import { Delete, Edit } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../context/AuthProvider';
 
-// --- Constantes ---
-// CORREÇÃO: O estado inicial reflete a estrutura aninhada que a API espera.
-const initialFormState = {
-    nome: '',
-    raceData: {
-        bonus: {
-            forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
-            agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
-        },
-        pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null }
-    }
-};
+// --- Constantes de Configuração ---
 
-// CORREÇÃO: Acessa 'bonus' dentro de 'raceData' para montar as opções.
-const attributeKeys = Object.keys(initialFormState.raceData.bonus);
+const bonusFieldsForAttributeOptions = {
+    forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0, sobrevivencia: 0,
+    agilidade: 0, destreza: 0, competencia: 0, criatividade: 0, sorte: 0
+};
+const attributeKeys = Object.keys(bonusFieldsForAttributeOptions);
 const attributeOptions = attributeKeys.map(key => ({
     value: key,
     label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim()
 }));
+
+const initialFormState = {
+    nome: '', // Top-level
+    bonus: { ...bonusFieldsForAttributeOptions }, // Top-level
+    pdd: { PdDFixo: 0, PdDFração: 0, AtributoUtilizado: null } // Top-level
+};
+
 const filledTextFieldStyles = {
     '& .MuiFilledInput-root': {
         backgroundColor: '#601b1c', color: 'white', borderTopLeftRadius: 4, borderTopRightRadius: 4,
@@ -44,11 +43,19 @@ const filledTextFieldStyles = {
     '& label.MuiInputLabel-filled.Mui-focused': { color: 'white' },
     '& label.MuiInputLabel-filled.Mui-disabled': { color: 'rgba(255, 255, 255, 0.4)' }
 };
+
+const attributeLabels = {
+    forca: "Força", resFisica: "Res. Física", resMental: "Res. Mental",
+    manipulacao: "Manipulação", resMagica: "Res. Mágica", sobrevivencia: "Sobrevivência",
+    agilidade: "Agilidade", destreza: "Destreza", competencia: "Competência",
+    criatividade: "Criatividade", sorte: "Sorte"
+};
+
 const API_BASE_URL = '/api';
 
 const Races = () => {
     const { races, isLoading: isLoadingRaces, error: racesError, refetchRaces } = useContext(RacesContext);
-    const { isAdmin } = useContext(AuthContext);
+    const { isAdmin, axiosInstance } = useContext(AuthContext);
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState(initialFormState);
     const [editingRaceName, setEditingRaceName] = useState(null);
@@ -76,13 +83,10 @@ const Races = () => {
         const currentRaceName = raceObject.name;
         setEditingRaceName(currentRaceName);
 
-        // CORREÇÃO: Popula o formulário usando a estrutura aninhada correta.
         setFormData({
             nome: currentRaceName,
-            raceData: {
-                bonus: { ...initialFormState.raceData.bonus, ...(raceObject.raceData.bonus || {}) },
-                pdd: { ...initialFormState.raceData.pdd, ...(raceObject.raceData.pdd || {}) }
-            }
+            bonus: { ...initialFormState.bonus, ...(raceObject.raceData.bonus || {}) },
+            pdd: { ...initialFormState.pdd, ...(raceObject.raceData.pdd || {}) }
         });
         setOpen(true);
     };
@@ -91,39 +95,34 @@ const Races = () => {
 
     const handleFormChange = (event, value, fieldName) => {
         if (fieldName === 'AtributoUtilizado') {
-            // CORREÇÃO: Atualiza o estado aninhado corretamente.
+            console.log('Updating AtributoUtilizado to:', value ? value.value : null);
             setFormData(prev => ({
                 ...prev,
-                raceData: {
-                    ...prev.raceData,
-                    pdd: { ...prev.raceData.pdd, AtributoUtilizado: value ? value.value : null }
-                }
+                pdd: { ...prev.pdd, AtributoUtilizado: value ? value.value : null }
             }));
         } else {
             const { name, value: inputValue } = event.target;
-            const isBonusField = Object.keys(initialFormState.raceData.bonus).includes(name);
-            const isPdDField = Object.keys(initialFormState.raceData.pdd).includes(name) && name !== 'AtributoUtilizado';
+
+            const isBonusField = Object.keys(initialFormState.bonus).includes(name);
+            const isPdDField = Object.keys(initialFormState.pdd).includes(name) && name !== 'AtributoUtilizado';
 
             if (name === 'nome') {
+                console.log('Updating nome to:', inputValue);
                 setFormData(prev => ({ ...prev, nome: inputValue }));
             } else if (isBonusField) {
-                // CORREÇÃO: Atualiza o estado aninhado corretamente.
+                console.log(`Updating bonus.${name} to:`, Number(inputValue) || 0);
                 setFormData(prev => ({
                     ...prev,
-                    raceData: {
-                        ...prev.raceData,
-                        bonus: { ...prev.raceData.bonus, [name]: Number(inputValue) || 0 }
-                    }
+                    bonus: { ...prev.bonus, [name]: Number(inputValue) || 0 }
                 }));
             } else if (isPdDField) {
-                // CORREÇÃO: Atualiza o estado aninhado corretamente.
+                console.log(`Updating pdd.${name} to:`, Number(inputValue) || 0);
                 setFormData(prev => ({
                     ...prev,
-                    raceData: {
-                        ...prev.raceData,
-                        pdd: { ...prev.raceData.pdd, [name]: Number(inputValue) || 0 }
-                    }
+                    pdd: { ...prev.pdd, [name]: Number(inputValue) || 0 }
                 }));
+            } else {
+                console.warn(`No matching field found for input with name: ${name}`);
             }
         }
     };
@@ -142,12 +141,11 @@ const Races = () => {
 
         setIsSubmitting(true);
         try {
-            // CORREÇÃO: Acessa a estrutura aninhada para a validação.
             if (!formData.nome.trim()) {
                 Swal.fire({ icon: 'error', title: 'Erro!', text: 'O nome da raça não pode ser vazio.' });
                 setIsSubmitting(false); return;
             }
-            if ((formData.raceData.pdd.PdDFixo > 0 || formData.raceData.pdd.PdDFração > 0) && !formData.raceData.pdd.AtributoUtilizado) {
+            if ((formData.pdd.PdDFixo > 0 || formData.pdd.PdDFração > 0) && !formData.pdd.AtributoUtilizado) {
                 Swal.fire({ icon: 'error', title: 'Erro!', text: 'Se PdD Fixo ou Fração for maior que zero, o Atributo Utilizado deve ser selecionado.' });
                 setIsSubmitting(false); return;
             }
@@ -157,19 +155,22 @@ const Races = () => {
             let body;
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
+            const racePayload = {
+                name: formData.nome.trim(),
+                raceData: {
+                    bonus: formData.bonus,
+                    pdd: formData.pdd
+                }
+            };
+
             if (editingRaceName) {
                 method = 'PUT';
-                url = `${API_BASE_URL}/races/:name?name=${encodeURIComponent(editingRaceName)}`;
-                // CORREÇÃO: O body já está na estrutura correta { raceData: { ... } }
-                body = JSON.stringify({ raceData: formData.raceData });
+                url = `${API_BASE_URL}/races/${encodeURIComponent(editingRaceName)}?name=${encodeURIComponent(editingRaceName)}`;
+                body = JSON.stringify(racePayload.raceData);
             } else {
                 method = 'POST';
                 url = `${API_BASE_URL}/races`;
-                // CORREÇÃO: O body já está na estrutura correta { name, raceData: { ... } }
-                body = JSON.stringify({
-                    name: formData.nome.trim(),
-                    raceData: formData.raceData
-                });
+                body = JSON.stringify(racePayload);
             }
 
             const response = await fetch(url, { method, headers, body });
@@ -204,7 +205,7 @@ const Races = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/races/:name?name=${encodeURIComponent(raceNameString)}`, {
+                    const response = await fetch(`${API_BASE_URL}/races/${encodeURIComponent(raceNameString)}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -224,16 +225,15 @@ const Races = () => {
         });
     };
 
-
     return (
         <>
             <Header />
             <div className="min-h-screen bg-gray-900 text-white">
                 <div className="container mx-auto px-4 py-8">
                     <Typography variant='h3' component="h1" className='font-bold text-center mb-10'>Raças</Typography>
-                    <div className='flex justify-start mb-6'>
+                    <div className='flex justify-start mb-6 max-[450px]:justify-center'>
                         {isAdmin() && (
-                            <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#b91c1c' } }} onClick={handleOpenAdd}>
+                            <Button variant='contained' sx={{ backgroundColor: '#601b1c', '&:hover': { backgroundColor: '#501b1c' } }} onClick={handleOpenAdd}>
                                 Adicionar nova Raça
                             </Button>
                         )}
@@ -244,7 +244,6 @@ const Races = () => {
 
                         {!isLoadingRaces && !racesError && races && races.length > 0 ? (
                             races.map((raceItem) => {
-                                // CORREÇÃO: Acessa os dados aninhados para exibição.
                                 if (!raceItem || !raceItem.name || !raceItem.raceData) {
                                     console.warn("Item de raça inválido:", raceItem);
                                     return null;
@@ -256,11 +255,10 @@ const Races = () => {
                                     : 'N/A';
 
                                 return (
-                                    <Card key={raceNameKey} sx={{ backgroundColor: '#601b1c', width: 320, display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
+                                    <Card key={raceNameKey} sx={{ backgroundColor: '#601b1c', color: 'white', width: 320, display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
                                         <CardContent className='text-center flex-grow'>
                                             <Typography variant='h5' component="div" sx={{ color: 'white', mb: 2 }} className='capitalize'>{raceNameKey}</Typography>
 
-                                            {/* CORREÇÃO: Acessa raceData.bonus */}
                                             {raceItem.raceData.bonus && Object.values(raceItem.raceData.bonus).some(v => v !== 0) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
@@ -269,7 +267,7 @@ const Races = () => {
                                                             .filter(([_, valor]) => valor !== 0)
                                                             .map(([atributo, valor]) => (
                                                                 <Typography key={atributo} variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', textAlign: 'left' }}>
-                                                                    <span className='capitalize'>{attributeOptions.find(opt => opt.value === atributo)?.label || atributo}:</span>
+                                                                    <span className='capitalize'>{attributeLabels[atributo] || atributo}:</span>
                                                                     <span style={{ color: valor > 0 ? 'lightgreen' : 'lightcoral', marginLeft: '4px', fontWeight: 'bold' }}>
                                                                         {valor > 0 ? `+${valor}` : valor}
                                                                     </span>
@@ -279,7 +277,6 @@ const Races = () => {
                                                 </>
                                             )}
 
-                                            {/* CORREÇÃO: Acessa raceData.pdd */}
                                             {raceItem.raceData.pdd && (raceItem.raceData.pdd.PdDFixo !== 0 || raceItem.raceData.pdd.PdDFração !== 0 || raceItem.raceData.pdd.AtributoUtilizado) && (
                                                 <>
                                                     <Typography variant='subtitle1' sx={{ color: 'rgba(255,255,255,0.9)', mt: 2, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento:</Typography>
@@ -311,36 +308,38 @@ const Races = () => {
                         {editingRaceName ? `Editar Raça: ${editingRaceName}` : 'Adicionar Nova Raça'}
                     </DialogTitle>
                     <DialogContent sx={{ pt: '20px !important' }}>
+                        {/* Corrected onChange */}
                         <TextField autoFocus={!editingRaceName} required margin="dense" id="racename" name="nome" label="Nome da Raça" type="text" fullWidth variant="filled" value={formData.nome} onChange={handleFormChange} disabled={!!editingRaceName} sx={filledTextFieldStyles} />
                         <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>Bônus da Raça:</Typography>
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
-                            {/* CORREÇÃO: Mapeia as chaves de raceData.bonus */}
-                            {Object.keys(formData.raceData.bonus).map(bonusKey => (
+                            {Object.keys(formData.bonus).map(bonusKey => (
+                                // Corrected onChange
                                 <TextField
                                     key={bonusKey} margin="dense" id={bonusKey} name={bonusKey}
                                     label={attributeOptions.find(opt => opt.value === bonusKey)?.label || bonusKey}
                                     type="number" variant="filled"
-                                    // CORREÇÃO: Acessa o valor de raceData.bonus
-                                    value={formData.raceData.bonus[bonusKey]}
-                                    onChange={handleFormChange} sx={filledTextFieldStyles}
+                                    value={formData.bonus[bonusKey]}
+                                    onChange={handleFormChange} // <--- Added/Confirmed
+                                    sx={filledTextFieldStyles}
                                 />
                             ))}
                         </Box>
                         <Typography variant='subtitle1' sx={{ color: 'white', mt: 3, mb: 1, fontWeight: 'bold' }}>Pontos de Deslocamento (PdD):</Typography>
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', alignItems: 'flex-start' }}>
+                            {/* Corrected onChange */}
                             <TextField margin="dense" id="PdDFixo" name="PdDFixo" label="PdD Fixo" type="number" variant="filled"
-                                // CORREÇÃO: Acessa o valor de raceData.pdd
-                                value={formData.raceData.pdd.PdDFixo}
-                                onChange={handleFormChange} sx={filledTextFieldStyles}
+                                value={formData.pdd.PdDFixo}
+                                onChange={handleFormChange} // <--- Added/Confirmed
+                                sx={filledTextFieldStyles}
                             />
+                            {/* Corrected onChange */}
                             <TextField margin="dense" id="PdDFração" name="PdDFração" label="PdD Fração (Valor)" type="number" variant="filled"
-                                // CORREÇÃO: Acessa o valor de raceData.pdd
-                                value={formData.raceData.pdd.PdDFração}
-                                onChange={handleFormChange} sx={filledTextFieldStyles}
+                                value={formData.pdd.PdDFração}
+                                onChange={handleFormChange} // <--- Added/Confirmed
+                                sx={filledTextFieldStyles}
                             />
                             <Autocomplete id="AtributoUtilizado" options={attributeOptions} getOptionLabel={(option) => option.label || ""}
-                                // CORREÇÃO: Acessa o valor de raceData.pdd
-                                value={getAutocompleteValue(formData.raceData.pdd.AtributoUtilizado)}
+                                value={getAutocompleteValue(formData.pdd.AtributoUtilizado)}
                                 onChange={(event, newValue) => handleFormChange(event, newValue, 'AtributoUtilizado')}
                                 isOptionEqualToValue={(option, value) => option.value === value?.value}
                                 renderInput={(params) => (<TextField {...params} label="Atributo para Fração PdD" variant="filled" margin="dense" sx={filledTextFieldStyles} />)}
