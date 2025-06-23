@@ -16,6 +16,150 @@ const autocompleteRootStyles = {
   '& .MuiOutlinedInput-root .MuiSvgIcon-root, & .MuiFilledInput-root .MuiSvgIcon-root, & .MuiInput-root .MuiSvgIcon-root': { color: 'rgba(255, 255, 255, 0.7)', }, '& .MuiAutocomplete-clearIndicator:hover, & .MuiAutocomplete-popupIndicator:hover': { '.MuiSvgIcon-root': { color: 'white', } },
 };
 
+const requisitosEstrelas = {
+  fisico: {
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 0,
+    segundaEstrelaMenor: 17,
+    segundaEstrelaMaior: 33,
+    terceiraEstrelaMenor: 50,
+    terceiraEstrelaMaior: 67,
+    quartaEstrelaMenor: 84,
+    quartaEstrelaMaior: 100,
+  },
+  magico: {
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 25,
+    segundaEstrelaMenor: 50,
+    segundaEstrelaMaior: 75,
+    terceiraEstrelaMenor: 100,
+    terceiraEstrelaMaior: 125,
+    quartaEstrelaMenor: 150,
+    quartaEstrelaMaior: 175,
+  },
+  neutro: {
+    semRequisitos: 'Por Enquanto'
+  },
+  hibrido: {
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 0,
+    segundaEstrelaMenor: 17,
+    segundaEstrelaMaior: 33,
+    terceiraEstrelaMenor: 50,
+    terceiraEstrelaMaior: 67,
+    quartaEstrelaMenor: 84,
+    quartaEstrelaMaior: 100,
+  },
+  fisicoEHibrido:{
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 0,
+    segundaEstrelaMenor: 17,
+    segundaEstrelaMaior: 33,
+    terceiraEstrelaMenor: 50,
+    terceiraEstrelaMaior: 67,
+    quartaEstrelaMenor: 84,
+    quartaEstrelaMaior: 100,
+  },
+  magicoEFisico: {
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 25*2,
+    segundaEstrelaMenor: 50*2,
+    segundaEstrelaMaior: 75*2,
+    terceiraEstrelaMenor: 100*2,
+    terceiraEstrelaMaior: 125*2,
+    quartaEstrelaMenor: 150*2,
+    quartaEstrelaMaior: 175*2,
+  },
+  neutroEHibrido: {
+    primeiraEstrelaMenor: 0,
+    primeiraEstrelaMaior: 0,
+    segundaEstrelaMenor: 17,
+    segundaEstrelaMaior: 33,
+    terceiraEstrelaMenor: 50,
+    terceiraEstrelaMaior: 67,
+    quartaEstrelaMenor: 84,
+    quartaEstrelaMaior: 100,
+  }
+};
+
+const requisitosCirculo = {
+  fisico: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35,
+    terceiroCirculo: 45,
+    quartoCirculo: 55,
+    quintoCirculo: 65,
+    sextoCirculo: 85,
+    setimoCirculo: 105,
+    oitavoCirculo: 125,
+    nonoCirculo: 145,
+    decimoCirculo: 165
+  },
+  magico: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35,
+    terceiroCirculo: 45,
+    quartoCirculo: 55,
+    quintoCirculo: 65,
+    sextoCirculo: 75,
+    setimoCirculo: 85,
+    oitavoCirculo: 95,
+    nonoCirculo: 105,
+    decimoCirculo: 125
+  },
+  neutro: {
+    semRequisitos: 'Por Enquanto'
+  },
+  hibrido: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35,
+    terceiroCirculo: 45,
+    quartoCirculo: 55,
+    quintoCirculo: 65,
+    sextoCirculo: 75,
+    setimoCirculo: 85,
+    oitavoCirculo: 95,
+    nonoCirculo: 105,
+    decimoCirculo: 125
+  },
+  fisicoEHibrido: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35,
+    terceiroCirculo: 45,
+    quartoCirculo: 55,
+    quintoCirculo: 65,
+    sextoCirculo: 75,
+    setimoCirculo: 85,
+    oitavoCirculo: 95,
+    nonoCirculo: 105,
+    decimoCirculo: 125
+  },
+  magicoEFisico: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35*2,
+    terceiroCirculo: 45*2,
+    quartoCirculo: 55*2,
+    quintoCirculo: 65*2,
+    sextoCirculo: 75*2,
+    setimoCirculo: 85*2,
+    oitavoCirculo: 95*2,
+    nonoCirculo: 105*2,
+    decimoCirculo: 125*2
+  },
+  neutroEHibrido: {
+    primeiroCirculo: 0,
+    segundoCirculo: 35,
+    terceiroCirculo: 45,
+    quartoCirculo: 55,
+    quintoCirculo: 65,
+    sextoCirculo: 75,
+    setimoCirculo: 85,
+    oitavoCirculo: 95,
+    nonoCirculo: 105,
+    decimoCirculo: 125
+  }
+}
+
 const CriacaoPage = () => {
   const [isHibrido, setIsHibrido] = useState(false);
   const [isSClasse, setIsSClasse] = useState(false);
@@ -37,6 +181,8 @@ const CriacaoPage = () => {
   const [nivel, setNivel] = useState(0);
   const [pontos, setPontos] = useState(50);
   const [pontosDiff, setPontosDiff] = useState(50);
+  const [circulo, setCirculo] = useState(1);
+  const [estrela, setEstrela] = useState('');
 
   const [CAF, setCAF] = useState(0);
   const [CAM, setCAM] = useState(0);
@@ -47,6 +193,7 @@ const CriacaoPage = () => {
 
   const [bonusRaca, setBonusRaca] = useState({});
   const [bonusClasse, setBonusClasse] = useState({});
+
   const [atributos, setAtributos] = useState({
     forca: 0, resFisica: 0, resMental: 0, manipulacao: 0, resMagica: 0,
     sobrevivencia: 0, agilidade: 0, destreza: 0, competencia: 0,
@@ -57,11 +204,15 @@ const CriacaoPage = () => {
   const { classes } = useContext(ClassesContext);
 
   useEffect(() => {
-    // CORREÇÃO: Trata 'races' e 'classes' como arrays para buscar os objetos corretos usando .find()
     const racaPrimariaObj = racaPrimaria && Array.isArray(races) ? races.find(r => r.name === racaPrimaria) : null;
     const racaSecundariaObj = racaSecundaria && Array.isArray(races) ? races.find(r => r.name === racaSecundaria) : null;
     const classePrimariaObj = classePrimaria && Array.isArray(classes) ? classes.find(c => c.name === classePrimaria) : null;
     const classeSecundariaObj = classeSecundaria && Array.isArray(classes) ? classes.find(c => c.name === classeSecundaria) : null;
+
+    const { Vigor, Habilidade, Percepção, Inteligência, Domínio } = stats;
+    setPdV((2 * Vigor) + Habilidade);
+    setPdE(Percepção + Inteligência + Domínio);
+
 
     const calcularPdDParaUmaRaca = (dadosPddRaca, atributosAtuaisPersonagem) => {
       if (!dadosPddRaca) return 0;
@@ -76,7 +227,6 @@ const CriacaoPage = () => {
       return pddCalculadoParaEstaRaca;
     };
 
-    // CORREÇÃO: Acessa os dados aninhados 'raceData.bonus' dos objetos encontrados
     const bonusRacaPrimaria = racaPrimariaObj?.raceData?.bonus || {};
     const bonusRacaSecundaria = racaSecundariaObj?.raceData?.bonus || {};
     const totalBonusRaca = {};
@@ -93,20 +243,115 @@ const CriacaoPage = () => {
     });
     setBonusRaca(totalBonusRaca);
 
-    // CORREÇÃO: Classes não têm 'raceData', acessa 'bonus' diretamente
     const bonusClassePrimaria = classePrimariaObj?.bonus || {};
     const bonusClasseSecundaria = classeSecundariaObj?.bonus || {};
+    const tipoClassePrimariaa = classePrimariaObj?.tipo || {};
+    const tipoClasseSecundariaa = classeSecundaria?.tipo || {};
+    const objetoClassePrimaria = {
+      bonusClassePrimaria: bonusClassePrimaria,
+      tipoClassePrimaria:  tipoClassePrimariaa.tipoClasse || null
+    }
+    const objetoClasseSecundaria = {
+      bonusClasseSecundaria: bonusClasseSecundaria,
+      tipoClasseSecundaria: tipoClasseSecundariaa.tipoClasse || null
+    }
     const totalBonusClasse = {};
-    const allClasseKeys = new Set([...Object.keys(bonusClassePrimaria), ...Object.keys(bonusClasseSecundaria)]);
+    const allClasseKeys = new Set([...Object.keys(objetoClassePrimaria.bonusClassePrimaria), ...Object.keys(objetoClasseSecundaria.bonusClasseSecundaria)]);
 
     allClasseKeys.forEach(key => {
       totalBonusClasse[key] = (bonusClassePrimaria[key] || 0) + (isSClasse && classeSecundaria ? (bonusClasseSecundaria[key] || 0) : 0);
     });
     setBonusClasse(totalBonusClasse);
 
-    const { Vigor, Habilidade, Percepção, Inteligência, Domínio } = stats;
-    setPdV((2 * Vigor) + Habilidade);
-    setPdE(Percepção + Inteligência + Domínio);
+    const tipoClasseAtual = classePrimariaObj?.tipo?.tipoClasse || null;
+    const tipoClasseSecundariaAtual = isSClasse && classeSecundariaObj ? (classeSecundariaObj?.tipo?.tipoClasse || null) : null;
+
+    let tipoDeRequisito;
+
+    if (tipoClasseAtual && tipoClasseSecundariaAtual) {
+      if ((tipoClasseAtual === 'fisico' && tipoClasseSecundariaAtual === 'magico')) {
+        tipoDeRequisito = 'fisicoEMagico';
+      } else if (tipoClasseAtual === 'magico' && tipoClasseSecundariaAtual === 'fisico') {
+        tipoDeRequisito = 'magicoEFisico';
+      } else if ((tipoClasseAtual === 'neutro' && tipoClasseSecundariaAtual === 'hibrido') || (tipoClasseAtual === 'hibrido' && tipoClasseSecundariaAtual === 'neutro')) {
+        tipoDeRequisito = 'neutroEHibrido';
+      } else if ((tipoClasseAtual === 'magico' && tipoClasseSecundariaAtual === 'hibrido') || (tipoClasseAtual === 'hibrido' && tipoClasseSecundariaAtual === 'magico')) {
+        tipoDeRequisito = 'magico';
+      } else if ((tipoClasseAtual === 'fisico' && tipoClasseSecundariaAtual === 'hibrido') || (tipoClasseAtual === 'hibrido' && tipoClasseSecundariaAtual === 'fisico')) {
+        tipoDeRequisito = 'fisico';
+      } else if ((tipoClasseAtual === 'neutro' && tipoClasseSecundariaAtual === 'fisico') || (tipoClasseAtual === 'fisico' && tipoClasseSecundariaAtual === 'neutro')) {
+        tipoDeRequisito = 'fisico';
+      } else if ((tipoClasseAtual === 'neutro' && tipoClasseSecundariaAtual === 'magico') || (tipoClasseAtual === 'magico' && tipoClasseSecundariaAtual === 'neutro')) {
+        tipoDeRequisito = 'magico';
+      } else {
+        tipoDeRequisito = tipoClasseAtual;
+      }
+    } else if (tipoClasseAtual) {
+      tipoDeRequisito = tipoClasseAtual;
+    } else if (tipoClasseSecundariaAtual) {
+      tipoDeRequisito = tipoClasseSecundariaAtual;
+    }
+
+    if (!tipoDeRequisito) {
+      setEstrela("Primeira Estrela Menor");
+    } else {
+      const reqEstrela = requisitosEstrelas[tipoDeRequisito];
+      let statusFinalEstrela = "Primeira Estrela Menor";
+
+      if (!reqEstrela || reqEstrela.semRequisitos) {
+        statusFinalEstrela = "Nenhuma estrela aplicável";
+      } else {
+        // Lógica de cálculo da estrela permanece a mesma
+        if (nivel >= reqEstrela.primeiraEstrelaMenor && nivel < reqEstrela.segundaEstrelaMenor) statusFinalEstrela = "Primeira Estrela Menor";
+        if (nivel >= reqEstrela.primeiraEstrelaMaior && nivel < reqEstrela.segundaEstrelaMenor) statusFinalEstrela = "Primeira Estrela Maior";
+        if (nivel >= reqEstrela.segundaEstrelaMenor && nivel < reqEstrela.segundaEstrelaMaior) statusFinalEstrela = "Segunda Estrela Menor";
+        if (nivel >= reqEstrela.segundaEstrelaMaior && nivel < reqEstrela.terceiraEstrelaMenor) statusFinalEstrela = "Segunda Estrela Maior";
+        if (nivel >= reqEstrela.terceiraEstrelaMenor && nivel < reqEstrela.terceiraEstrelaMaior) statusFinalEstrela = "Terceira Estrela Menor";
+        if (nivel >= reqEstrela.terceiraEstrelaMaior && nivel < reqEstrela.quartaEstrelaMenor) statusFinalEstrela = "Terceira Estrela Maior";
+        if (nivel >= reqEstrela.quartaEstrelaMenor && nivel < reqEstrela.quartaEstrelaMaior) statusFinalEstrela = "Quarta Estrela Menor";
+        if (nivel >= reqEstrela.quartaEstrelaMaior) statusFinalEstrela = "Quarta Estrela Maior";
+      }
+      setEstrela(statusFinalEstrela);
+    }
+
+    const PdEAtual = Percepção + Inteligência + Domínio;
+
+    if (!tipoDeRequisito) {
+      setCirculo(1);
+    } else {
+      const reqCirculo = requisitosCirculo[tipoDeRequisito];
+      let statusFinalCirculo = 1;
+
+      if (!reqCirculo || reqCirculo.semRequisitos) {
+        statusFinalCirculo = 1;
+      } else {
+        if (PdEAtual >= reqCirculo.decimoCirculo) {
+          // --- CORREÇÃO 3: LÓGICA DO CÍRCULO SIMPLIFICADA E CORRIGIDA ---
+          const excessoPdE = PdEAtual - reqCirculo.decimoCirculo;
+          const circulosAdicionais = Math.floor(excessoPdE / 20); // A cada 20 pontos, ganha um círculo
+          statusFinalCirculo = 10 + circulosAdicionais;
+        } else if (PdEAtual >= reqCirculo.nonoCirculo) {
+          statusFinalCirculo = 9;
+        } else if (PdEAtual >= reqCirculo.oitavoCirculo) {
+          statusFinalCirculo = 8;
+        } else if (PdEAtual >= reqCirculo.setimoCirculo) {
+          statusFinalCirculo = 7;
+        } else if (PdEAtual >= reqCirculo.sextoCirculo) {
+          statusFinalCirculo = 6;
+        } else if (PdEAtual >= reqCirculo.quintoCirculo) {
+          statusFinalCirculo = 5;
+        } else if (PdEAtual >= reqCirculo.quartoCirculo) {
+          statusFinalCirculo = 4;
+        } else if (PdEAtual >= reqCirculo.terceiroCirculo) {
+          statusFinalCirculo = 3;
+        } else if (PdEAtual >= reqCirculo.segundoCirculo) {
+          statusFinalCirculo = 2;
+        } else {
+          statusFinalCirculo = 1;
+        }
+      }
+      setCirculo(statusFinalCirculo);
+    }
 
     const atributosCalculados = {
       forca: Vigor + Habilidade + (totalBonusRaca.forca || 0) + (totalBonusClasse.forca || 0),
@@ -123,7 +368,6 @@ const CriacaoPage = () => {
     };
     setAtributos(atributosCalculados);
 
-    // CORREÇÃO: Acessa os dados aninhados 'raceData.pdd' dos objetos encontrados
     const dadosPddRacaPrimaria = racaPrimariaObj?.raceData?.pdd;
     const pddCalculadoRacaPrimaria = calcularPdDParaUmaRaca(dadosPddRacaPrimaria, atributosCalculados);
     let pddFinalPersonagem = 0;
@@ -137,7 +381,19 @@ const CriacaoPage = () => {
     }
     setPdD(pddFinalPersonagem);
 
-  }, [stats, racaPrimaria, racaSecundaria, classePrimaria, classeSecundaria, isHibrido, isSClasse, races, classes]);
+  }, [
+    nivel,
+    stats,
+    racaPrimaria,
+    racaSecundaria,
+    classePrimaria,
+    classeSecundaria,
+    isHibrido,
+    isSClasse,
+    races,
+    classes,
+    PdE
+  ]);
 
   useEffect(() => {
     const numPdAFisico = Number(PdAFisico) || 0;
@@ -282,9 +538,9 @@ const CriacaoPage = () => {
             className='bg-[#601b1c] text-white mb-6 w-full'
             sx={{
               height: 'fit-content',
-              maxWidth: '900px', // Limita a largura em telas grandes
+              maxWidth: '900px',
               borderRadius: '10px',
-              padding: { xs: '16px', sm: '20px', md: '24px' } // Padding responsivo
+              padding: { xs: '16px', sm: '20px', md: '24px' }
             }}
           >
             <div className='flex justify-center items-center mb-6'>
@@ -292,15 +548,15 @@ const CriacaoPage = () => {
                 <h4 className='text-3xl mb-2'>Qual o nível do personagem?</h4>
                 <div className='flex justify-center items-center gap-4'>
                   <div>
-                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>Nível</InputLabel> {/* Label do nível branco */}
+                    <InputLabel sx={{ color: 'white', mb: 0.5 }}>Nível</InputLabel>
                     <TextField
                       name='nivel'
                       type='number'
-                      variant={blackFilledFieldStyles.variant} // Aplicando variant
+                      variant={blackFilledFieldStyles.variant}
                       value={nivel === 0 ? '' : nivel}
                       onChange={handleNivelChange}
                       onFocus={(e) => e.target.select()}
-                      sx={{ ...blackFilledFieldStyles.sx, width: '100px' }} // Aplicando estilos
+                      sx={{ ...blackFilledFieldStyles.sx, width: '100px' }}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ min: 0 }}
                       autoComplete='off'
@@ -540,6 +796,8 @@ const CriacaoPage = () => {
                         <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>CAF</TableCell>
                         <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>CAM</TableCell>
                         <TableCell sx={{ color: 'bisque', fontWeight: 'bold' }}>CAB</TableCell>
+                        <TableCell sx={{ color: 'bisque', fontWeight: 'bold' }}>Estrela</TableCell>
+                        <TableCell sx={{ color: 'bisque', fontWeight: 'bold' }}>Circulo</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -547,6 +805,26 @@ const CriacaoPage = () => {
                         <TableCell sx={{ color: 'white' }}>{CAF}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{CAM}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{stats.CAB}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{estrela}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{circulo}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+              <Box className={"mb-5"}>
+                <TableContainer sx={{ backgroundColor: 'black' }} component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: 'black' }}>
+                        <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>Peso Em Combate</TableCell>
+                        <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>Peso F. Combate (Força)</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow sx={{ backgroundColor: 'black' }}>
+                        <TableCell sx={{ color: 'white' }}>{stats.Vigor}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{atributos.forca}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
