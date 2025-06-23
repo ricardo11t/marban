@@ -28,6 +28,7 @@ const tiposDeClasseOptions = [
     { value: 'fisico', label: 'Físico' },
     { value: 'magico', label: 'Mágico' },
     { value: 'neutro', label: 'Neutro' },
+    { value: 'hibrido', label: 'Híbrido' }
 ];
 
 const initialFormState = {
