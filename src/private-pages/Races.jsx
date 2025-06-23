@@ -205,7 +205,7 @@ const Races = () => {
             if (result.isConfirmed) {
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/races/${encodeURIComponent(raceNameString)}`, {
+                    const response = await fetch(`${API_BASE_URL}/races/${encodeURIComponent(raceNameString)}?name=${encodeURIComponent(raceNameString)}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });

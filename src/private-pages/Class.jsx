@@ -194,7 +194,7 @@ const Classes = () => {
                 setIsSubmitting(true);
                 try {
                     // Use axiosInstance for the DELETE request
-                    await axiosInstance.delete(`/classes/${encodeURIComponent(classNameString)}`);
+                    await axiosInstance.delete(`/classes/${encodeURIComponent(classNameString)}?name=${encodeURIComponent(classNameString)}`);
 
                     await refetchClasses();
                     Swal.fire('Deletado!', `A classe "${classNameString}" foi deletada.`, 'success');
