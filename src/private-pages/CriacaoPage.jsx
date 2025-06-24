@@ -183,6 +183,8 @@ const CriacaoPage = () => {
   const [pontosDiff, setPontosDiff] = useState(50);
   const [circulo, setCirculo] = useState(1);
   const [estrela, setEstrela] = useState('');
+  const [classUpgrades, setClassUpgrades] = useState(0);
+  const [slotHabilidade, setSlotHabilidade] = useState(3);
 
   const [CAF, setCAF] = useState(0);
   const [CAM, setCAM] = useState(0);
@@ -213,6 +215,12 @@ const CriacaoPage = () => {
     setPdV((2 * Vigor) + Habilidade);
     setPdE(Percepção + Inteligência + Domínio);
 
+
+    const qtdClassUpgrades = Math.floor(nivel/5);
+    setClassUpgrades(qtdClassUpgrades);
+
+    const qtdSlotsHabilidade = Math.floor(nivel/5)+3;
+    setSlotHabilidade(qtdSlotsHabilidade);
 
     const calcularPdDParaUmaRaca = (dadosPddRaca, atributosAtuaisPersonagem) => {
       if (!dadosPddRaca) return 0;
@@ -819,12 +827,16 @@ const CriacaoPage = () => {
                       <TableRow sx={{ backgroundColor: 'black' }}>
                         <TableCell sx={{ color: 'crimson', fontWeight: 'bold' }}>Peso Em Combate</TableCell>
                         <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>Peso F. Combate (Força)</TableCell>
+                        <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>Class Upgrades</TableCell>
+                        <TableCell sx={{ color: 'royalblue', fontWeight: 'bold' }}>Slots de Habilidade</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       <TableRow sx={{ backgroundColor: 'black' }}>
                         <TableCell sx={{ color: 'white' }}>{stats.Vigor}</TableCell>
                         <TableCell sx={{ color: 'white' }}>{atributos.forca}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{classUpgrades}</TableCell>
+                        <TableCell sx={{ color: 'white' }}>{slotHabilidade}</TableCell>             
                       </TableRow>
                     </TableBody>
                   </Table>

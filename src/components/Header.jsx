@@ -18,6 +18,8 @@ const Header = () => {
     }
   };
 
+  const displayName = user && user.username.length > 10 ? `${user.username.substring(0, 10)}...` : user?.username;
+
   return (
     <header>
       <div className='flex justify-between items-center p-2 md:p-4 bg-[#601b1c]'>
@@ -42,9 +44,9 @@ const Header = () => {
             <CircularProgress size={24} sx={{ color: 'white' }} />
           ) : isAuthenticated && user ? (
             <div className='flex flex-col sm:flex-row items-center gap-2 md:gap-4'>
-                <div className='max-[250px]:hidden'>
+              <div className='max-[250px]:hidden'>
                 <Typography variant="subtitle1" sx={{ color: 'white', fontFamily: 'serif' }}>
-                  Olá, <span className='font-sans text-emerald-400 font-semibold'>{user.username || user.nomeCompleto || user.email}</span>!
+                    Olá, <span className='font-sans text-emerald-400 font-semibold'>{displayName}</span>!
                 </Typography>
               </div>
               <Button
