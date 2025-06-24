@@ -18,7 +18,9 @@ const Header = () => {
     }
   };
 
-  const displayName = user && user.username.length > 10 ? `${user.username.substring(0, 10)}...` : user?.username;
+  const displayName1 = user && user.username.length > 30 ? `${user.username.substring(0, 30)}...` : user?.username;
+  const displayName2 = user && user.username.length > 10 ? `${user.username.substring(0, 10)}...` : user?.username;
+  const displayName3 = user && user.username.length > 5 ? `${user.username.substring(0, 5)}...` : user?.username;
 
   return (
     <header>
@@ -46,7 +48,13 @@ const Header = () => {
             <div className='flex flex-col sm:flex-row items-center gap-2 md:gap-4'>
               <div className='max-[250px]:hidden'>
                 <Typography variant="subtitle1" sx={{ color: 'white', fontFamily: 'serif' }}>
-                    Olá, <span className='font-sans text-emerald-400 font-semibold'>{displayName}</span>!
+                    Olá, 
+                    <span className='font-sans text-emerald-400 font-semibold max-[801px]:hidden'>{user.username}</span>
+                    <span className='font-sans text-emerald-400 font-semibold min-[800px]:hidden max-[641px]:hidden'>{displayName1}</span>
+                    <span className='font-sans text-emerald-400 font-semibold min-[640px]:hidden max-[401px]:hidden'>{displayName2}</span>
+                    <span className='font-sans text-emerald-400 font-semibold min-[400px]:hidden max-[200px]:hidden'>{displayName3}</span>
+                    !
+
                 </Typography>
               </div>
               <Button
