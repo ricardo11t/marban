@@ -1,19 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import { Box, Button, Paper, TextField, CircularProgress, Typography } from '@mui/material'; // Adicionado CircularProgress e Typography
+import { Box, Button, Paper, TextField, CircularProgress, Typography, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { AuthContext } from '../context/AuthProvider';
 
 const Login = () => {
-  // Correção 1: Desestruturar diretamente as propriedades do contexto
   const { login, loading, authError, setAuthError } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Limpar erro ao digitar
   useEffect(() => {
     if (email || password) {
-      setAuthError(null); // Limpa o erro quando o usuário começa a digitar
+      setAuthError(null); 
     }
   }, [email, password, setAuthError]);
 
@@ -25,32 +25,39 @@ const Login = () => {
     setPassword(event.target.value);
   };
 
-  // Correção 2: handleSubmit como um event handler para o formulário
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!email || !password) { // 'email' e 'password' aqui são do estado do componente
+    if (!email || !password) {
       setAuthError("Email e senha são obrigatórios.");
       return;
     }
-    await login(email, password); // 'email' e 'password' são passados corretamente
+    await login(email, password);
   };
+
+  const toggleShowPassword = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
 
   return (
     <>
       <Header />
       <main className='min-h-screen bg-black'>
         <div className='flex justify-center pt-20'>
-          {/* Correção 2: Envolver em um <form> e usar onSubmit */}
           <Box
-            component="form" // Transforma o Box em um elemento form
-            onSubmit={handleSubmit} // onSubmit no form
+            component="form"
+            onSubmit={handleSubmit} 
             sx={{
               backgroundColor: '#601b1c',
-              width: { xs: '90%', sm: 500, md: 700 }, // Largura responsiva
-              minHeight: 600, // Altura mínima, pode crescer se necessário
+              width: { xs: '90%', sm: 500, md: 700 },
+              minHeight: 600,
               color: 'white',
               borderRadius: 2,
-              padding: { xs: 2, sm: 3, md: 4 }, // Padding responsivo
+              padding: { xs: 2, sm: 3, md: 4 },
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -62,17 +69,17 @@ const Login = () => {
             </Typography>
 
             <TextField
-              fullWidth // Ocupa a largura total do container Box interno
+              fullWidth
               label={'Email'}
               type="email"
               value={email}
               sx={{
                 backgroundColor: 'white',
                 borderRadius: 2,
-                mb: 4, // Margin bottom
-                '& .MuiInputBase-input': { color: 'black' }, // Cor do texto digitado
-                '& label.Mui-focused': { color: '#601b1c' }, // Cor do label quando focado
-                '& .MuiOutlinedInput-root': { // Estilo da borda
+                mb: 4,
+                '& .MuiInputBase-input': { color: 'black' },
+                '& label.Mui-focused': { color: '#601b1c' },
+                '& .MuiOutlinedInput-root': {
                   '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
                   '&:hover fieldset': { borderColor: '#601b1c' },
                   '&.Mui-focused fieldset': { borderColor: '#601b1c' },
@@ -84,7 +91,7 @@ const Login = () => {
             <TextField
               fullWidth
               label={'Senha'}
-              type="password"
+              type={!showPassword ? 'password' : 'text'}
               value={password}
               sx={{
                 backgroundColor: 'white',
@@ -99,6 +106,20 @@ const Login = () => {
                 },
               }}
               onChange={handlePasswordChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={toggleShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               required
             />
 
@@ -109,13 +130,13 @@ const Login = () => {
             )}
 
             <Button
-              type="submit" // Botão tipo submit para o formulário
+              type="submit"
               variant='contained'
-              disabled={loading} // Desabilita o botão durante o carregamento
+              disabled={loading}
               sx={{
                 width: '100%',
                 backgroundColor: 'black',
-                py: 1.5, // Padding vertical
+                py: 1.5,
                 '&:hover': { backgroundColor: '#333' },
                 '&.Mui-disabled': { backgroundColor: 'grey' }
               }}
